@@ -82,7 +82,7 @@ export function Sidebar({
         <div className="p-4 border-t">
           <div className="flex items-center justify-between hover:bg-primary/30 p-2 rounded-lg">
             <a href="/profile"
-              className="flex gap-3"
+              className="flex items-center gap-3"
             >
               <Avatar className=''>
                 <AvatarImage src={user?.picture} />
@@ -92,9 +92,9 @@ export function Sidebar({
                 {user?.name?.[0]}
 
               </Avatar>
-              <div className="text-left">
-                <p className="text-sm font-medium capitalize">{user?.name || 'A Name'}</p>
-                <p className="text-sm text-muted-foreground">{user?.email || 'mail@sociact.com'}</p>
+              <div className="text-left ">
+                <p className="text-xs font-medium capitalize">{user?.name || 'A Name'}</p>
+                <p className="text-xs text-muted-foreground">{user?.email || 'mail@sociact.com'}</p>
               </div>
             </a>
             <Button
