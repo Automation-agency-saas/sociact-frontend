@@ -83,12 +83,12 @@ export default function Home() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      {sidebarOpen && (
+      {/* {sidebarOpen && (
         <div
           className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm md:hidden"
           onClick={() => setSidebarOpen(false)}
         />
-      )}
+      )} */}
 
       <Sidebar
         user={user}
@@ -101,12 +101,13 @@ export default function Home() {
 
       <div className="bg-gray-200 dark:bg-zinc-900 flex-1 flex flex-col overflow-hidden">
         <main className="flex-1 overflow-y-auto p-4 md:p-6 space-y-5">
-            <Header
-              setSidebarOpen={setSidebarOpen}
-              onSearch={handleSearch}
-              activePlatform={activePlatform}
-              setActivePlatform={setActivePlatform}
-            />
+          <Header
+            sidebarOpen={sidebarOpen}
+            setSidebarOpen={setSidebarOpen}
+            onSearch={handleSearch}
+            activePlatform={activePlatform}
+            setActivePlatform={setActivePlatform}
+          />
           {/* <div className="z-40 flex items-center justify-between gap-2 md:gap-4">
             <SearchInput onSearch={handleSearch} />
             <PlatformSelector
