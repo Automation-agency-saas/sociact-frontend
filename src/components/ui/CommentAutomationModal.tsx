@@ -18,13 +18,14 @@ import {
 } from "./select";
 import { Instagram, Youtube, Twitter, AlertCircle, Loader2, ArrowRight } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { CommentPlatform } from '../../lib/types';
 
 export type PlatformType = 'instagram' | 'youtube' | 'twitter';
 
 interface CommentAutomationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  platform: PlatformType;
+  platform: CommentPlatform;
 }
 
 type Step = 'auth_check' | 'input' | 'running';

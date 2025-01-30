@@ -1,8 +1,6 @@
 import { Youtube, Instagram, Twitter, Linkedin, Sparkles, Zap, Video, FileText, MessageCircle, Search, Image, BarChart3, MessageSquare } from 'lucide-react';
 import { IconType } from 'react-icons';
-
-export type Platform = 'all' | 'youtube' | 'instagram' | 'twitter' | 'linkedin';
-export type Category = 'ideation' | 'content' | 'engagement' | 'analytics';
+import { Platform, Category } from '../types';
 
 export interface Tool {
   name: string;

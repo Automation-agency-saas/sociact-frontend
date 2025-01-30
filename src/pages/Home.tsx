@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { useAuth } from '../lib/context/AuthContext';
 import { useIsMobile } from '../hooks/use-mobile';
-import { IdeaGeneratorModal, PlatformType } from '../components/ui/IdeaGeneratorModal';
+import { IdeaGeneratorModal, PlatformType as IdeaPlatformType } from '../components/ui/IdeaGeneratorModal';
 import { ContentGeneratorModal, ContentType } from '../components/ui/ContentGeneratorModal';
 import { SEOOptimizerModal } from '../components/ui/SEOOptimizerModal';
+import { CommentAutomationModal, PlatformType as CommentPlatformType } from '../components/ui/CommentAutomationModal';
 import { Sidebar } from '../components/dashboard/Sidebar';
 import { Header } from '../components/dashboard/Header';
 import { ToolGrid } from '../components/dashboard/ToolGrid';
-import { tools, Tool, Platform, Category } from '../lib/config/tools';
-import { CommentAutomationModal } from '../components/ui/CommentAutomationModal';
+import { tools, Tool } from '../lib/config/tools';
+import { Platform, Category } from '../lib/types';
 
 // Organize tools by category
 const toolsByCategory = tools.reduce((acc, tool) => {
@@ -37,13 +38,13 @@ export default function Home() {
   const [isIdeaGeneratorOpen, setIsIdeaGeneratorOpen] = useState(false);
   const [isContentGeneratorOpen, setIsContentGeneratorOpen] = useState(false);
   const [isSEOOptimizerOpen, setIsSEOOptimizerOpen] = useState(false);
-  const [selectedPlatform, setSelectedPlatform] = useState<PlatformType>('youtube');
+  const [selectedPlatform, setSelectedPlatform] = useState<IdeaPlatformType>('youtube');
   const [selectedContentType, setSelectedContentType] = useState<ContentType>('youtube_script');
-  const [selectedSEOPlatform, setSelectedSEOPlatform] = useState<PlatformType>('youtube');
+  const [selectedSEOPlatform, setSelectedSEOPlatform] = useState<IdeaPlatformType>('youtube');
 
-  // Add new state
+  // Comment automation states
   const [isCommentAutomationOpen, setIsCommentAutomationOpen] = useState(false);
-  const [selectedCommentPlatform, setSelectedCommentPlatform] = useState<PlatformType>('instagram');
+  const [selectedCommentPlatform, setSelectedCommentPlatform] = useState<CommentPlatformType>('instagram');
 
   // Filter tools based on active platform
   const platformFilteredTools = tools.filter(tool => {
@@ -69,9 +70,9 @@ export default function Home() {
     if (tool.name.includes('IdeaForge') || tool.name.includes('ReelSpark') || 
         tool.name.includes('ThreadMind') || tool.name.includes('ProMind')) {
       if (platform === 'all') {
-        setSelectedPlatform(tool.platforms[0] as PlatformType);
+        setSelectedPlatform(tool.platforms[0] as IdeaPlatformType);
       } else {
-        setSelectedPlatform(platform as PlatformType);
+        setSelectedPlatform(platform as IdeaPlatformType);
       }
       setIsIdeaGeneratorOpen(true);
     } else if (tool.name.includes('ScriptCraft')) {
@@ -88,16 +89,16 @@ export default function Home() {
       setIsContentGeneratorOpen(true);
     } else if (tool.name.includes('SEOPro')) {
       if (platform === 'all') {
-        setSelectedSEOPlatform(tool.platforms[0] as PlatformType);
+        setSelectedSEOPlatform(tool.platforms[0] as IdeaPlatformType);
       } else {
-        setSelectedSEOPlatform(platform as PlatformType);
+        setSelectedSEOPlatform(platform as IdeaPlatformType);
       }
       setIsSEOOptimizerOpen(true);
     } else if (tool.name === 'CommentPro') {
       if (platform === 'all') {
         setSelectedCommentPlatform('instagram');
-      } else {
-        setSelectedCommentPlatform(platform as PlatformType);
+      } else if (platform !== 'linkedin') { // Exclude LinkedIn for comment automation
+        setSelectedCommentPlatform(platform as CommentPlatformType);
       }
       setIsCommentAutomationOpen(true);
     }
