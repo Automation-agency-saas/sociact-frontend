@@ -3,9 +3,10 @@ import { ModeToggle } from '../mode-toggle';
 import { Avatar, AvatarImage, AvatarFallback } from '../ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';
 import { PlusCircle } from 'lucide-react';
-import { Platform } from '@/lib/config/tools';
+import { Platform } from '@/lib/types';
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
 import { platformConfig } from '@/lib/config/tools';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui/select';
 
 interface HeaderProps {
   user: any;
@@ -15,26 +16,10 @@ interface HeaderProps {
 
 export function Header({ user, activePlatform, setActivePlatform }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-40 border-b bg-background">
+    <header className="sticky bg-background top-0 z-40 ">
       <div className="container flex h-16 items-center justify-between gap-4">
-        <div className="hidden md:block">
-          <Tabs value={activePlatform} onValueChange={(value) => setActivePlatform(value as Platform)}>
-            <TabsList className="h-10 grid grid-cols-5 w-[500px]">
-              {Object.entries(platformConfig).map(([key, config]) => (
-                <TabsTrigger 
-                  key={key}
-                  value={key as Platform} 
-                  className="gap-2 data-[state=active]:bg-primary/10"
-                >
-                  <config.icon className={`h-4 w-4 ${config.color}`} />
-                  <span>{config.name}</span>
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
-        </div>
 
-        {/* Right side actions */}
+        {/* Left side actions */}
         <div className="flex items-center gap-2 md:gap-4">
           {/* Mobile Actions */}
           <div className="flex md:hidden items-center gap-2">
@@ -69,6 +54,29 @@ export function Header({ user, activePlatform, setActivePlatform }: HeaderProps)
               <AvatarFallback>{user?.name?.[0]}</AvatarFallback>
             </Avatar>
           </div>
+        </div>
+
+        {/* Right side actions */}
+        <div className="hidden md:block">
+          <Select value={activePlatform} onValueChange={(value: Platform) => setActivePlatform(value)}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Select platform" />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(platformConfig).map(([key, config]) => (
+                <SelectItem
+                  key={key}
+                  value={key as Platform}
+                  className="data-[state=active]:bg-primary/10 hover:text-white"
+                >
+                  <div className='flex gap-4 items-center'>
+                    <config.icon className={`h-4 w-4 ${config.color}`} />
+                    <span>{config.name}</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
     </header>
