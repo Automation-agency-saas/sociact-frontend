@@ -63,9 +63,9 @@ function AppRoutes() {
 
       {/* Protected Routes */}
       <Route path="/home" element={
-        <ProtectedRoute>
           <Home />
-        </ProtectedRoute>
+        // <ProtectedRoute>
+        // </ProtectedRoute>
       } />
 
       {/* Catch all route */}
