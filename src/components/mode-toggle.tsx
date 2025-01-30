@@ -26,8 +26,9 @@ export function ModeToggle() {
           exit={{ scale: 0, rotate: 180 }}
           transition={{
             type: "spring",
-            stiffness: 200,
-            damping: 10,
+            stiffness: 300,
+            damping: 16,
+            duration: 0.2,
           }}
         >
           {isLight ? <Sun className="h-[1.2rem] w-[1.2rem]" /> : <Moon className="h-[1.2rem] w-[1.2rem]" />}
