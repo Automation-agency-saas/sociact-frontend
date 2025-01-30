@@ -33,7 +33,7 @@ export function ToolGrid({ tools, activePlatform, onToolLaunch }: ToolGridProps)
             </div>
           )} */}
 
-          <div className="flex-1 grid grid-cols-2 gap-5 p-4 md:p-6">
+          <div className="flex-1 grid grid-cols-2 gap-3 p-4 md:p-6">
             <div className="rounded-lg group-hover:rounded-3xl w-40 h-full flex bg-zinc-100 p-2 md:p-3 flex-shrink-0 transition-all duration-500 ease-in-out">
               <tool.icon className="size-full p-6 group-hover:p-3 text-primary/70 transition-all duration-300 ease-in-out " />
             </div>
