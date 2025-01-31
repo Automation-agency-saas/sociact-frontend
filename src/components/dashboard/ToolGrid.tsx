@@ -34,7 +34,7 @@ export function ToolGrid({ tools, activePlatform, onToolLaunch }: ToolGridProps)
           )} */}
 
           <div className="flex-1 grid grid-cols-2 gap-3 p-4 md:p-6">
-            <div className="rounded-lg group-hover:rounded-3xl w-40 h-full flex bg-zinc-100 p-2 md:p-3 flex-shrink-0 transition-all duration-500 ease-in-out">
+            <div className="rounded-lg group-hover:rounded-3xl md:w-40 h-full flex bg-zinc-100 p-2 md:p-3 flex-shrink-0 transition-all duration-500 ease-in-out">
               <tool.icon className="size-full p-6 group-hover:p-3 text-primary/70 transition-all duration-300 ease-in-out " />
             </div>
             <div className="flex flex-col items-start gap-3 md:gap-4">
@@ -43,7 +43,7 @@ export function ToolGrid({ tools, activePlatform, onToolLaunch }: ToolGridProps)
                 <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{tool.description}</p>
 
                 {activePlatform === 'all' && tool.platforms.length > 0 && (
-                  <div className="flex gap-1.5 mt-2">
+                  <div className="hiddenmd: flex gap-1.5 mt-2">
                     {tool.platforms.map((p) => {
                       const config = platformConfig[p];
                       return (

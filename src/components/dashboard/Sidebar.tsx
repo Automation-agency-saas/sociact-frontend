@@ -38,7 +38,7 @@ export function Sidebar({
   return (
     <aside
       className={cn(
-        "fixed md:relative inset-y-0 left-0 z-50 w-64 transform border-r bg-card/50 backdrop-blur-xl transition-all duration-300 ease-in-out",
+        "fixed md:relative inset-y-0 left-0 z-50 w-64 transform border-r bg-card/90 md:bg-card/50 backdrop-blur-xl transition-all duration-300 ease-in-out",
         sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0 md:w-16",
       )}
     >
@@ -87,12 +87,14 @@ export function Sidebar({
             )
           })}
         </nav>
+
+        {/*  */}
         <div className={`p-4 hidden items-center md:flex
           ${sidebarOpen ? 'justify-end' : 'justify-center'}
           `}>
-        <Button variant="outline" size="sm" className=" bg-card rounded-full " onClick={() => { setSidebarOpen(!sidebarOpen) }}>
+        <Button variant="link" size="icon" className="text-primary bg-foreground rounded-full " onClick={() => { setSidebarOpen(!sidebarOpen) }}>
           {/* please make a button to close sidebar */}
-          {sidebarOpen ? <ChevronLeft className="size-4" /> : <ChevronRight className="size-4" />}
+          {sidebarOpen ? <ChevronLeft className="size-5" /> : <ChevronRight className="size-5" />}
           {/* <ChevronRight className="size-4" /> */}
         </Button>
         </div>

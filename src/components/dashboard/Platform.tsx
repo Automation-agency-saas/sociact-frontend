@@ -10,9 +10,9 @@ interface HeaderProps {
 
 export function PlatformSelector({ activePlatform, setActivePlatform }: HeaderProps) {
     return (
-        <div className="hidden md:block">
+        <div className="block">
             <Select value={activePlatform} onValueChange={(value: Platform) => setActivePlatform(value)}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-full md:w-[180px]">
                     <SelectValue placeholder="Select platform" />
                 </SelectTrigger>
                 <SelectContent>
@@ -22,8 +22,8 @@ export function PlatformSelector({ activePlatform, setActivePlatform }: HeaderPr
                             value={key as Platform}
                             className="data-[state=active]:bg-primary/10 hover:text-white"
                         >
-                            <div className='flex gap-4 items-center'>
-                                <config.icon className={`h-4 w-4 ${config.color}`} />
+                            <div className='flex gap-2 md:gap-4 items-center pr-2 w-full text-nowrap'>
+                                <config.icon className={`size-4 ${config.color}`} />
                                 <span>{config.name}</span>
                             </div>
                         </SelectItem>

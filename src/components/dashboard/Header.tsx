@@ -1,4 +1,4 @@
-import { Menu } from "lucide-react"
+import { Menu, Plus } from "lucide-react"
 import { Button } from "../ui/button"
 import { SearchInput } from "./Search"
 import { PlatformSelector } from "./Platform"
@@ -20,7 +20,7 @@ export function Header({ sidebarOpen, setSidebarOpen, onSearch, activePlatform, 
         <div className="flex items-center justify-between gap-2 md:gap-4">
           <h1 className="text-xl font-bold">Welcome User</h1>
           <Button variant="outline" size="icon" className="" onClick={() => setSidebarOpen(!sidebarOpen)}>
-            <Menu className="h-5 w-5" />
+           {sidebarOpen ? <Plus className="size-5 rotate-45" /> : <Menu className="size-5" />}
           </Button>
         </div>
       )}

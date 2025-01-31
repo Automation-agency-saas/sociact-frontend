@@ -32,11 +32,11 @@ export function SearchInput({ onSearch }: SearchInputProps) {
 
     return (
         <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+            <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground " />
             <Input
                 type="text"
                 placeholder="Search tools..."
-                className="pl-10 w-[300px]"
+                className="pl-10 md:w-[300px]"
                 value={searchQuery}
                 onChange={handleSearch}
             />
