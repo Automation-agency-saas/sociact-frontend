@@ -92,10 +92,8 @@ export function Sidebar({
         <div className={`p-4 hidden items-center md:flex
           ${sidebarOpen ? 'justify-end' : 'justify-center'}
           `}>
-        <Button variant="link" size="icon" className="text-primary bg-foreground rounded-full " onClick={() => { setSidebarOpen(!sidebarOpen) }}>
-          {/* please make a button to close sidebar */}
+        <Button variant="link" size="icon" className="text-primary bg-foreground/5 rounded-full " onClick={() => { setSidebarOpen(!sidebarOpen) }}>
           {sidebarOpen ? <ChevronLeft className="size-5" /> : <ChevronRight className="size-5" />}
-          {/* <ChevronRight className="size-4" /> */}
         </Button>
         </div>
 
