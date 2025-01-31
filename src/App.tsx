@@ -5,6 +5,7 @@ import { useAuth } from './lib/context/AuthContext';
 import { Toaster } from 'react-hot-toast';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { ThemeProvider } from './components/theme-provider';
+import { AuthCallback } from './pages/auth/AuthCallback';
 
 // Landing page components
 import { About } from "./components/About";
@@ -59,6 +60,7 @@ function AppRoutes() {
         isAuthenticated ? <Navigate to="/home" /> : <LandingPage />
       } />
       
+      {/* Auth Routes */}
       <Route path="/auth/*" element={<AuthLayout />} />
 
       {/* Protected Routes */}
@@ -75,7 +77,7 @@ function AppRoutes() {
 }
 
 function App() {
-  console.log('Google Client ID:', import.meta.env.VITE_GOOGLE_CLIENT_ID);
+  console.log('App mounting...');
   return (
     <ThemeProvider defaultTheme="system" storageKey="sociact-theme">
       <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>

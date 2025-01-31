@@ -1,4 +1,4 @@
-import { Link, Routes, Route, Navigate } from 'react-router-dom';
+import { Link, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { SignIn } from './SignIn';
 import { SignUp } from './SignUp';
 import { AuthCallback } from './AuthCallback';
@@ -8,6 +8,8 @@ import { LogoIcon } from '../../components/Icons';
 
 export function AuthLayout() {
   const { isAuthenticated, loading } = useAuth();
+  const location = useLocation();
+  console.log('AuthLayout - Current path:', location.pathname);
 
   // Wait for authentication check to complete
   if (loading) {
@@ -18,8 +20,9 @@ export function AuthLayout() {
     );
   }
 
-  // Redirect if already authenticated
-  if (isAuthenticated) {
+  // Don't redirect if we're on the callback route
+  if (isAuthenticated && !location.pathname.includes('/auth/callback')) {
+    console.log('AuthLayout - Redirecting authenticated user to home');
     return <Navigate to="/home" replace />;
   }
 
