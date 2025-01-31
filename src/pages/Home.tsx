@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../lib/context/AuthContext';
 import { useIsMobile } from '../hooks/use-mobile';
 import { IdeaGeneratorModal, PlatformType as IdeaPlatformType } from '../components/ui/IdeaGeneratorModal';
+import { ThumbnailProModal } from '../components/ui/ThumbnailProModal';
 import { ContentGeneratorModal, ContentType } from '../components/ui/ContentGeneratorModal';
 import { SEOOptimizerModal } from '../components/ui/SEOOptimizerModal';
 import { CommentAutomationModal, PlatformType as CommentPlatformType } from '../components/ui/CommentAutomationModal';
@@ -10,8 +11,6 @@ import { Header } from '../components/dashboard/Header';
 import { ToolGrid } from '../components/dashboard/ToolGrid';
 import { tools, Tool } from '../lib/config/tools';
 import { Platform, Category } from '../lib/types';
-import { SearchInput } from '@/components/dashboard/Search';
-import { PlatformSelector } from '@/components/dashboard/Platform';
 
 export default function Home() {
   const { user } = useAuth();
@@ -23,6 +22,7 @@ export default function Home() {
 
   // Modal states
   const [isIdeaGeneratorOpen, setIsIdeaGeneratorOpen] = useState(false);
+  const [isThumbnailProOpen, setIsThumbnailProOpen] = useState(false);
   const [isContentGeneratorOpen, setIsContentGeneratorOpen] = useState(false);
   const [isSEOOptimizerOpen, setIsSEOOptimizerOpen] = useState(false);
   const [selectedPlatform, setSelectedPlatform] = useState<IdeaPlatformType>('youtube');
@@ -78,6 +78,8 @@ export default function Home() {
         setSelectedCommentPlatform((platform === 'all' ? 'instagram' : platform) as CommentPlatformType);
         setIsCommentAutomationOpen(true);
       }
+    } else if (tool.name === 'ThumbnailPro') {
+      setIsThumbnailProOpen(true);
     }
   };
 
@@ -142,6 +144,10 @@ export default function Home() {
         isOpen={isCommentAutomationOpen}
         onClose={() => setIsCommentAutomationOpen(false)}
         platform={selectedCommentPlatform}
+      />
+      <ThumbnailProModal
+        isOpen={isThumbnailProOpen}
+        onClose={() => setIsThumbnailProOpen(false)}
       />
     </div>
   );
