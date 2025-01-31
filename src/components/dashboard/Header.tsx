@@ -3,6 +3,7 @@ import { Button } from "../ui/button"
 import { SearchInput } from "./Search"
 import { PlatformSelector } from "./Platform"
 import type { Platform } from "@/lib/types"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 interface HeaderProps {
   sidebarOpen: boolean
@@ -14,15 +15,22 @@ interface HeaderProps {
 
 export function Header({ sidebarOpen, setSidebarOpen, onSearch, activePlatform, setActivePlatform }: HeaderProps) {
   return (
-    <div className="flex items-center justify-between gap-2 md:gap-4 py-3">
-      <div className="flex items-center gap-4">
-        <Button variant="outline" size="icon" className="" onClick={() => setSidebarOpen(!sidebarOpen)}>
-          <Menu className="h-5 w-5" />
-        </Button>
-        <SearchInput onSearch={onSearch} />
+    <>
+      {useIsMobile() && (
+        <div className="flex items-center justify-between gap-2 md:gap-4">
+          <h1 className="text-xl font-bold">Welcome User</h1>
+          <Button variant="outline" size="icon" className="" onClick={() => setSidebarOpen(!sidebarOpen)}>
+            <Menu className="h-5 w-5" />
+          </Button>
+        </div>
+      )}
+      <div className="flex items-center justify-between gap-2 md:gap-4 pb-3">
+        <div className="flex items-center gap-4">
+          <SearchInput onSearch={onSearch} />
+        </div>
+        <PlatformSelector activePlatform={activePlatform} setActivePlatform={setActivePlatform} />
       </div>
-      <PlatformSelector activePlatform={activePlatform} setActivePlatform={setActivePlatform} />
-    </div>
+    </>
   )
 }
 
