@@ -28,6 +28,7 @@ import { AuthLayout } from "./pages/auth/AuthLayout";
 
 // App pages
 import Home from "./pages/Home";
+import { PrivacyPolicy } from './pages/PrivacyPolicy';
 
 function LandingPage() {
   return (
@@ -62,12 +63,13 @@ function AppRoutes() {
       
       {/* Auth Routes */}
       <Route path="/auth/*" element={<AuthLayout />} />
+      <Route path="/privacy" element={<PrivacyPolicy />} />
 
       {/* Protected Routes */}
       <Route path="/home" element={
-        <ProtectedRoute>
           <Home />
-        </ProtectedRoute>
+        // <ProtectedRoute>
+        // </ProtectedRoute>
       } />
 
       {/* Catch all route */}
