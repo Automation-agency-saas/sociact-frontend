@@ -82,6 +82,14 @@ export const tools: Tool[] = [
     category: 'engagement',
     platforms: ['instagram', 'youtube', 'twitter'],
   },
+  // create one more tool as AI Thumbnail Generator
+  {
+    name: 'ThumbnailPro',
+    description: 'Generate AI-powered thumbnails for your videos',
+    icon: Image,
+    category: 'content',
+    platforms: ['youtube'],
+  },
 ];
 
 export const platformConfig = {
