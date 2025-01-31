@@ -6,7 +6,7 @@ export const Footer = () => {
       <hr className="w-11/12 mx-auto" />
 
       <section className="container py-20 grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-x-12 gap-y-8">
-        <div className="col-span-full xl:col-span-2">
+        <div className="col-span-full xl:col-span-1">
           <a
             rel="noreferrer noopener"
             href="/"
@@ -46,6 +46,39 @@ export const Footer = () => {
               className="opacity-60 hover:opacity-100"
             >
               Dribbble
+            </a>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <h3 className="font-bold text-lg">Quick Links</h3>
+          <div>
+            <a
+              rel="noreferrer noopener"
+              href="/privacy"
+              className="opacity-60 hover:opacity-100"
+            >
+              Privacy Policy
+            </a>
+          </div>
+
+          <div>
+            <a
+              rel="noreferrer noopener"
+              href="/privacy"
+              className="opacity-60 hover:opacity-100"
+            >
+              Terms of Service
+            </a>
+          </div>
+
+          <div>
+            <a
+              rel="noreferrer noopener"
+              href="#"
+              className="opacity-60 hover:opacity-100"
+            >
+              Contact Us
             </a>
           </div>
         </div>
