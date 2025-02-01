@@ -65,11 +65,14 @@ function AppRoutes() {
       <Route path="/auth/*" element={<AuthLayout />} />
       <Route path="/privacy" element={<PrivacyPolicy />} />
 
+      {/* Instagram Auth Callback - Separate from regular auth flow */}
+      <Route path="/auth/instagram/callback" element={<AuthCallback />} />
+
       {/* Protected Routes */}
       <Route path="/home" element={
+        <ProtectedRoute>
           <Home />
-        // <ProtectedRoute>
-        // </ProtectedRoute>
+        </ProtectedRoute>
       } />
 
       {/* Catch all route */}

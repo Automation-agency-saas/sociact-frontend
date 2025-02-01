@@ -1,55 +1,58 @@
-import axiosInstance from './config';
+import { API_URL } from '../config';
 
-export type CommentPlatform = 'instagram' | 'youtube' | 'twitter';
+export enum CommentPlatform {
+  INSTAGRAM = 'instagram',
+  YOUTUBE = 'youtube',
+  TWITTER = 'twitter'
+}
 
-interface CommentAutomationRequest {
-  post_url: string;
+export interface CommentAutomationRequest {
   platform: CommentPlatform;
   tone: string;
   style: string;
 }
 
-interface CommentAutomationResponse {
+export interface AutomationStats {
+  comments_processed: number;
+  successful_responses: number;
+  failed_responses: number;
+}
+
+export interface CommentAutomationResponse {
   success: boolean;
   message: string;
-  comments_processed?: number;
+  log_id: string;
+  stats: AutomationStats;
 }
 
 class CommentAutomationService {
+  private baseUrl = `${API_URL}/api/v1`;
+
+  private getHeaders(): HeadersInit {
+    const token = localStorage.getItem('token');
+    return {
+      'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+    };
+  }
+
   async startAutomation(request: CommentAutomationRequest): Promise<CommentAutomationResponse> {
     try {
-      const response = await axiosInstance.post<CommentAutomationResponse>(
-        '/api/v1/comment-automation/start',
-        request
-      );
-      return response.data;
-    } catch (error) {
+      const response = await fetch(`${this.baseUrl}/comment-automation/start`, {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify(request),
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Failed to start automation');
+      }
+
+      return await response.json();
+    } catch (error: any) {
       console.error('Error starting automation:', error);
-      throw error;
-    }
-  }
-
-  async checkInstagramAuth(): Promise<boolean> {
-    try {
-      const response = await axiosInstance.get<{ auth_status: boolean }>(
-        '/api/v1/comment-automation/instagram/auth/check'
-      );
-      return response.data.auth_status;
-    } catch (error) {
-      console.error('Error checking Instagram auth:', error);
-      return false;
-    }
-  }
-
-  async connectInstagram(code: string): Promise<{ success: boolean; message: string }> {
-    try {
-      const response = await axiosInstance.post<{ success: boolean; message: string }>(
-        '/api/v1/comment-automation/instagram/auth',
-        { code }
-      );
-      return response.data;
-    } catch (error) {
-      console.error('Error connecting Instagram:', error);
       throw error;
     }
   }

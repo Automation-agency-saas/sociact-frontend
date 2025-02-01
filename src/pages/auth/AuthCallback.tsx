@@ -13,8 +13,13 @@ export function AuthCallback() {
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // Log all URL and search parameters immediately
   console.log('Current URL:', window.location.href);
-  console.log('Search params:', Object.fromEntries(searchParams.entries()));
+  console.log('Current pathname:', window.location.pathname);
+  console.log('Current search:', window.location.search);
+  console.log('Current hash:', window.location.hash);
+  console.log('All search params:', Object.fromEntries(searchParams.entries()));
+  console.log('Auth token in localStorage:', localStorage.getItem('token'));
 
   useEffect(() => {
     console.log('AuthCallback useEffect triggered');
@@ -27,25 +32,37 @@ export function AuthCallback() {
 
       try {
         setIsProcessing(true);
-        const code = searchParams.get('code');
+        const rawCode = searchParams.get('code');
         const credential = searchParams.get('credential');
         const state = searchParams.get('state');
 
-        console.log('Auth Callback - Received params:', { code, credential, state });
+        // Clean the code by removing any hash or extra parameters
+        const code = rawCode ? rawCode.split('#')[0] : null;
+
+        console.log('Auth Callback - Received params:', { 
+          rawCode,
+          cleanedCode: code,
+          credential, 
+          state 
+        });
+
+        if (!code && !credential) {
+          console.error('No code or credential found in URL');
+          setError('No authentication code found');
+          return;
+        }
 
         if (credential) {
           console.log('Processing Google auth...');
-          // Handle Google Sign-In
           await signInWithGoogle(credential);
           const redirectPath = localStorage.getItem('redirectPath') || '/home';
           localStorage.removeItem('redirectPath');
           navigate(redirectPath, { replace: true });
         } else if (code && state === 'instagram') {
           console.log('Processing Instagram auth callback...');
-          // Handle Instagram OAuth
           try {
-            // Connect Instagram account
-            console.log('Calling handleAuthCallback with code:', code);
+            // Connect Instagram account with cleaned code
+            console.log('Calling handleAuthCallback with cleaned code:', code);
             const authResponse = await instagramService.handleAuthCallback(code);
             console.log('Instagram auth response:', authResponse);
             
@@ -57,17 +74,9 @@ export function AuthCallback() {
               if (savedState) {
                 try {
                   const parsedState = JSON.parse(savedState);
-                  console.log('Restored Instagram state:', parsedState);
                   localStorage.removeItem('instagram_auth_return_state');
                   
-                  // Wait for a moment to ensure the auth is processed
-                  await new Promise(resolve => setTimeout(resolve, 1000));
-                  
-                  console.log('Navigating to home with state:', {
-                    instagramConnected: true,
-                    modalState: parsedState
-                  });
-                  
+                  console.log('Instagram auth successful, navigating to home');
                   toast.success('Successfully connected Instagram account');
                   navigate('/home', { 
                     replace: true,
@@ -78,7 +87,7 @@ export function AuthCallback() {
                   });
                 } catch (parseError) {
                   console.error('Error parsing saved state:', parseError);
-                  navigate('/home', { replace: true });
+                  setError('Error restoring previous state. Please try connecting again.');
                 }
               } else {
                 console.log('No saved state found, navigating to home');
@@ -87,18 +96,15 @@ export function AuthCallback() {
               }
             } else {
               console.error('Instagram auth failed:', authResponse);
-              toast.error('Failed to connect Instagram account');
-              navigate('/home', { replace: true });
+              setError(authResponse.message || 'Failed to connect Instagram account');
             }
-          } catch (err) {
+          } catch (err: any) {
             console.error('Instagram auth error:', err);
-            toast.error('Failed to connect Instagram account');
-            navigate('/home', { replace: true });
+            setError(err.message || 'Failed to connect Instagram account');
           }
         } else if (code) {
-          // Handle other OAuth providers if needed
-          console.warn('Unsupported OAuth provider');
-          setError('OAuth provider not supported');
+          console.error('Invalid state parameter for Instagram auth');
+          setError('Invalid authentication state');
         } else {
           console.error('Invalid callback parameters');
           setError('Invalid callback parameters');

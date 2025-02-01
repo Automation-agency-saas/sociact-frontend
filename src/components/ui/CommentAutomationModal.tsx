@@ -36,7 +36,7 @@ type Step = 'auth_check' | 'input' | 'running';
 
 const URL_PATTERNS = {
   youtube: /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)[a-zA-Z0-9_-]{11}$/,
-  instagram: /^(https?:\/\/)?(www\.)?(instagram\.com\/p\/)[a-zA-Z0-9_-]{11}$/,
+  instagram: /^(https?:\/\/)?(www\.)?instagram\.com\/p\/[\w\-\.]+\/?(\?.*)?$/,
   twitter: /^(https?:\/\/)?(www\.)?(twitter\.com|x\.com)\/[a-zA-Z0-9_]+\/status\/[0-9]+$/,
 };
 
@@ -87,8 +87,6 @@ const styleOptions = [
 export function CommentAutomationModal({ isOpen, onClose, platform }: CommentAutomationModalProps) {
   const [currentStep, setCurrentStep] = useState<Step>('auth_check');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [postUrl, setPostUrl] = useState('');
-  const [urlError, setUrlError] = useState<string | null>(null);
   const [tone, setTone] = useState('professional');
   const [style, setStyle] = useState('concise');
   const [isLoading, setIsLoading] = useState(false);
@@ -96,73 +94,66 @@ export function CommentAutomationModal({ isOpen, onClose, platform }: CommentAut
 
   const config = platformConfig[platform];
 
+  // Handle Instagram auth return state
   useEffect(() => {
-    // Check if we're returning from Instagram auth
+    if (!isOpen) return;
+
     const state = location.state as { instagramConnected?: boolean; modalState?: any };
     if (state?.instagramConnected && state?.modalState) {
       console.log('Restoring modal state after Instagram auth:', state.modalState);
-      setPostUrl(state.modalState.postUrl || '');
       setTone(state.modalState.tone || 'professional');
       setStyle(state.modalState.style || 'concise');
       setCurrentStep('input');
       setIsAuthenticated(true);
       
-      // Clear the state
+      // Clear the state after processing
       window.history.replaceState({}, document.title, location.pathname);
     }
-  }, [location]);
+  }, [location.state, isOpen]);
 
+  // Check Instagram auth status when modal opens
   useEffect(() => {
     const checkInstagramAuth = async () => {
+      if (!isOpen || platform !== 'instagram') return;
+
       try {
+        setIsLoading(true);
         console.log('Checking Instagram auth status...');
         const response = await instagramService.checkAuthStatus();
         console.log('Instagram auth status response:', response);
+        
         setIsAuthenticated(response.auth_status);
         if (response.auth_status) {
           setCurrentStep('input');
+        } else {
+          setCurrentStep('auth_check');
         }
       } catch (error) {
         console.error('Failed to check Instagram auth status:', error);
         setIsAuthenticated(false);
+        setCurrentStep('auth_check');
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    if (isOpen && platform === 'instagram') {
-      checkInstagramAuth();
-    }
+    // Only check auth status when modal opens
+    checkInstagramAuth();
+    
   }, [isOpen, platform]);
 
-  const validateUrl = (url: string) => {
-    if (!url) {
-      setUrlError('URL is required');
-      return false;
+  // Reset state when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setCurrentStep('auth_check');
+      setTone('professional');
+      setStyle('concise');
+      setIsAuthenticated(false);
     }
-    
-    const pattern = URL_PATTERNS[platform];
-    if (!pattern.test(url)) {
-      setUrlError(config.urlError);
-      return false;
-    }
-    
-    setUrlError(null);
-    return true;
-  };
-
-  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newUrl = e.target.value;
-    setPostUrl(newUrl);
-    if (newUrl) {
-      validateUrl(newUrl);
-    } else {
-      setUrlError(null);
-    }
-  };
+  }, [isOpen]);
 
   const handleClose = () => {
     setCurrentStep('auth_check');
-    setPostUrl('');
-    setUrlError(null);
     setTone('professional');
     setStyle('concise');
     onClose();
@@ -173,16 +164,20 @@ export function CommentAutomationModal({ isOpen, onClose, platform }: CommentAut
       setIsLoading(true);
       
       // Store current modal state in localStorage
-      localStorage.setItem('instagram_auth_return_state', JSON.stringify({
-        postUrl,
+      const stateToSave = {
         tone,
-        style
-      }));
+        style,
+        timestamp: Date.now()
+      };
+      
+      localStorage.setItem('instagram_auth_return_state', JSON.stringify(stateToSave));
+      console.log('Saved modal state before auth:', stateToSave);
 
       // Initiate Instagram auth
       const authUrl = await instagramService.getAuthUrl();
       window.location.href = authUrl;
     } catch (error: any) {
+      console.error('Failed to initiate Instagram auth:', error);
       toast.error(error.message || 'Failed to connect Instagram account');
     } finally {
       setIsLoading(false);
@@ -190,23 +185,18 @@ export function CommentAutomationModal({ isOpen, onClose, platform }: CommentAut
   };
 
   const handleStartAutomation = async () => {
-    if (!validateUrl(postUrl)) {
-      return;
-    }
-
     try {
       setIsLoading(true);
       setCurrentStep('running');
 
       const response = await commentAutomationService.startAutomation({
-        post_url: postUrl,
         tone,
         style,
         platform
       });
 
       if (response.success) {
-        toast.success(`Successfully processed ${response.comments_processed} comments`);
+        toast.success(`Successfully processed ${response.stats.comments_processed} comments on your latest post`);
         handleClose();
       }
     } catch (error: any) {
@@ -215,28 +205,6 @@ export function CommentAutomationModal({ isOpen, onClose, platform }: CommentAut
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const initiateInstagramAuth = () => {
-    const redirectUri = encodeURIComponent(INSTAGRAM_REDIRECT_URI);
-    const scope = [
-      'instagram_business_basic',
-      'instagram_business_manage_messages',
-      'instagram_business_manage_comments',
-      'instagram_business_content_publish',
-      'instagram_business_manage_insights'
-    ].join(',');
-    
-    const authUrl = `https://www.instagram.com/oauth/authorize?` + 
-      `enable_fb_login=0` +
-      `&force_authentication=1` +
-      `&client_id=${INSTAGRAM_CLIENT_ID}` +
-      `&redirect_uri=${redirectUri}` +
-      `&response_type=code` +
-      `&scope=${scope}` +
-      `&state=instagram`;
-    
-    window.location.href = authUrl;
   };
 
   return (
@@ -280,17 +248,9 @@ export function CommentAutomationModal({ isOpen, onClose, platform }: CommentAut
 
           {currentStep === 'input' && (
             <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Post URL</label>
-                <Input
-                  placeholder={config.inputPlaceholder}
-                  value={postUrl}
-                  onChange={handleUrlChange}
-                  className={cn(urlError && "border-destructive")}
-                />
-                {urlError && (
-                  <p className="text-sm text-destructive">{urlError}</p>
-                )}
+              <div className="flex items-center gap-2 rounded-lg border p-4 bg-muted/50">
+                <Instagram className="h-5 w-5 text-pink-500" />
+                <p className="text-sm">Connected to Instagram</p>
               </div>
 
               <div className="space-y-2">
@@ -324,6 +284,12 @@ export function CommentAutomationModal({ isOpen, onClose, platform }: CommentAut
                   </SelectContent>
                 </Select>
               </div>
+
+              <div className="rounded-lg border p-4 bg-muted/50">
+                <p className="text-sm text-muted-foreground">
+                  Automation will process comments on your latest Instagram post.
+                </p>
+              </div>
             </div>
           )}
 
@@ -331,7 +297,7 @@ export function CommentAutomationModal({ isOpen, onClose, platform }: CommentAut
             <div className="flex flex-col items-center justify-center py-8 space-y-4">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
               <p className="text-sm text-muted-foreground">
-                Starting comment automation...
+                Processing comments on your latest post...
               </p>
             </div>
           )}
@@ -348,7 +314,7 @@ export function CommentAutomationModal({ isOpen, onClose, platform }: CommentAut
           {currentStep === 'input' && (
             <Button 
               onClick={handleStartAutomation}
-              disabled={!postUrl || !!urlError || isLoading}
+              disabled={isLoading}
               className="w-full sm:w-auto"
             >
               {isLoading ? (
