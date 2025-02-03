@@ -1,10 +1,6 @@
 import { API_URL } from '../config';
 
-export enum CommentPlatform {
-  INSTAGRAM = 'instagram',
-  YOUTUBE = 'youtube',
-  TWITTER = 'twitter'
-}
+export type CommentPlatform = 'instagram' | 'facebook';
 
 export interface CommentAutomationRequest {
   platform: CommentPlatform;
@@ -22,13 +18,14 @@ export interface CommentAutomationResponse {
   success: boolean;
   message: string;
   log_id: string;
+  post_url: string;
   stats: AutomationStats;
 }
 
 class CommentAutomationService {
   private baseUrl = `${API_URL}/api/v1`;
 
-  private getHeaders(): HeadersInit {
+  private getAuthHeaders(): HeadersInit {
     const token = localStorage.getItem('token');
     return {
       'Content-Type': 'application/json',
@@ -36,13 +33,17 @@ class CommentAutomationService {
     };
   }
 
-  async startAutomation(request: CommentAutomationRequest): Promise<CommentAutomationResponse> {
+  async startAutomation(params: {
+    tone: string;
+    style: string;
+    platform: CommentPlatform;
+  }): Promise<CommentAutomationResponse> {
     try {
       const response = await fetch(`${this.baseUrl}/comment-automation/start`, {
         method: 'POST',
-        headers: this.getHeaders(),
-        body: JSON.stringify(request),
-        credentials: 'include'
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(params),
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -51,7 +52,7 @@ class CommentAutomationService {
       }
 
       return await response.json();
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error starting automation:', error);
       throw error;
     }

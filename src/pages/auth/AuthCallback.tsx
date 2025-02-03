@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../lib/context/AuthContext';
-import { instagramService } from '../../lib/services';
+import { instagramService } from '../../lib/services/instagram.service';
+import { facebookService } from '../../lib/services/facebook.service';
 import { toast } from 'react-hot-toast';
 
 export function AuthCallback() {
@@ -35,6 +36,7 @@ export function AuthCallback() {
         const rawCode = searchParams.get('code');
         const credential = searchParams.get('credential');
         const state = searchParams.get('state');
+        const hash = window.location.hash;
 
         // Clean the code by removing any hash or extra parameters
         const code = rawCode ? rawCode.split('#')[0] : null;
@@ -43,11 +45,12 @@ export function AuthCallback() {
           rawCode,
           cleanedCode: code,
           credential, 
-          state 
+          state,
+          hash
         });
 
-        if (!code && !credential) {
-          console.error('No code or credential found in URL');
+        if (!code && !credential && !hash) {
+          console.error('No code, credential, or hash found in URL');
           setError('No authentication code found');
           return;
         }
@@ -61,13 +64,10 @@ export function AuthCallback() {
         } else if (code && state === 'instagram') {
           console.log('Processing Instagram auth callback...');
           try {
-            // Connect Instagram account with cleaned code
-            console.log('Calling handleAuthCallback with cleaned code:', code);
             const authResponse = await instagramService.handleAuthCallback(code);
             console.log('Instagram auth response:', authResponse);
             
             if (authResponse.success) {
-              // Restore modal state if it exists
               const savedState = localStorage.getItem('instagram_auth_return_state');
               console.log('Saved Instagram state:', savedState);
               
@@ -102,9 +102,61 @@ export function AuthCallback() {
             console.error('Instagram auth error:', err);
             setError(err.message || 'Failed to connect Instagram account');
           }
-        } else if (code) {
-          console.error('Invalid state parameter for Instagram auth');
-          setError('Invalid authentication state');
+        } else if (hash) {
+          console.log('Processing Facebook auth callback...');
+          try {
+            // Parse the hash fragment
+            const params = new URLSearchParams(hash.replace('#', ''));
+            const accessToken = params.get('access_token');
+            const longLivedToken = params.get('long_lived_token');
+            
+            if (!accessToken && !longLivedToken) {
+              throw new Error('No access token found in Facebook response');
+            }
+
+            const token = longLivedToken || accessToken;
+            if (!token) {
+              throw new Error('No valid token found in Facebook response');
+            }
+
+            const authResponse = await facebookService.handleAuthCallback(token);
+            console.log('Facebook auth response:', authResponse);
+            
+            if (authResponse.success) {
+              const savedState = localStorage.getItem('facebook_auth_return_state');
+              console.log('Saved Facebook state:', savedState);
+              
+              if (savedState) {
+                try {
+                  const parsedState = JSON.parse(savedState);
+                  localStorage.removeItem('facebook_auth_return_state');
+                  
+                  console.log('Facebook auth successful, navigating to home');
+                  toast.success('Successfully connected Facebook account');
+                  navigate('/home', { 
+                    replace: true,
+                    state: { 
+                      facebookConnected: true,
+                      modalState: parsedState
+                    }
+                  });
+                } catch (parseError) {
+                  console.error('Error parsing saved state:', parseError);
+                  setError('Error restoring previous state. Please try connecting again.');
+                }
+              } else {
+                console.log('No saved state found, navigating to home');
+                toast.success('Successfully connected Facebook account');
+                navigate('/home', { replace: true });
+              }
+            } else {
+              console.error('Facebook auth failed:', authResponse);
+              setError(authResponse.message || 'Failed to connect Facebook account');
+            }
+          } catch (err: any) {
+            console.error('Facebook auth error:', err);
+            setError(err.message || 'Failed to connect Facebook account');
+          }
         } else {
           console.error('Invalid callback parameters');
           setError('Invalid callback parameters');

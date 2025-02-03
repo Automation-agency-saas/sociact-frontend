@@ -73,9 +73,10 @@ export default function Home() {
     } else if (tool.name.includes('SEOPro')) {
       setSelectedSEOPlatform((platform === 'all' ? tool.platforms[0] : platform) as IdeaPlatformType);
       setIsSEOOptimizerOpen(true);
-    } else if (tool.name === 'CommentPro') {
+    } else if (tool.name.includes('CommentPro')) {
       if (platform !== 'linkedin') {
-        setSelectedCommentPlatform((platform === 'all' ? 'instagram' : platform) as CommentPlatformType);
+        const commentPlatform = tool.name.includes('Facebook') ? 'facebook' : 'instagram';
+        setSelectedCommentPlatform(commentPlatform as CommentPlatformType);
         setIsCommentAutomationOpen(true);
       }
     } else if (tool.name === 'ThumbnailPro') {

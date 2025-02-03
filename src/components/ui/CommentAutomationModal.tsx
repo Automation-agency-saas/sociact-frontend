@@ -16,11 +16,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./select";
-import { Instagram, Youtube, Twitter, AlertCircle, Loader2, ArrowRight } from 'lucide-react';
+import { Instagram, Youtube, Twitter, Facebook, AlertCircle, Loader2, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CommentPlatform, commentAutomationService } from '@/lib/services/comment-automation';
 import { toast } from 'react-hot-toast';
 import { instagramService } from '@/lib/services/instagram.service';
+import { facebookService } from '@/lib/services/facebook.service';
 import { INSTAGRAM_CLIENT_ID, INSTAGRAM_REDIRECT_URI } from '@/lib/config';
 import { useLocation } from 'react-router-dom';
 
@@ -49,6 +50,15 @@ const platformConfig = {
     authCheckMessage: 'To use Instagram comment automation, you need to connect your Instagram account first.',
     inputPlaceholder: 'Enter Instagram post URL (e.g., https://instagram.com/p/ABC123xyz...)',
     urlError: 'Please enter a valid Instagram post URL',
+  },
+  facebook: {
+    title: 'Facebook Comment Automation',
+    description: 'Automatically respond to comments on your Facebook posts',
+    icon: Facebook,
+    color: 'text-blue-600',
+    authCheckMessage: 'To use Facebook comment automation, you need to connect your Facebook account first.',
+    inputPlaceholder: 'Enter Facebook post URL',
+    urlError: 'Please enter a valid Facebook post URL',
   },
   youtube: {
     title: 'YouTube Comment Automation',
@@ -113,14 +123,16 @@ export function CommentAutomationModal({ isOpen, onClose, platform }: CommentAut
 
   // Check Instagram auth status when modal opens
   useEffect(() => {
-    const checkInstagramAuth = async () => {
-      if (!isOpen || platform !== 'instagram') return;
+    const checkAuth = async () => {
+      if (!isOpen) return;
 
       try {
         setIsLoading(true);
-        console.log('Checking Instagram auth status...');
-        const response = await instagramService.checkAuthStatus();
-        console.log('Instagram auth status response:', response);
+        console.log(`Checking ${platform} auth status...`);
+        
+        const service = platform === 'facebook' ? facebookService : instagramService;
+        const response = await service.checkAuthStatus();
+        console.log(`${platform} auth status response:`, response);
         
         setIsAuthenticated(response.auth_status);
         if (response.auth_status) {
@@ -129,7 +141,7 @@ export function CommentAutomationModal({ isOpen, onClose, platform }: CommentAut
           setCurrentStep('auth_check');
         }
       } catch (error) {
-        console.error('Failed to check Instagram auth status:', error);
+        console.error(`Failed to check ${platform} auth status:`, error);
         setIsAuthenticated(false);
         setCurrentStep('auth_check');
       } finally {
@@ -137,9 +149,7 @@ export function CommentAutomationModal({ isOpen, onClose, platform }: CommentAut
       }
     };
 
-    // Only check auth status when modal opens
-    checkInstagramAuth();
-    
+    checkAuth();
   }, [isOpen, platform]);
 
   // Reset state when modal closes
@@ -163,22 +173,21 @@ export function CommentAutomationModal({ isOpen, onClose, platform }: CommentAut
     try {
       setIsLoading(true);
       
-      // Store current modal state in localStorage
       const stateToSave = {
         tone,
         style,
         timestamp: Date.now()
       };
       
-      localStorage.setItem('instagram_auth_return_state', JSON.stringify(stateToSave));
+      localStorage.setItem(`${platform}_auth_return_state`, JSON.stringify(stateToSave));
       console.log('Saved modal state before auth:', stateToSave);
 
-      // Initiate Instagram auth
-      const authUrl = await instagramService.getAuthUrl();
+      const service = platform === 'facebook' ? facebookService : instagramService;
+      const authUrl = await service.getAuthUrl();
       window.location.href = authUrl;
     } catch (error: any) {
-      console.error('Failed to initiate Instagram auth:', error);
-      toast.error(error.message || 'Failed to connect Instagram account');
+      console.error(`Failed to initiate ${platform} auth:`, error);
+      toast.error(error.message || `Failed to connect ${platform} account`);
     } finally {
       setIsLoading(false);
     }

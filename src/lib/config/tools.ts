@@ -1,11 +1,11 @@
-import { Youtube, Instagram, Twitter, Linkedin, Sparkles, Zap, Video, FileText, MessageCircle, Search, Image, BarChart3, MessageSquare } from 'lucide-react';
+import { Youtube, Instagram, Twitter, Linkedin, Sparkles, Zap, Video, FileText, MessageCircle, Search, Image, BarChart3, MessageSquare, Facebook } from 'lucide-react';
 import { IconType } from 'react-icons';
 import { Platform, Category } from '../types';
 
 export interface Tool {
   name: string;
   description: string;
-  icon: IconType;
+  icon: React.ElementType;
   category: Category;
   platforms: Platform[];
   comingSoon?: boolean;
@@ -76,11 +76,18 @@ export const tools: Tool[] = [
     platforms: ['youtube', 'instagram', 'twitter', 'linkedin'],
   },
   {
-    name: 'CommentPro',
+    name: 'CommentPro - Instagram',
     description: 'Automate engaging responses to comments on your posts',
     icon: MessageSquare,
     category: 'engagement',
-    platforms: ['instagram', 'youtube', 'twitter'],
+    platforms: ['instagram'],
+  },
+  {
+    name: 'CommentPro - Facebook',
+    description: 'Automate engaging responses to comments on your Facebook posts',
+    icon: MessageSquare,
+    category: 'engagement',
+    platforms: ['facebook'],
   },
   // create one more tool as AI Thumbnail Generator
   {
@@ -117,5 +124,10 @@ export const platformConfig = {
     icon: Linkedin,
     name: 'LinkedIn',
     color: 'text-[#0A66C2]',
+  },
+  facebook: {
+    icon: Facebook,
+    name: 'Facebook',
+    color: 'text-[#1877F2]',
   },
 }; 
