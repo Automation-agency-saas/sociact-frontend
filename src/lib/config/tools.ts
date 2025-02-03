@@ -1,4 +1,4 @@
-import { Youtube, Instagram, Twitter, Linkedin, Sparkles, Zap, Video, FileText, MessageCircle, Search, Image, BarChart3, MessageSquare, Facebook } from 'lucide-react';
+import { Youtube, Instagram, Twitter, Linkedin, Sparkles, Zap, Video, FileText, MessageCircle, Search, Image, BarChart3, MessageSquare, Facebook, Palette } from 'lucide-react';
 import { IconType } from 'react-icons';
 import { Platform, Category } from '../types';
 
@@ -89,13 +89,19 @@ export const tools: Tool[] = [
     category: 'engagement',
     platforms: ['facebook'],
   },
-  // create one more tool as AI Thumbnail Generator
   {
     name: 'ThumbnailPro',
     description: 'Generate AI-powered thumbnails for your videos',
     icon: Image,
     category: 'content',
     platforms: ['youtube'],
+  },
+  {
+    name: 'ThumbnailGen',
+    description: 'Create stunning thumbnails from text descriptions',
+    icon: Palette,
+    category: 'content',
+    platforms: ['youtube', 'instagram', 'twitter', 'linkedin', 'facebook'],
   },
 ];
 

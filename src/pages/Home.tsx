@@ -3,6 +3,7 @@ import { useAuth } from '../lib/context/AuthContext';
 import { useIsMobile } from '../hooks/use-mobile';
 import { IdeaGeneratorModal, PlatformType as IdeaPlatformType } from '../components/ui/IdeaGeneratorModal';
 import { ThumbnailProModal } from '../components/ui/ThumbnailProModal';
+import { ThumbnailGenModal } from '../components/ui/ThumbnailGenModal';
 import { ContentGeneratorModal, ContentType } from '../components/ui/ContentGeneratorModal';
 import { SEOOptimizerModal } from '../components/ui/SEOOptimizerModal';
 import { CommentAutomationModal, PlatformType as CommentPlatformType } from '../components/ui/CommentAutomationModal';
@@ -23,6 +24,7 @@ export default function Home() {
   // Modal states
   const [isIdeaGeneratorOpen, setIsIdeaGeneratorOpen] = useState(false);
   const [isThumbnailProOpen, setIsThumbnailProOpen] = useState(false);
+  const [isThumbnailGenOpen, setIsThumbnailGenOpen] = useState(false);
   const [isContentGeneratorOpen, setIsContentGeneratorOpen] = useState(false);
   const [isSEOOptimizerOpen, setIsSEOOptimizerOpen] = useState(false);
   const [selectedPlatform, setSelectedPlatform] = useState<IdeaPlatformType>('youtube');
@@ -81,6 +83,8 @@ export default function Home() {
       }
     } else if (tool.name === 'ThumbnailPro') {
       setIsThumbnailProOpen(true);
+    } else if (tool.name === 'ThumbnailGen') {
+      setIsThumbnailGenOpen(true);
     }
   };
 
@@ -149,6 +153,10 @@ export default function Home() {
       <ThumbnailProModal
         isOpen={isThumbnailProOpen}
         onClose={() => setIsThumbnailProOpen(false)}
+      />
+      <ThumbnailGenModal
+        isOpen={isThumbnailGenOpen}
+        onClose={() => setIsThumbnailGenOpen(false)}
       />
     </div>
   );

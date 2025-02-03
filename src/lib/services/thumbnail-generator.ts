@@ -1,14 +1,35 @@
 import axiosInstance from "./config";
 
-interface GenerateThumbnailRequest {
-  prompt: string;
-  image?: File;
-  youtube_url?: string;
+export interface ThumbnailStyle {
+  MODERN: 'modern';
+  MINIMAL: 'minimal';
+  VIBRANT: 'vibrant';
+  PROFESSIONAL: 'professional';
+  CREATIVE: 'creative';
 }
 
-interface EditThumbnailRequest {
-  image: File;
+// Constants for style values
+export const THUMBNAIL_STYLES = {
+  MODERN: 'modern',
+  MINIMAL: 'minimal',
+  VIBRANT: 'vibrant',
+  PROFESSIONAL: 'professional',
+  CREATIVE: 'creative'
+} as const;
+
+export type ThumbnailStyleValue = typeof THUMBNAIL_STYLES[keyof typeof THUMBNAIL_STYLES];
+
+export interface GenerateThumbnailRequest {
   prompt: string;
+  style: ThumbnailStyleValue;
+  youtube_url?: string;
+  image_base64?: string;
+}
+
+export interface EditThumbnailRequest {
+  prompt: string;
+  style: ThumbnailStyleValue;
+  image_base64: string;
   selection: {
     x: number;
     y: number;
@@ -17,59 +38,54 @@ interface EditThumbnailRequest {
   };
 }
 
-interface ThumbnailResponse {
-  url: string;
+export interface ThumbnailResponse {
+  url: string | null;
   status: string;
   message?: string;
 }
 
 class ThumbnailGeneratorService {
-  async generateThumbnail(
-    request: GenerateThumbnailRequest
-  ): Promise<ThumbnailResponse> {
-    const formData = new FormData();
-    formData.append("prompt", request.prompt);
+  private readonly baseUrl = '/api/v1/thumbnail';
 
-    if (request.image) {
-      formData.append("image", request.image);
+  async generateThumbnail(data: GenerateThumbnailRequest): Promise<ThumbnailResponse> {
+    try {
+      const response = await axiosInstance.post<ThumbnailResponse>(
+        `${this.baseUrl}/generate`,
+        data
+      );
+      return response.data;
+    } catch (error) {
+      throw error;
     }
-
-    if (request.youtube_url) {
-      formData.append("youtube_url", request.youtube_url);
-    }
-
-    const response = await axiosInstance.post<ThumbnailResponse>(
-      "/api/v1/thumbnails/generate",
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
-
-    return response.data;
   }
 
-  async editThumbnail(
-    request: EditThumbnailRequest
-  ): Promise<ThumbnailResponse> {
-    const formData = new FormData();
-    formData.append("image", request.image);
-    formData.append("prompt", request.prompt);
-    formData.append("selection", JSON.stringify(request.selection));
+  async editThumbnailArea(data: EditThumbnailRequest): Promise<ThumbnailResponse> {
+    try {
+      const response = await axiosInstance.post<ThumbnailResponse>(
+        `${this.baseUrl}/edit`,
+        data
+      );
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
 
-    const response = await axiosInstance.post<ThumbnailResponse>(
-      "/api/v1/thumbnails/edit",
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
-
-    return response.data;
+  async fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          // Remove the data URL prefix (e.g., "data:image/jpeg;base64,")
+          const base64 = reader.result.split(',')[1];
+          resolve(base64);
+        } else {
+          reject(new Error('Failed to convert file to base64'));
+        }
+      };
+      reader.onerror = error => reject(error);
+    });
   }
 }
 

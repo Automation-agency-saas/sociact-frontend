@@ -6,6 +6,8 @@ import { Textarea } from './textarea';
 import { Upload, Image as ImageIcon, Wand2, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { cn } from '../../lib/utils';
+import { thumbnailGeneratorService, THUMBNAIL_STYLES, ThumbnailStyleValue } from '../../lib/services/thumbnail-generator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select';
 
 interface ThumbnailProModalProps {
     isOpen: boolean;
@@ -29,11 +31,20 @@ export function ThumbnailProModal({ isOpen, onClose }: ThumbnailProModalProps) {
     const [selection, setSelection] = useState<SelectionArea | null>(null);
     const [editPrompt, setEditPrompt] = useState('');
     const [isEditing, setIsEditing] = useState(false);
+    const [style, setStyle] = useState<ThumbnailStyleValue>(THUMBNAIL_STYLES.MODERN);
 
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const imageRef = useRef<HTMLImageElement>(null);
     const isDrawing = useRef(false);
     const startPos = useRef({ x: 0, y: 0 });
+
+    const styleOptions = [
+        { value: THUMBNAIL_STYLES.MODERN, label: 'Modern' },
+        { value: THUMBNAIL_STYLES.MINIMAL, label: 'Minimal' },
+        { value: THUMBNAIL_STYLES.VIBRANT, label: 'Vibrant' },
+        { value: THUMBNAIL_STYLES.PROFESSIONAL, label: 'Professional' },
+        { value: THUMBNAIL_STYLES.CREATIVE, label: 'Creative' },
+    ];
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = e.target.files?.[0];
@@ -53,14 +64,20 @@ export function ThumbnailProModal({ isOpen, onClose }: ThumbnailProModalProps) {
 
         setIsLoading(true);
         try {
-            // Here you would call your backend API to fetch the thumbnail
-            // For now, we'll simulate it
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            const mockThumbnailUrl = 'https://images.unsplash.com/photo-1611162617474-5b21e879e113';
-            setPreviewUrl(mockThumbnailUrl);
-            setStep('editing');
+            const result = await thumbnailGeneratorService.generateThumbnail({
+                prompt,
+                style,
+                youtube_url: youtubeUrl
+            });
+
+            if (result.status === 'success' && result.url) {
+                setPreviewUrl(result.url);
+                setStep('editing');
+            } else {
+                throw new Error(result.message || 'Failed to generate thumbnail');
+            }
         } catch (error) {
-            toast.error('Failed to fetch YouTube thumbnail');
+            toast.error(error instanceof Error ? error.message : 'Failed to fetch YouTube thumbnail');
         } finally {
             setIsLoading(false);
         }
@@ -72,13 +89,33 @@ export function ThumbnailProModal({ isOpen, onClose }: ThumbnailProModalProps) {
             return;
         }
 
+        if (!prompt) {
+            toast.error('Please provide a generation prompt');
+            return;
+        }
+
         setIsLoading(true);
         try {
-            // Here you would call your backend API to generate the thumbnail
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            setStep('editing');
+            let image_base64;
+            if (file) {
+                image_base64 = await thumbnailGeneratorService.fileToBase64(file);
+            }
+
+            const result = await thumbnailGeneratorService.generateThumbnail({
+                prompt,
+                style,
+                image_base64,
+                youtube_url: youtubeUrl || undefined
+            });
+
+            if (result.status === 'success' && result.url) {
+                setPreviewUrl(result.url);
+                setStep('editing');
+            } else {
+                throw new Error(result.message || 'Failed to generate thumbnail');
+            }
         } catch (error) {
-            toast.error('Failed to generate thumbnail');
+            toast.error(error instanceof Error ? error.message : 'Failed to generate thumbnail');
         } finally {
             setIsLoading(false);
         }
@@ -141,13 +178,50 @@ export function ThumbnailProModal({ isOpen, onClose }: ThumbnailProModalProps) {
 
         setIsEditing(true);
         try {
-            // Here you would call your backend API to edit the selected area
-            // The API should use the selection coordinates and editPrompt
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            toast.success('Area edited successfully');
-            // Update the canvas with the new image
+            // Convert the canvas to base64
+            const canvas = canvasRef.current;
+            if (!canvas) throw new Error('Canvas not found');
+            
+            const image_base64 = canvas.toDataURL('image/png').split(',')[1];
+            
+            // Normalize selection coordinates to percentages
+            const normalizedSelection = {
+                x: selection.x / canvas.width,
+                y: selection.y / canvas.height,
+                width: selection.width / canvas.width,
+                height: selection.height / canvas.height
+            };
+
+            const result = await thumbnailGeneratorService.editThumbnailArea({
+                prompt: editPrompt,
+                style,
+                image_base64,
+                selection: normalizedSelection
+            });
+
+            if (result.status === 'success' && result.url) {
+                setPreviewUrl(result.url);
+                // Reset selection and prompt
+                setSelection(null);
+                setEditPrompt('');
+                
+                // Redraw canvas with new image
+                const img = new Image();
+                img.src = result.url;
+                img.onload = () => {
+                    if (canvas && canvas.getContext('2d')) {
+                        const ctx = canvas.getContext('2d')!;
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    }
+                };
+                
+                toast.success('Area edited successfully');
+            } else {
+                throw new Error(result.message || 'Failed to edit area');
+            }
         } catch (error) {
-            toast.error('Failed to edit area');
+            toast.error(error instanceof Error ? error.message : 'Failed to edit area');
         } finally {
             setIsEditing(false);
         }
@@ -240,6 +314,22 @@ export function ThumbnailProModal({ isOpen, onClose }: ThumbnailProModalProps) {
                                 )}
 
                                 <div className="space-y-2">
+                                    <label className="text-sm font-medium">Style</label>
+                                    <Select value={style} onValueChange={(value) => setStyle(value as ThumbnailStyleValue)}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select a style" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {styleOptions.map((option) => (
+                                                <SelectItem key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                <div className="space-y-2">
                                     <label className="text-sm font-medium">Generation Prompt</label>
                                     <Textarea
                                         placeholder="Describe how you want your thumbnail to look..."
@@ -299,6 +389,22 @@ export function ThumbnailProModal({ isOpen, onClose }: ThumbnailProModalProps) {
                                         }
                                     }}
                                 />
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium">Style</label>
+                                <Select value={style} onValueChange={(value) => setStyle(value as ThumbnailStyleValue)}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a style" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {styleOptions.map((option) => (
+                                            <SelectItem key={option.value} value={option.value}>
+                                                {option.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
 
                             <div className="space-y-2">
