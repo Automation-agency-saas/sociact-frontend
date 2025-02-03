@@ -1,41 +1,24 @@
 import axiosInstance from "./config";
 
-export interface ThumbnailStyle {
-  MODERN: 'modern';
-  MINIMAL: 'minimal';
-  VIBRANT: 'vibrant';
-  PROFESSIONAL: 'professional';
-  CREATIVE: 'creative';
+export type ThumbnailStyle = 'modern' | 'minimal' | 'vibrant' | 'professional' | 'creative';
+
+export interface YouTubeThumbnailRequest {
+  video_url: string;
 }
 
-// Constants for style values
-export const THUMBNAIL_STYLES = {
-  MODERN: 'modern',
-  MINIMAL: 'minimal',
-  VIBRANT: 'vibrant',
-  PROFESSIONAL: 'professional',
-  CREATIVE: 'creative'
-} as const;
-
-export type ThumbnailStyleValue = typeof THUMBNAIL_STYLES[keyof typeof THUMBNAIL_STYLES];
-
-export interface GenerateThumbnailRequest {
-  prompt: string;
-  style: ThumbnailStyleValue;
-  youtube_url?: string;
-  image_base64?: string;
+export interface YouTubeThumbnailResponse {
+  thumbnail_url: string;
+  title: string;
+  channel_name: string;
+  status: string;
+  message?: string;
+  thumbnail_base64?: string;
 }
 
-export interface EditThumbnailRequest {
-  prompt: string;
-  style: ThumbnailStyleValue;
+export interface ImageEnhanceRequest {
   image_base64: string;
-  selection: {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  };
+  prompt: string;
+  style: ThumbnailStyle;
 }
 
 export interface ThumbnailResponse {
@@ -47,11 +30,11 @@ export interface ThumbnailResponse {
 class ThumbnailGeneratorService {
   private readonly baseUrl = '/api/v1/thumbnail';
 
-  async generateThumbnail(data: GenerateThumbnailRequest): Promise<ThumbnailResponse> {
+  async getYouTubeThumbnail(videoUrl: string): Promise<YouTubeThumbnailResponse> {
     try {
-      const response = await axiosInstance.post<ThumbnailResponse>(
-        `${this.baseUrl}/generate`,
-        data
+      const response = await axiosInstance.post<YouTubeThumbnailResponse>(
+        `${this.baseUrl}/youtube`,
+        { video_url: videoUrl }
       );
       return response.data;
     } catch (error) {
@@ -59,10 +42,10 @@ class ThumbnailGeneratorService {
     }
   }
 
-  async editThumbnailArea(data: EditThumbnailRequest): Promise<ThumbnailResponse> {
+  async enhanceImage(data: ImageEnhanceRequest): Promise<ThumbnailResponse> {
     try {
       const response = await axiosInstance.post<ThumbnailResponse>(
-        `${this.baseUrl}/edit`,
+        `${this.baseUrl}/enhance`,
         data
       );
       return response.data;
