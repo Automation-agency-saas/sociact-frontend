@@ -13,7 +13,7 @@ export const Footer = () => {
             className="font-bold text-xl flex"
           >
             <LogoIcon />
-            ShadcnUI/React
+            Sociact
           </a>
         </div>
 
@@ -45,7 +45,7 @@ export const Footer = () => {
               href="#"
               className="opacity-60 hover:opacity-100"
             >
-              Dribbble
+              Instagram
             </a>
           </div>
         </div>
@@ -65,7 +65,7 @@ export const Footer = () => {
           <div>
             <a
               rel="noreferrer noopener"
-              href="/privacy"
+              href="/terms"
               className="opacity-60 hover:opacity-100"
             >
               Terms of Service
@@ -183,19 +183,9 @@ export const Footer = () => {
         </div>
       </section>
 
-      <section className="container pb-14 text-center">
-        <h3>
-          &copy; 2024 Landing page made by{" "}
-          <a
-            rel="noreferrer noopener"
-            target="_blank"
-            href="https://www.linkedin.com/in/leopoldo-miranda/"
-            className="text-primary transition-all border-primary hover:border-b-2"
-          >
-            Leo Miranda
-          </a>
-        </h3>
-      </section>
+      <div className="container pb-8 text-center text-sm opacity-60">
+        <p>© {new Date().getFullYear()} Sociact. All rights reserved.</p>
+      </div>
     </footer>
   );
 };
