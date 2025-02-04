@@ -87,7 +87,6 @@ export function SignUp() {
       
       console.log('Google credential received:', credentialResponse.credential);
       console.log('Current origin:', window.location.origin);
-      console.log('Configured redirect URI:', import.meta.env.VITE_GOOGLE_REDIRECT_URI);
       
       await signInWithGoogle(credentialResponse.credential);
       toast.success('Successfully signed up with Google!', { id: toastId });

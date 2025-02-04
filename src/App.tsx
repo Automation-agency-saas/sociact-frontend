@@ -92,7 +92,6 @@ function App() {
         onScriptLoadSuccess={() => {
           console.log('Google OAuth script loaded successfully');
           console.log('Current origin:', window.location.origin);
-          console.log('Configured redirect URI:', import.meta.env.VITE_GOOGLE_REDIRECT_URI);
         }}
         onScriptLoadError={() => {
           console.error('Failed to load Google OAuth script');
