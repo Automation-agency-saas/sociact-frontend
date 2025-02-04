@@ -87,7 +87,17 @@ function App() {
   console.log('Using Google Client ID:', import.meta.env.VITE_GOOGLE_CLIENT_ID);
   return (
     <ThemeProvider defaultTheme="system" storageKey="sociact-theme">
-      <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+      <GoogleOAuthProvider 
+        clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}
+        onScriptLoadSuccess={() => {
+          console.log('Google OAuth script loaded successfully');
+          console.log('Current origin:', window.location.origin);
+          console.log('Configured redirect URI:', import.meta.env.VITE_GOOGLE_REDIRECT_URI);
+        }}
+        onScriptLoadError={() => {
+          console.error('Failed to load Google OAuth script');
+        }}
+      >
         <Router>
           <AuthProvider>
             <AppRoutes />
