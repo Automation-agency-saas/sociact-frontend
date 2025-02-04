@@ -1,6 +1,6 @@
 import axiosInstance from "./config";
 
-export type ThumbnailStyle = 'modern' | 'minimal' | 'vibrant' | 'professional' | 'creative';
+export type ThumbnailStyle = 'modern' | 'classic' | 'vibrant' | 'minimal' | 'dramatic';
 
 export interface YouTubeThumbnailRequest {
   video_url: string;
@@ -15,6 +15,12 @@ export interface YouTubeThumbnailResponse {
   thumbnail_base64?: string;
 }
 
+export interface ThumbnailGenRequest {
+  background_prompt: string;
+  text_prompt: string;
+  style: ThumbnailStyle;
+}
+
 export interface ImageEnhanceRequest {
   image_base64: string;
   prompt: string;
@@ -25,10 +31,24 @@ export interface ThumbnailResponse {
   url: string | null;
   status: string;
   message?: string;
+  dimensions?: string;
 }
 
 class ThumbnailGeneratorService {
   private readonly baseUrl = '/api/v1/thumbnail';
+  private readonly genBaseUrl = '/api/v1/thumbnail-gen';
+
+  async generateThumbnail(data: ThumbnailGenRequest): Promise<ThumbnailResponse> {
+    try {
+      const response = await axiosInstance.post<ThumbnailResponse>(
+        `${this.genBaseUrl}/generate`,
+        data
+      );
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
 
   async getYouTubeThumbnail(videoUrl: string): Promise<YouTubeThumbnailResponse> {
     try {
