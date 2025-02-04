@@ -84,6 +84,7 @@ function AppRoutes() {
 
 function App() {
   console.log('App mounting...');
+  console.log('Using Google Client ID:', import.meta.env.VITE_GOOGLE_CLIENT_ID);
   return (
     <ThemeProvider defaultTheme="system" storageKey="sociact-theme">
       <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>

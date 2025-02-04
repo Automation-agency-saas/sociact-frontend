@@ -81,12 +81,18 @@ export function SignUp() {
   const handleGoogleSuccess = async (credentialResponse: any) => {
     const toastId = toast.loading('Signing up with Google...');
     try {
+      if (!credentialResponse.credential) {
+        throw new Error('No Google credential received');
+      }
+      
+      console.log('Google credential received:', credentialResponse.credential);
       await signInWithGoogle(credentialResponse.credential);
       toast.success('Successfully signed up with Google!', { id: toastId });
       const redirectPath = localStorage.getItem('redirectPath') || '/home';
       localStorage.removeItem('redirectPath');
       navigate(redirectPath, { replace: true });
     } catch (err) {
+      console.error('Google sign up error:', err);
       let errorMessage = 'Failed to sign up with Google';
       if (err instanceof Error) {
         errorMessage = err.message;

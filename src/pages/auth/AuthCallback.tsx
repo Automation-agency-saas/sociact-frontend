@@ -57,10 +57,19 @@ export function AuthCallback() {
 
         if (credential) {
           console.log('Processing Google auth...');
-          await signInWithGoogle(credential);
-          const redirectPath = localStorage.getItem('redirectPath') || '/home';
-          localStorage.removeItem('redirectPath');
-          navigate(redirectPath, { replace: true });
+          try {
+            await signInWithGoogle(credential);
+            toast.success('Successfully signed in with Google!');
+            const redirectPath = localStorage.getItem('redirectPath') || '/home';
+            localStorage.removeItem('redirectPath');
+            navigate(redirectPath, { replace: true });
+          } catch (err: any) {
+            console.error('Google auth error:', err);
+            toast.error(err.message || 'Failed to authenticate with Google');
+            setError(err.message || 'Failed to authenticate with Google');
+            // Redirect to sign in page after error
+            navigate('/auth/sign-in', { replace: true });
+          }
         } else if (code && state === 'instagram') {
           console.log('Processing Instagram auth callback...');
           try {

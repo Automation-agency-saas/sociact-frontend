@@ -72,12 +72,27 @@ export function SignIn() {
   const handleGoogleSuccess = async (credentialResponse: any) => {
     const toastId = toast.loading('Signing in with Google...');
     try {
+      if (!credentialResponse.credential) {
+        throw new Error('No Google credential received');
+      }
+      
+      console.log('Google credential received:', credentialResponse.credential);
+      // Try to decode the credential to see its contents
+      try {
+        const decoded = JSON.parse(atob(credentialResponse.credential.split('.')[1]));
+        console.log('Decoded credential:', decoded);
+        console.log('Token audience:', decoded.aud);
+      } catch (e) {
+        console.error('Error decoding credential:', e);
+      }
+      
       await signInWithGoogle(credentialResponse.credential);
       toast.success('Successfully signed in with Google!', { id: toastId });
       const redirectPath = localStorage.getItem('redirectPath') || '/home';
       localStorage.removeItem('redirectPath');
       navigate(redirectPath, { replace: true });
     } catch (err) {
+      console.error('Google sign in error:', err);
       let errorMessage = 'Failed to sign in with Google';
       if (err instanceof Error) {
         errorMessage = err.message;
