@@ -12,6 +12,8 @@ import { TypingAnimationDemo } from "../TypingAnimation";
 import { AnimatedGradientTextDemo} from "../AnimatedText";
 import { ShimmerButtonDemo } from "../ShinyButton";
 import { BgGrid } from "../BgGrid";
+import AutoScrollCarousel from "../Curosal";
+import { BentoDemo } from "../BentoGrid";
 export const HeroParallax = ({
   products,
 }: {
@@ -58,6 +60,7 @@ export const HeroParallax = ({
   );
 
   return (
+    <>
     <div
       ref={ref}
       className="overflow-hidden antialiased relative flex flex-col self-auto [perspective:1000px] [transform-style:preserve-3d]"
@@ -101,10 +104,13 @@ export const HeroParallax = ({
               key={product.title}
             />
           ))}
+         
         </motion.div>
       </motion.div>
-      
+     
     </div>
+     <BentoDemo/>
+     </>
   );
 };
 
@@ -112,8 +118,8 @@ export const Header = () => {
   return (
  
     <div className="flex items-center justify-center relative">
-       <BgGrid>
-      <div className="absolute top-0 left-0 w-[600px] h-[600px] -z-50">
+   {/* {GlowEffect} */}
+      <div className="absolute top-0 left-0 w-[500px] h-[500px] -z-50">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(139,51,255,1)_0%,rgba(139,51,255,0.6)_40%,transparent_70%)]" />
       </div>
       <div className="max-w-7xl w-full px-4 sm:px-6 lg:px-8 mx-auto text-center">
@@ -150,10 +156,10 @@ export const Header = () => {
             
             <ShimmerButtonDemo text="Get Started"/>
           </div>
-        
+        < AutoScrollCarousel/>
         </motion.div>
       </div>
-      </BgGrid>
+  
     </div>
  
   );  
