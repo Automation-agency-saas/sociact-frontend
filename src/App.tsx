@@ -6,6 +6,9 @@ import { Toaster } from 'react-hot-toast';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { ThemeProvider } from './components/theme-provider';
 import { AuthCallback } from './pages/auth/AuthCallback';
+import { OnboardingModal } from './components/onboarding/OnboardingModal';
+import { WelcomeBackModal } from './components/onboarding/WelcomeBackModal';
+import { useState, useEffect } from 'react';
 
 // Landing page components
 import { About } from "./components/About";
@@ -52,39 +55,83 @@ function LandingPage() {
 }
 
 function AppRoutes() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user, completeOnboarding } = useAuth();
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showWelcomeBack, setShowWelcomeBack] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      if (!user.is_onboarded) {
+        setShowOnboarding(true);
+      } else {
+        // Show welcome back modal if user is returning
+        const lastVisit = localStorage.getItem('lastVisit');
+        const now = new Date().toISOString();
+        if (!lastVisit || new Date(lastVisit).getDate() !== new Date(now).getDate()) {
+          setShowWelcomeBack(true);
+          localStorage.setItem('lastVisit', now);
+        }
+      }
+    }
+  }, [isAuthenticated, user]);
+
+  const handleOnboardingComplete = async (data: any) => {
+    try {
+      await completeOnboarding(data);
+      setShowOnboarding(false);
+    } catch (error) {
+      console.error('Onboarding error:', error);
+    }
+  };
 
   return (
-    <Routes>
-      {/* Public Routes */}
-      <Route path="/" element={
-        isAuthenticated ? <Navigate to="/home" /> : <LandingPage />
-      } />
-      
-      {/* Auth Routes */}
-      <Route path="/auth/*" element={<AuthLayout />} />
-      <Route path="/privacy" element={<PrivacyPolicy />} />
+    <>
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/" element={
+          isAuthenticated ? <Navigate to="/home" /> : <LandingPage />
+        } />
+        
+        {/* Auth Routes */}
+        <Route path="/auth/*" element={<AuthLayout />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
 
-      {/* Instagram Auth Callback - Separate from regular auth flow */}
-      <Route path="/auth/instagram/callback" element={<AuthCallback />} />
-      <Route path="/auth/youtube/callback" element={<AuthCallback />} />
+        {/* Instagram Auth Callback - Separate from regular auth flow */}
+        <Route path="/auth/instagram/callback" element={<AuthCallback />} />
+        <Route path="/auth/youtube/callback" element={<AuthCallback />} />
 
-      {/* Protected Routes */}
-      <Route path="/home" element={
-        <ProtectedRoute>
-          <Home />
-        </ProtectedRoute>
-      } />
+        {/* Protected Routes */}
+        <Route path="/home" element={
+          <ProtectedRoute>
+            <Home />
+          </ProtectedRoute>
+        } />
 
-      {/* Catch all route */}
-      <Route path="*" element={<Navigate to="/" />} />
-    </Routes>
+        {/* Catch all route */}
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+
+      <OnboardingModal
+        isOpen={showOnboarding}
+        onClose={() => setShowOnboarding(false)}
+        onComplete={handleOnboardingComplete}
+      />
+
+      {user && (
+        <WelcomeBackModal
+          isOpen={showWelcomeBack}
+          onClose={() => setShowWelcomeBack(false)}
+          user={user}
+        />
+      )}
+    </>
   );
 }
 
 function App() {
   console.log('App mounting...');
   console.log('Using Google Client ID:', import.meta.env.VITE_GOOGLE_CLIENT_ID);
+  
   return (
     <ThemeProvider defaultTheme="system" storageKey="sociact-theme">
       <GoogleOAuthProvider 

@@ -73,7 +73,7 @@ export const tools: Tool[] = [
     description: 'Optimize your content for better visibility',
     icon: Search,
     category: 'analytics',
-    platforms: ['youtube', 'instagram', 'twitter', 'linkedin'],
+    platforms: ['youtube'],
   },
   {
     name: 'CommentPro - Instagram',
@@ -101,7 +101,7 @@ export const tools: Tool[] = [
     description: 'Create stunning thumbnails from text descriptions',
     icon: Palette,
     category: 'content',
-    platforms: ['youtube', 'instagram', 'twitter', 'linkedin', 'facebook'],
+    platforms: ['youtube'],
   },
 ];
 

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { authApi } from '../services/auth';
+import { useNavigate } from 'react-router-dom';
 
 interface User {
   id: string;
@@ -7,8 +8,19 @@ interface User {
   name: string;
   picture?: string;
   is_google_auth?: boolean;
-  created_at?: string;
-  updated_at?: string;
+  username?: string;
+  bio?: string;
+  purpose?: string;
+  referral_source?: string;
+  is_onboarded?: boolean;
+}
+
+interface OnboardingData {
+  username: string;
+  bio?: string;
+  purpose?: string;
+  referral_source?: string;
+  profile_picture?: string;
 }
 
 interface AuthContextType {
@@ -17,8 +29,9 @@ interface AuthContextType {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (name: string, email: string, password: string) => Promise<void>;
-  signInWithGoogle: (credential: string) => Promise<void>;
   signOut: () => Promise<void>;
+  signInWithGoogle: (credential: string) => Promise<void>;
+  completeOnboarding: (data: OnboardingData) => Promise<any>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -26,6 +39,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     checkAuth();
@@ -62,6 +76,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   };
 
+  const completeOnboarding = async (data: OnboardingData) => {
+    try {
+      const response = await authApi.completeOnboarding(data);
+      setUser(response.user);
+      return response;
+    } catch (error) {
+      console.error('Error completing onboarding:', error);
+      throw error;
+    }
+  };
+
   const value = {
     user,
     isAuthenticated: !!user,
@@ -70,6 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signUp,
     signInWithGoogle,
     signOut,
+    completeOnboarding,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -19,12 +19,25 @@ interface User {
   is_google_auth?: boolean;
   created_at?: string;
   updated_at?: string;
+  username?: string;
+  bio?: string;
+  purpose?: string;
+  referral_source?: string;
+  is_onboarded?: boolean;
 }
 
 interface AuthResponse {
   token: string;
   user: User;
   message: string;
+}
+
+interface OnboardingData {
+  username: string;
+  bio?: string;
+  purpose?: string;
+  referralSource?: string;
+  profilePicture?: string;
 }
 
 /**
@@ -54,7 +67,12 @@ class AuthApi {
         picture: user.picture || undefined,
         is_google_auth: user.is_google_auth || false,
         created_at: user.created_at ? new Date(user.created_at).toISOString() : undefined,
-        updated_at: user.updated_at ? new Date(user.updated_at).toISOString() : undefined
+        updated_at: user.updated_at ? new Date(user.updated_at).toISOString() : undefined,
+        username: user.username || undefined,
+        bio: user.bio || undefined,
+        purpose: user.purpose || undefined,
+        referral_source: user.referral_source || undefined,
+        is_onboarded: user.is_onboarded || false
       };
     }
 
@@ -228,6 +246,55 @@ class AuthApi {
    */
   isAuthenticated(): boolean {
     return !!localStorage.getItem('token');
+  }
+
+  /**
+   * Complete user onboarding
+   * @param data - Onboarding data
+   * @returns Updated user data
+   */
+  async completeOnboarding(data: OnboardingData): Promise<AuthResponse> {
+    try {
+      const requestData = {
+        username: data.username,
+        bio: data.bio,
+        purpose: data.purpose,
+        referral_source: data.referralSource,
+        picture: data.profilePicture
+      };
+
+      // Log the data being sent
+      console.log('Sending onboarding data:', {
+        ...requestData,
+        picture: requestData.picture ? 'URL present' : 'No picture'
+      });
+
+      const response = await api.post<any>(`${this.baseUrl}/onboarding`, requestData);
+      
+      // Log the response
+      console.log('Onboarding response:', {
+        ...response.data,
+        user: response.data.user ? {
+          ...response.data.user,
+          picture: response.data.user.picture ? 'URL present' : 'No picture'
+        } : null
+      });
+
+      const normalizedResponse: AuthResponse = {
+        token: response.data.token || response.data.access_token,
+        user: this.normalizeUser(response.data.user),
+        message: response.data.message || 'Successfully completed onboarding'
+      };
+
+      if (normalizedResponse.user) {
+        localStorage.setItem('user', JSON.stringify(normalizedResponse.user));
+      }
+
+      return normalizedResponse;
+    } catch (error) {
+      console.error('Error completing onboarding:', error);
+      throw error;
+    }
   }
 }
 
