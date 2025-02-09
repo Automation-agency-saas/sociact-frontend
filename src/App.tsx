@@ -22,6 +22,7 @@ import { ScrollToTop } from "./components/ScrollToTop";
 import { Services } from "./components/Services";
 import { Sponsors } from "./components/Sponsors";
 import { Testimonials } from "./components/Testimonials";
+import { BentoDemo } from "./components/BentoGrid";
 import "./App.css";
 // Auth pages
 import { AuthLayout } from "./pages/auth/AuthLayout";
@@ -29,22 +30,24 @@ import { AuthLayout } from "./pages/auth/AuthLayout";
 // App pages
 import Home from "./pages/Home";
 import { PrivacyPolicy } from './pages/PrivacyPolicy';
+import { WavyBackgroundDemo } from './components/WavyBg';
 
 function LandingPage() {
   return (
     <>
       <Navbar />
       <Hero />
-      <Sponsors />
+      <BentoDemo />
+      {/* <Sponsors /> */}
       <About />
-      <HowItWorks />
       <Features />
+      <HowItWorks />
       <Services />
-      <Cta />
+      {/* <Cta /> */}
       <Testimonials />
       <Pricing />
-      <Newsletter />
       <FAQ />
+      <Newsletter />
       <Footer />
       <ScrollToTop />
     </>

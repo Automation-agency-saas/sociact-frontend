@@ -108,10 +108,12 @@ const features = [
 
 export function BentoDemo() {
   return (
-    <BentoGrid>
-      {features.map((feature, idx) => (
-        <BentoCard key={idx} {...feature} />
-      ))}
-    </BentoGrid>
+    <div className="w-full max-w-7xl mx-auto px-4 py-8">
+        <BentoGrid>
+    {features.map((feature, idx) => (
+      <BentoCard key={idx} {...feature} />
+    ))}
+  </BentoGrid>
+</div>
   );
 }

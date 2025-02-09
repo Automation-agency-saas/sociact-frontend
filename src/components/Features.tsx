@@ -46,15 +46,8 @@ export function Features() {
   return (
     
     
-    <section id="features" className="container relative py-24 sm:py-32 space-y-8 overflow-hidden">
- 
-    <div className="absolute top-20 -right-40 w-[700px] h-[700px]">
-      <div className="absolute inset-0 blur-3xl bg-[radial-gradient(circle,rgba(139,51,255,0.2)_0%,rgba(139,51,255,0.1)_50%,transparent_75%)]" />
-    </div>
-    {/* Additional subtle glow for top-bottom blend */}
-    <div className="absolute top-0 right-0 w-full h-full">
-      <div className="absolute inset-0 bg-gradient-to-b from-purple-500/5 via-transparent to-purple-500/5" />
-    </div>
+    <section id="features" className="container relative sm:py-24 py-6  overflow-hidden">
+
 
     <div className="relative z-10 text-center">
       <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
@@ -113,6 +106,7 @@ export function Features() {
     </div>
 
     <div className="relative z-10 flex flex-wrap justify-center gap-4 pt-8">
+
       {featureList.map((feature) => (
         <Badge
           key={feature}
