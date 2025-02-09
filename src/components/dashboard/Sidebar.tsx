@@ -101,7 +101,7 @@ export function Sidebar({
         <div className="border-t">
           <div className={`flex items-center ${sidebarOpen ? 'hover:bg-primary/10 m-2 justify-between' : 'justify-center'} p-2 rounded-lg`}>
             {sidebarOpen && (
-              <a href="/profile" className="flex items-center gap-3">
+              <a href="/profile/me" className="flex items-center gap-3">
                 <Avatar>
                   <AvatarImage src={user?.picture} />
                   <AvatarFallback>{user?.name?.[0]}</AvatarFallback>

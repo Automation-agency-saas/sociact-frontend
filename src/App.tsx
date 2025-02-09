@@ -32,6 +32,7 @@ import { AuthLayout } from "./pages/auth/AuthLayout";
 // App pages
 import Home from "./pages/Home";
 import { PrivacyPolicy } from './pages/PrivacyPolicy';
+import { Profile } from "./pages/Profile";
 
 function LandingPage() {
   return (
@@ -104,6 +105,11 @@ function AppRoutes() {
         <Route path="/home" element={
           <ProtectedRoute>
             <Home />
+          </ProtectedRoute>
+        } />
+        <Route path="/profile/me" element={
+          <ProtectedRoute>
+            <Profile />
           </ProtectedRoute>
         } />
 
