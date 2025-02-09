@@ -107,33 +107,38 @@ export const tools: Tool[] = [
 
 export const platformConfig = {
   all: {
-    icon: Zap,
+    icon: Youtube,
     name: 'All Platforms',
     color: 'text-primary',
   },
   youtube: {
     icon: Youtube,
     name: 'YouTube',
-    color: 'text-[#FF0000]',
+    color: 'text-red-500',
+    bgColor: 'bg-red-500/10'
   },
   instagram: {
     icon: Instagram,
     name: 'Instagram',
-    color: 'text-[#E4405F]',
+    color: 'text-pink-500',
+    bgColor: 'bg-pink-500/10'
   },
   twitter: {
     icon: Twitter,
     name: 'Twitter',
-    color: 'text-[#1DA1F2]',
+    color: 'text-blue-500',
+    bgColor: 'bg-blue-500/10'
   },
   linkedin: {
     icon: Linkedin,
     name: 'LinkedIn',
-    color: 'text-[#0A66C2]',
+    color: 'text-blue-600',
+    bgColor: 'bg-blue-600/10'
   },
   facebook: {
     icon: Facebook,
     name: 'Facebook',
-    color: 'text-[#1877F2]',
+    color: 'text-blue-700',
+    bgColor: 'bg-blue-700/10'
   },
 }; 

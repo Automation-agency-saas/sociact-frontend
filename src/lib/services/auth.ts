@@ -24,6 +24,13 @@ interface User {
   purpose?: string;
   referral_source?: string;
   is_onboarded?: boolean;
+  socials?: {
+    instagram?: string;
+    twitter?: string;
+    youtube?: string;
+    linkedin?: string;
+    website?: string;
+  };
 }
 
 interface AuthResponse {
@@ -38,6 +45,13 @@ interface OnboardingData {
   purpose?: string;
   referralSource?: string;
   profilePicture?: string;
+}
+
+interface ProfileUpdateData {
+  name?: string;
+  username?: string;
+  bio?: string;
+  picture?: string;
 }
 
 /**
@@ -72,7 +86,8 @@ class AuthApi {
         bio: user.bio || undefined,
         purpose: user.purpose || undefined,
         referral_source: user.referral_source || undefined,
-        is_onboarded: user.is_onboarded || false
+        is_onboarded: user.is_onboarded || false,
+        socials: user.socials || undefined
       };
     }
 
@@ -293,6 +308,33 @@ class AuthApi {
       return normalizedResponse;
     } catch (error) {
       console.error('Error completing onboarding:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update user profile
+   * @param data - Profile update data
+   * @returns Updated user data and new token
+   */
+  async updateProfile(data: ProfileUpdateData): Promise<AuthResponse> {
+    try {
+      const response = await api.put<any>(`${this.baseUrl}/profile`, data);
+
+      const normalizedResponse: AuthResponse = {
+        token: response.data.token || response.data.access_token,
+        user: this.normalizeUser(response.data.user),
+        message: response.data.message || 'Successfully updated profile'
+      };
+
+      if (normalizedResponse.token) {
+        localStorage.setItem('token', normalizedResponse.token);
+        localStorage.setItem('user', JSON.stringify(normalizedResponse.user));
+      }
+
+      return normalizedResponse;
+    } catch (error) {
+      console.error('Error updating profile:', error);
       throw error;
     }
   }
