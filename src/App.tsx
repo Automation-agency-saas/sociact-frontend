@@ -10,21 +10,8 @@ import { OnboardingModal } from './components/onboarding/OnboardingModal';
 import { WelcomeBackModal } from './components/onboarding/WelcomeBackModal';
 import { useState, useEffect } from 'react';
 
+import LandingPage from './pages/LandingPage';
 // Landing page components
-import { About } from "./components/About";
-import { Cta } from "./components/Cta";
-import { FAQ } from "./components/FAQ";
-import { Features } from "./components/Features";
-import { Footer } from "./components/Footer";
-import { Hero } from "./components/Hero";
-import { HowItWorks } from "./components/HowItWorks";
-import { Navbar } from "./components/Navbar";
-import { Newsletter } from "./components/Newsletter";
-import { Pricing } from "./components/Pricing";
-import { ScrollToTop } from "./components/ScrollToTop";
-import { Services } from "./components/Services";
-import { Sponsors } from "./components/Sponsors";
-import { Testimonials } from "./components/Testimonials";
 import "./App.css";
 // Auth pages
 import { AuthLayout } from "./pages/auth/AuthLayout";
@@ -33,7 +20,6 @@ import { AuthLayout } from "./pages/auth/AuthLayout";
 import Home from "./pages/Home";
 import { PrivacyPolicy } from './pages/PrivacyPolicy';
 import { Profile } from "./pages/Profile";
-
 // Import tool pages
 import { YouTubeIdeaGeneratorPage } from "./pages/tools/youtube/IdeaGenerator";
 import { YouTubeScriptGeneratorPage } from "./pages/tools/youtube/ScriptGenerator";
@@ -48,26 +34,8 @@ import { LinkedInPostGeneratorPage } from './pages/tools/linkedin/PostGenerator'
 import { FacebookCommentAutomationPage } from './pages/tools/facebook/CommentAutomation';
 import { TwitterIdeaGeneratorPage } from './pages/tools/twitter/IdeaGenerator';
 
-function LandingPage() {
-  return (
-    <>
-      <Navbar />
-      <Hero />
-      <Sponsors />
-      <About />
-      <HowItWorks />
-      <Features />
-      <Services />
-      <Cta />
-      <Testimonials />
-      <Pricing />
-      <Newsletter />
-      <FAQ />
-      <Footer />
-      <ScrollToTop />
-    </>
-  );
-}
+
+
 
 function AppRoutes() {
   const { isAuthenticated, user, completeOnboarding } = useAuth();
