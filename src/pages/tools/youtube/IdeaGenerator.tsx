@@ -1,17 +1,13 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Copy, Loader2, Trash2, History, Sparkles, Wand2, MessageSquare, Clock, Settings, PenLine, Lightbulb } from 'lucide-react';
-import { toast } from 'sonner';
-import { ToolPageWrapper } from '../../../components/tool-page/ToolPageWrapper';
+import { Copy, Loader2, Trash2, History, Sparkles, Wand2, MessageSquare, Clock, Settings, PenLine, Lightbulb, ChevronRight } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import { Button } from '../../../components/ui/button';
 import { Card } from '../../../components/ui/card';
-import { Input } from '../../../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
 import { Textarea } from '../../../components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/ui/tabs';
-import { containerVariants, itemVariants, cardHoverVariants } from '../../../lib/animations';
-import { youtubeService, type YouTubeIdea, type YouTubeIdeaResponse } from '../../../lib/services/youtube';
-import { Separator } from '../../../components/ui/separator';
+import { ideaGeneratorService, type IdeaGeneration } from '../../../lib/services/idea-generator';
 import { LoadingModal } from "@/components/ui/loading-modal";
 import { ToolTitle } from "@/components/ui/tool-title";
 import { ToolLayout } from "@/components/tool-page/ToolLayout";
@@ -54,6 +50,29 @@ const FOCUS_AREAS = [
   { value: 'educational', label: '📖 Educational' }
 ];
 
+interface YouTubeIdea {
+  title: string;
+  description: string;
+  estimated_duration: string;
+  key_talking_points?: string;
+  engagement_potential?: string;
+  thumbnail_suggestion: string;
+  additional_content?: string;
+  difficulty?: string;
+  engagement?: string;
+  tags?: string[];
+}
+
+interface YouTubeIdeaGeneration extends IdeaGeneration {
+  ideas: YouTubeIdea[];
+  preferences: {
+    genre: string;
+    target_audience: string;
+    video_type: string;
+    focus_area: string;
+  };
+}
+
 export function YouTubeIdeaGeneratorPage() {
   // Form states
   const [genre, setGenre] = useState('');
@@ -66,8 +85,8 @@ export function YouTubeIdeaGeneratorPage() {
   const [loading, setLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
-  const [currentIdeas, setCurrentIdeas] = useState<YouTubeIdeaResponse | null>(null);
-  const [history, setHistory] = useState<YouTubeIdeaResponse[]>([]);
+  const [currentIdeas, setCurrentIdeas] = useState<YouTubeIdeaGeneration | null>(null);
+  const [history, setHistory] = useState<YouTubeIdeaGeneration[]>([]);
 
   const loadingMessages = [
     "Analyzing your preferences...",
@@ -111,10 +130,10 @@ export function YouTubeIdeaGeneratorPage() {
 
   const loadHistory = async () => {
     try {
-      const response = await youtubeService.getIdeaHistory();
-      setHistory(response.items);
-    } catch (error) {
-      toast.error("Failed to load idea history");
+      const response = await ideaGeneratorService.getHistory('youtube');
+      setHistory(response.items as YouTubeIdeaGeneration[]);
+    } catch (error: any) {
+      toast.error(error.message);
     }
   };
 
@@ -126,17 +145,18 @@ export function YouTubeIdeaGeneratorPage() {
 
     setLoading(true);
     try {
-      const response = await youtubeService.generateIdeasFromPreferences({
+      const response = await ideaGeneratorService.generateFromPreferences('youtube', {
         genre,
         target_audience: targetAudience,
         video_type: videoType,
         focus_area: focusArea
       });
-      setCurrentIdeas(response);
-      setHistory(prev => [response, ...prev]);
+      
+      setCurrentIdeas(response as YouTubeIdeaGeneration);
+      setHistory(prev => [response as YouTubeIdeaGeneration, ...prev]);
       toast.success("Ideas generated successfully!");
-    } catch (error) {
-      toast.error("Failed to generate ideas");
+    } catch (error: any) {
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }
@@ -150,14 +170,12 @@ export function YouTubeIdeaGeneratorPage() {
 
     setLoading(true);
     try {
-      const response = await youtubeService.generateCustomIdeas({
-        prompt: customPrompt
-      });
-      setCurrentIdeas(response);
-      setHistory(prev => [response, ...prev]);
+      const response = await ideaGeneratorService.generateCustom('youtube', customPrompt);
+      setCurrentIdeas(response as YouTubeIdeaGeneration);
+      setHistory(prev => [response as YouTubeIdeaGeneration, ...prev]);
       toast.success("Custom ideas generated successfully!");
-    } catch (error) {
-      toast.error("Failed to generate custom ideas");
+    } catch (error: any) {
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }
@@ -166,12 +184,12 @@ export function YouTubeIdeaGeneratorPage() {
   const generateSurprise = async () => {
     setLoading(true);
     try {
-      const response = await youtubeService.generateSurpriseIdeas();
-      setCurrentIdeas(response);
-      setHistory(prev => [response, ...prev]);
+      const response = await ideaGeneratorService.generateSurprise('youtube');
+      setCurrentIdeas(response as YouTubeIdeaGeneration);
+      setHistory(prev => [response as YouTubeIdeaGeneration, ...prev]);
       toast.success("Surprise ideas generated!");
-    } catch (error) {
-      toast.error("Failed to generate surprise ideas");
+    } catch (error: any) {
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }
@@ -184,7 +202,7 @@ export function YouTubeIdeaGeneratorPage() {
 
   const deleteIdea = async (ideaId: string) => {
     try {
-      await youtubeService.deleteIdea(ideaId);
+      await ideaGeneratorService.deleteIdea('youtube', ideaId);
       setHistory(prev => prev.filter(item => item.id !== ideaId));
       toast.success("Idea deleted successfully");
     } catch (error) {
@@ -201,61 +219,73 @@ export function YouTubeIdeaGeneratorPage() {
     });
   };
 
-  const renderIdeas = (ideas: YouTubeIdea[]) => (
-    <motion.div variants={containerVariants} className="space-y-3">
-      {ideas.map((idea, index) => (
-        <motion.div
-          key={index}
-          variants={itemVariants}
-          whileHover="hover"
-          className="relative"
-        >
-          <Card className="p-4 cursor-pointer group bg-card/50 backdrop-blur-sm hover:shadow-lg transition-all duration-300">
-            <motion.div variants={cardHoverVariants}>
-              <div className="space-y-3">
-                <div className="flex justify-between items-start gap-4">
-                  <h3 className="font-semibold text-lg">{idea.title}</h3>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => copyToClipboard(idea.title)}
-                    className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                </div>
-                <p className="text-muted-foreground">{idea.description}</p>
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-2 py-1 rounded-full bg-primary/10 text-primary text-sm">
-                    {idea.difficulty}
-                  </span>
-                  <span className="px-2 py-1 rounded-full bg-primary/10 text-primary text-sm">
-                    {idea.estimated_duration}
-                  </span>
-                  <span className="px-2 py-1 rounded-full bg-primary/10 text-primary text-sm">
-                    {idea.engagement}
-                  </span>
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  <strong>🎨 Thumbnail:</strong> {idea.thumbnail_suggestion}
-                </div>
-                <div className="flex flex-wrap gap-1">
-                  {idea.tags.map((tag, i) => (
-                    <span
-                      key={i}
-                      className="px-2 py-0.5 text-xs rounded-full bg-secondary hover:bg-secondary/80 cursor-pointer transition-colors"
-                      onClick={() => copyToClipboard(tag)}
-                    >
-                      #{tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-          </Card>
-        </motion.div>
-      ))}
-    </motion.div>
+  const renderIdea = (idea: YouTubeIdea) => (
+    <Card className="p-6 hover:shadow-lg transition-all duration-300 bg-card/50 backdrop-blur-sm">
+      <div className="space-y-4">
+        {/* Title Section */}
+        <div className="flex justify-between items-start gap-4">
+          <h3 className="text-xl font-semibold">{idea.title}</h3>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => copyToClipboard(idea.title)}
+            className="shrink-0"
+          >
+            <Copy className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Description */}
+        {idea.description && (
+          <p className="text-muted-foreground text-base">{idea.description}</p>
+        )}
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">⏱️ Duration</p>
+            <p className="font-medium">{idea.estimated_duration || '10-15 minutes'}</p>
+          </div>
+          {idea.engagement_potential && (
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">📈 Engagement</p>
+              <p className="font-medium">{idea.engagement_potential}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Key Points */}
+        {idea.key_talking_points && (
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">🎯 Key Points</p>
+            <p className="text-sm">{idea.key_talking_points}</p>
+          </div>
+        )}
+
+        {/* Thumbnail */}
+        {idea.thumbnail_suggestion && (
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">🎨 Thumbnail Suggestion</p>
+            <p className="text-sm">{idea.thumbnail_suggestion}</p>
+          </div>
+        )}
+
+        {/* Tags */}
+        {idea.tags && idea.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {idea.tags.map((tag, i) => (
+              <span
+                key={i}
+                className="px-3 py-1 text-sm rounded-full bg-primary/10 text-primary hover:bg-primary/20 cursor-pointer transition-colors"
+                onClick={() => copyToClipboard(tag)}
+              >
+                #{tag}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+    </Card>
   );
 
   return (
@@ -473,84 +503,119 @@ export function YouTubeIdeaGeneratorPage() {
 
         {/* Generated Ideas Section */}
         {currentIdeas && (
-          <Card className="p-6 bg-card/50 backdrop-blur-sm">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-primary" />
-                  <h2 className="text-xl font-semibold">Generated Ideas</h2>
-                </div>
-                {currentIdeas.generation_type === 'preferences' && (
-                  <div className="text-sm text-muted-foreground">
-                    {currentIdeas.genre} • {currentIdeas.target_audience} • {currentIdeas.video_type} • {currentIdeas.focus_area}
-                  </div>
-                )}
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-primary" />
+                <h2 className="text-xl font-semibold">Generated Ideas</h2>
               </div>
-              {renderIdeas(currentIdeas.ideas)}
+              {currentIdeas.generation_type === 'preferences' && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <span className="px-2 py-1 rounded-full bg-secondary/50">{currentIdeas.preferences.genre}</span>
+                  <span>•</span>
+                  <span className="px-2 py-1 rounded-full bg-secondary/50">{currentIdeas.preferences.target_audience}</span>
+                  <span>•</span>
+                  <span className="px-2 py-1 rounded-full bg-secondary/50">{currentIdeas.preferences.video_type}</span>
+                  <span>•</span>
+                  <span className="px-2 py-1 rounded-full bg-secondary/50">{currentIdeas.preferences.focus_area}</span>
+                </div>
+              )}
             </div>
-          </Card>
+            <div className="grid gap-6">
+              {currentIdeas.ideas.map((idea, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  {renderIdea(idea)}
+                </motion.div>
+              ))}
+            </div>
+          </div>
         )}
 
         {/* History Section */}
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <History className="h-5 w-5 text-primary" />
               <h2 className="text-xl font-semibold">Previously Generated Ideas</h2>
             </div>
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={loadHistory}
-              className="text-muted-foreground hover:text-primary"
+              className="gap-2"
             >
-              <History className="mr-2 h-4 w-4" />
+              <History className="h-4 w-4" />
               Refresh History
             </Button>
           </div>
 
           {history.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-6">
               {history.map((item) => (
-                <Card key={item.id} className="p-4 relative group bg-card/50 backdrop-blur-sm hover:shadow-lg transition-all duration-300">
-                  <div className="absolute right-2 top-2 flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setCurrentIdeas(item)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <MessageSquare className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => deleteIdea(item.id)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+                <Card 
+                  key={item.id} 
+                  className="p-6 bg-card/50 backdrop-blur-sm hover:shadow-lg transition-all duration-300"
+                >
                   <div className="space-y-4">
+                    {/* Header */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Clock className="h-4 w-4" />
                         {formatDate(item.created_at)}
                       </div>
-                      {item.generation_type === 'preferences' && (
-                        <div className="text-sm text-muted-foreground">
-                          {item.genre} • {item.target_audience} • {item.video_type} • {item.focus_area}
-                        </div>
-                      )}
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setCurrentIdeas(item)}
+                          title="View Details"
+                        >
+                          <MessageSquare className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => deleteIdea(item.id)}
+                          title="Delete"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
-                    {renderIdeas(item.ideas.slice(0, 2))}
-                    {item.ideas.length > 2 && (
+
+                    {/* Preview */}
+                    <div className="space-y-4">
+                      {item.ideas.slice(0, 1).map((idea, index) => (
+                        <div key={index} className="space-y-2">
+                          <h3 className="text-lg font-semibold">{idea.title}</h3>
+                          <p className="text-muted-foreground line-clamp-2">{idea.description}</p>
+                          <div className="flex flex-wrap gap-2 text-sm">
+                            <span className="text-primary">{idea.estimated_duration}</span>
+                            {idea.engagement_potential && (
+                              <>
+                                <span>•</span>
+                                <span className="text-primary">{idea.engagement_potential}</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* View More Button */}
+                    {item.ideas.length > 1 && (
                       <Button
                         variant="ghost"
-                        className="w-full text-muted-foreground hover:text-primary"
+                        className="w-full mt-2 hover:bg-secondary/50"
                         onClick={() => setCurrentIdeas(item)}
                       >
-                        View {item.ideas.length - 2} more ideas
+                        View all generated ideas
+                        <ChevronRight className="h-4 w-4 ml-2" />
                       </Button>
                     )}
                   </div>

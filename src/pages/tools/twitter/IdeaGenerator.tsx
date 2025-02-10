@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Copy, Loader2, Trash2, History, Sparkles, Wand2, MessageSquare, Clock, Settings, PenLine, Lightbulb } from 'lucide-react';
+import { Copy, Loader2, Trash2, History, Sparkles, Wand2, MessageSquare, Clock, Settings, PenLine, Lightbulb, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { ToolLayout } from '../../../components/tool-page/ToolLayout';
 import { Button } from '../../../components/ui/button';
@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/ui
 import { containerVariants, itemVariants, cardHoverVariants } from '../../../lib/animations';
 import { LoadingModal } from "@/components/ui/loading-modal";
 import { ToolTitle } from "@/components/ui/tool-title";
+import { ideaGeneratorService, type IdeaGeneration } from '../../../lib/services/idea-generator';
 
 // Constants for dropdowns
 const THREAD_TYPES = [
@@ -48,6 +49,23 @@ const loadingMessages = [
   "Finalizing your thread ideas..."
 ];
 
+interface TwitterIdea {
+  hook: string;
+  outline: string[];
+}
+
+interface TwitterIdeaGeneration extends IdeaGeneration {
+  ideas: TwitterIdea[];
+  preferences: {
+    thread_type: string;
+    topic: string;
+    tone_of_voice: string;
+  };
+  thread_type?: string;
+  topic?: string;
+  tone_of_voice?: string;
+}
+
 export function TwitterIdeaGeneratorPage() {
   // Form states
   const [threadType, setThreadType] = useState('');
@@ -59,8 +77,8 @@ export function TwitterIdeaGeneratorPage() {
   const [loading, setLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
-  const [currentIdeas, setCurrentIdeas] = useState<any | null>(null);
-  const [history, setHistory] = useState<any[]>([]);
+  const [currentIdeas, setCurrentIdeas] = useState<TwitterIdeaGeneration | null>(null);
+  const [history, setHistory] = useState<TwitterIdeaGeneration[]>([]);
 
   // Load history on mount
   useEffect(() => {
@@ -69,11 +87,10 @@ export function TwitterIdeaGeneratorPage() {
 
   const loadHistory = async () => {
     try {
-      const response = await fetch('/api/twitter/ideas/history');
-      const data = await response.json();
-      setHistory(data.items);
-    } catch (error) {
-      toast.error("Failed to load idea history");
+      const response = await ideaGeneratorService.getHistory('twitter');
+      setHistory(response.items as TwitterIdeaGeneration[]);
+    } catch (error: any) {
+      toast.error(error.message);
     }
   };
 
@@ -85,22 +102,17 @@ export function TwitterIdeaGeneratorPage() {
 
     setLoading(true);
     try {
-      const response = await fetch('/api/twitter/ideas/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          thread_type: threadType,
-          topic,
-          tone_of_voice: tone
-        })
+      const response = await ideaGeneratorService.generateFromPreferences('twitter', {
+        thread_type: threadType,
+        topic,
+        tone_of_voice: tone
       });
       
-      const data = await response.json();
-      setCurrentIdeas(data);
-      setHistory(prev => [data, ...prev]);
+      setCurrentIdeas(response as TwitterIdeaGeneration);
+      setHistory(prev => [response as TwitterIdeaGeneration, ...prev]);
       toast.success("Ideas generated successfully!");
-    } catch (error) {
-      toast.error("Failed to generate ideas");
+    } catch (error: any) {
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }
@@ -114,18 +126,12 @@ export function TwitterIdeaGeneratorPage() {
 
     setLoading(true);
     try {
-      const response = await fetch('/api/twitter/ideas/custom', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: customPrompt })
-      });
-      
-      const data = await response.json();
-      setCurrentIdeas(data);
-      setHistory(prev => [data, ...prev]);
+      const response = await ideaGeneratorService.generateCustom('twitter', customPrompt);
+      setCurrentIdeas(response as TwitterIdeaGeneration);
+      setHistory(prev => [response as TwitterIdeaGeneration, ...prev]);
       toast.success("Custom ideas generated successfully!");
-    } catch (error) {
-      toast.error("Failed to generate custom ideas");
+    } catch (error: any) {
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }
@@ -134,13 +140,12 @@ export function TwitterIdeaGeneratorPage() {
   const generateSurprise = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/twitter/ideas/surprise');
-      const data = await response.json();
-      setCurrentIdeas(data);
-      setHistory(prev => [data, ...prev]);
+      const response = await ideaGeneratorService.generateSurprise('twitter');
+      setCurrentIdeas(response as TwitterIdeaGeneration);
+      setHistory(prev => [response as TwitterIdeaGeneration, ...prev]);
       toast.success("Surprise ideas generated!");
-    } catch (error) {
-      toast.error("Failed to generate surprise ideas");
+    } catch (error: any) {
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }
@@ -153,11 +158,11 @@ export function TwitterIdeaGeneratorPage() {
 
   const deleteIdea = async (ideaId: string) => {
     try {
-      await fetch(`/api/twitter/ideas/${ideaId}`, { method: 'DELETE' });
+      await ideaGeneratorService.deleteIdea('twitter', ideaId);
       setHistory(prev => prev.filter(item => item.id !== ideaId));
       toast.success("Idea deleted successfully");
-    } catch (error) {
-      toast.error("Failed to delete idea");
+    } catch (error: any) {
+      toast.error(error.message);
     }
   };
 
@@ -377,40 +382,54 @@ export function TwitterIdeaGeneratorPage() {
                   <h2 className="text-xl font-semibold">Generated Ideas</h2>
                 </div>
                 {currentIdeas.generation_type === 'preferences' && (
-                  <div className="text-sm text-muted-foreground">
-                    {currentIdeas.thread_type} • {currentIdeas.topic} • {currentIdeas.tone_of_voice}
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <span className="px-2 py-1 rounded-full bg-secondary/50">{currentIdeas.preferences.thread_type}</span>
+                    <span>•</span>
+                    <span className="px-2 py-1 rounded-full bg-secondary/50">{currentIdeas.preferences.topic}</span>
+                    <span>•</span>
+                    <span className="px-2 py-1 rounded-full bg-secondary/50">{currentIdeas.preferences.tone_of_voice}</span>
                   </div>
                 )}
               </div>
               <div className="grid gap-4">
-                {currentIdeas.threads.map((thread: any, index: number) => (
-                  <Card key={index} className="p-4 relative group">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-start gap-3 flex-1">
-                        <div className="mt-1">
-                          <Sparkles className="h-5 w-5 text-primary" />
-                        </div>
-                        <div className="space-y-2">
-                          <p className="text-base font-medium">{thread.hook}</p>
-                          <div className="space-y-1">
-                            {thread.outline.map((point: string, i: number) => (
-                              <p key={i} className="text-sm text-muted-foreground">
-                                {i + 1}. {point}
-                              </p>
-                            ))}
+                {currentIdeas.ideas.map((idea: TwitterIdea, index: number) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <Card className="p-6 hover:shadow-lg transition-all duration-300">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-start gap-3 flex-1">
+                          <div className="mt-1">
+                            <Sparkles className="h-5 w-5 text-primary" />
+                          </div>
+                          <div className="space-y-4">
+                            <div className="space-y-2">
+                              <p className="text-lg font-medium">{idea.hook}</p>
+                              <div className="space-y-2">
+                                {idea.outline.map((point: string, i: number) => (
+                                  <div key={i} className="flex items-start gap-2">
+                                    <span className="text-primary font-medium">{i + 1}.</span>
+                                    <p className="text-muted-foreground">{point}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
                           </div>
                         </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => copyToClipboard(`${idea.hook}\n\n${idea.outline.map((point: string, i: number) => `${i + 1}. ${point}`).join('\n')}`)}
+                          className="shrink-0"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => copyToClipboard(`${thread.hook}\n\n${thread.outline.map((point: string, i: number) => `${i + 1}. ${point}`).join('\n')}`)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </Card>
+                    </Card>
+                  </motion.div>
                 ))}
               </div>
             </div>
@@ -418,76 +437,84 @@ export function TwitterIdeaGeneratorPage() {
         )}
 
         {/* History Section */}
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <History className="h-5 w-5 text-primary" />
               <h2 className="text-xl font-semibold">Previously Generated Ideas</h2>
             </div>
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={loadHistory}
-              className="text-muted-foreground hover:text-primary"
+              className="gap-2"
             >
-              <History className="mr-2 h-4 w-4" />
+              <History className="h-4 w-4" />
               Refresh History
             </Button>
           </div>
 
           {history.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-6">
               {history.map((item) => (
-                <Card key={item.id} className="p-4 relative group bg-card/50 backdrop-blur-sm hover:shadow-lg transition-all duration-300">
-                  <div className="absolute right-2 top-2 flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setCurrentIdeas(item)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <MessageSquare className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => deleteIdea(item.id)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+                <Card 
+                  key={item.id} 
+                  className="p-6 bg-card/50 backdrop-blur-sm hover:shadow-lg transition-all duration-300"
+                >
                   <div className="space-y-4">
+                    {/* Header */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Clock className="h-4 w-4" />
                         {formatDate(item.created_at)}
                       </div>
-                      {item.generation_type === 'preferences' && (
-                        <div className="text-sm text-muted-foreground">
-                          {item.thread_type} • {item.topic} • {item.tone_of_voice}
-                        </div>
-                      )}
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setCurrentIdeas(item)}
+                          title="View Details"
+                        >
+                          <MessageSquare className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => deleteIdea(item.id)}
+                          title="Delete"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
-                    <div className="space-y-3">
-                      {item.threads.slice(0, 2).map((thread: any, index: number) => (
-                        <div key={index} className="space-y-1">
-                          <p className="text-sm font-medium">{thread.hook}</p>
-                          <div className="text-xs text-muted-foreground">
-                            {thread.outline.length} points
+
+                    {/* Preview */}
+                    <div className="space-y-4">
+                      {item.ideas.slice(0, 1).map((idea, index) => (
+                        <div key={index} className="space-y-2">
+                          <p className="text-lg font-medium">{idea.hook}</p>
+                          <div className="space-y-1">
+                            {idea.outline.slice(0, 2).map((point, i) => (
+                              <p key={i} className="text-sm text-muted-foreground">
+                                {i + 1}. {point}
+                              </p>
+                            ))}
                           </div>
                         </div>
                       ))}
-                      {item.threads.length > 2 && (
-                        <Button
-                          variant="ghost"
-                          className="w-full text-muted-foreground hover:text-primary"
-                          onClick={() => setCurrentIdeas(item)}
-                        >
-                          View {item.threads.length - 2} more threads
-                        </Button>
-                      )}
                     </div>
+
+                    {/* View More Button */}
+                    {item.ideas.length > 1 && (
+                      <Button
+                        variant="ghost"
+                        className="w-full mt-2 hover:bg-secondary/50"
+                        onClick={() => setCurrentIdeas(item)}
+                      >
+                        View all generated ideas
+                        <ChevronRight className="h-4 w-4 ml-2" />
+                      </Button>
+                    )}
                   </div>
                 </Card>
               ))}

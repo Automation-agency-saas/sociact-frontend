@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Copy, Loader2, Trash2, History, Sparkles, Wand2, MessageSquare, Clock, Settings, PenLine, Lightbulb } from 'lucide-react';
+import { Copy, Loader2, Trash2, History, Sparkles, Wand2, MessageSquare, Clock, Settings, PenLine, Lightbulb, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { ToolLayout } from '../../../components/tool-page/ToolLayout';
 import { Button } from '../../../components/ui/button';
@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/ui
 import { containerVariants, itemVariants, cardHoverVariants } from '../../../lib/animations';
 import { LoadingModal } from "@/components/ui/loading-modal";
 import { ToolTitle } from "@/components/ui/tool-title";
+import { ideaGeneratorService, type IdeaGeneration } from '../../../lib/services/idea-generator';
 
 // Constants for dropdowns
 const POST_TYPES = [
@@ -55,6 +56,26 @@ const loadingMessages = [
   "Finalizing your post ideas..."
 ];
 
+interface LinkedInPost {
+  headline: string;
+  content: string;
+  hashtags?: string;
+}
+
+interface LinkedInIdeaGeneration extends IdeaGeneration {
+  ideas: LinkedInPost[];
+  preferences: {
+    post_type: string;
+    target_audience: string;
+    content_focus: string;
+    engagement_goal: string;
+  };
+  post_type?: string;
+  target_audience?: string;
+  content_focus?: string;
+  engagement_goal?: string;
+}
+
 export function LinkedInIdeaGeneratorPage() {
   // Form states
   const [postType, setPostType] = useState('');
@@ -67,8 +88,8 @@ export function LinkedInIdeaGeneratorPage() {
   const [loading, setLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
-  const [currentIdeas, setCurrentIdeas] = useState<any | null>(null);
-  const [history, setHistory] = useState<any[]>([]);
+  const [currentIdeas, setCurrentIdeas] = useState<LinkedInIdeaGeneration | null>(null);
+  const [history, setHistory] = useState<LinkedInIdeaGeneration[]>([]);
 
   // Load history on mount
   useEffect(() => {
@@ -77,11 +98,10 @@ export function LinkedInIdeaGeneratorPage() {
 
   const loadHistory = async () => {
     try {
-      const response = await fetch('/api/linkedin/ideas/history');
-      const data = await response.json();
-      setHistory(data.items);
-    } catch (error) {
-      toast.error("Failed to load idea history");
+      const response = await ideaGeneratorService.getHistory('linkedin');
+      setHistory(response.items as LinkedInIdeaGeneration[]);
+    } catch (error: any) {
+      toast.error(error.message);
     }
   };
 
@@ -93,23 +113,18 @@ export function LinkedInIdeaGeneratorPage() {
 
     setLoading(true);
     try {
-      const response = await fetch('/api/linkedin/ideas/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          post_type: postType,
-          target_audience: targetAudience,
-          content_focus: contentFocus,
-          engagement_goal: engagementGoal
-        })
+      const response = await ideaGeneratorService.generateFromPreferences('linkedin', {
+        post_type: postType,
+        target_audience: targetAudience,
+        content_focus: contentFocus,
+        engagement_goal: engagementGoal
       });
       
-      const data = await response.json();
-      setCurrentIdeas(data);
-      setHistory(prev => [data, ...prev]);
+      setCurrentIdeas(response as LinkedInIdeaGeneration);
+      setHistory(prev => [response as LinkedInIdeaGeneration, ...prev]);
       toast.success("Ideas generated successfully!");
-    } catch (error) {
-      toast.error("Failed to generate ideas");
+    } catch (error: any) {
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }
@@ -123,18 +138,12 @@ export function LinkedInIdeaGeneratorPage() {
 
     setLoading(true);
     try {
-      const response = await fetch('/api/linkedin/ideas/custom', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: customPrompt })
-      });
-      
-      const data = await response.json();
-      setCurrentIdeas(data);
-      setHistory(prev => [data, ...prev]);
+      const response = await ideaGeneratorService.generateCustom('linkedin', customPrompt);
+      setCurrentIdeas(response as LinkedInIdeaGeneration);
+      setHistory(prev => [response as LinkedInIdeaGeneration, ...prev]);
       toast.success("Custom ideas generated successfully!");
-    } catch (error) {
-      toast.error("Failed to generate custom ideas");
+    } catch (error: any) {
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }
@@ -143,13 +152,12 @@ export function LinkedInIdeaGeneratorPage() {
   const generateSurprise = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/linkedin/ideas/surprise');
-      const data = await response.json();
-      setCurrentIdeas(data);
-      setHistory(prev => [data, ...prev]);
+      const response = await ideaGeneratorService.generateSurprise('linkedin');
+      setCurrentIdeas(response as LinkedInIdeaGeneration);
+      setHistory(prev => [response as LinkedInIdeaGeneration, ...prev]);
       toast.success("Surprise ideas generated!");
-    } catch (error) {
-      toast.error("Failed to generate surprise ideas");
+    } catch (error: any) {
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }
@@ -162,11 +170,11 @@ export function LinkedInIdeaGeneratorPage() {
 
   const deleteIdea = async (ideaId: string) => {
     try {
-      await fetch(`/api/linkedin/ideas/${ideaId}`, { method: 'DELETE' });
+      await ideaGeneratorService.deleteIdea('linkedin', ideaId);
       setHistory(prev => prev.filter(item => item.id !== ideaId));
       toast.success("Idea deleted successfully");
-    } catch (error) {
-      toast.error("Failed to delete idea");
+    } catch (error: any) {
+      toast.error(error.message);
     }
   };
 
@@ -178,6 +186,45 @@ export function LinkedInIdeaGeneratorPage() {
       minute: '2-digit'
     });
   };
+
+  const renderIdea = (idea: LinkedInPost) => (
+    <Card className="p-6 hover:shadow-lg transition-all duration-300 bg-card/50 backdrop-blur-sm">
+      <div className="space-y-4">
+        {/* Title Section */}
+        <div className="flex justify-between items-start gap-4">
+          <h3 className="text-xl font-semibold">{idea.headline}</h3>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => copyToClipboard(idea.headline)}
+            className="shrink-0"
+          >
+            <Copy className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Content */}
+        <div className="space-y-2">
+          <p className="text-base">{idea.content}</p>
+        </div>
+
+        {/* Hashtags */}
+        {idea.hashtags && (
+          <div className="flex flex-wrap gap-2">
+            {idea.hashtags.split(',').map((tag, i) => (
+              <span
+                key={i}
+                className="px-3 py-1 text-sm rounded-full bg-primary/10 text-primary hover:bg-primary/20 cursor-pointer transition-colors"
+                onClick={() => copyToClipboard(tag)}
+              >
+                #{tag}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+    </Card>
+  );
 
   return (
     <ToolLayout>
@@ -394,124 +441,112 @@ export function LinkedInIdeaGeneratorPage() {
 
         {/* Generated Ideas Section */}
         {currentIdeas && (
-          <Card className="p-6 bg-card/50 backdrop-blur-sm">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-primary" />
-                  <h2 className="text-xl font-semibold">Generated Ideas</h2>
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-primary" />
+                <h2 className="text-xl font-semibold">Generated Ideas</h2>
+              </div>
+              {currentIdeas.generation_type === 'preferences' && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <span className="px-2 py-1 rounded-full bg-secondary/50">{currentIdeas.preferences.post_type}</span>
+                  <span>•</span>
+                  <span className="px-2 py-1 rounded-full bg-secondary/50">{currentIdeas.preferences.target_audience}</span>
+                  <span>•</span>
+                  <span className="px-2 py-1 rounded-full bg-secondary/50">{currentIdeas.preferences.content_focus}</span>
+                  <span>•</span>
+                  <span className="px-2 py-1 rounded-full bg-secondary/50">{currentIdeas.preferences.engagement_goal}</span>
                 </div>
-                {currentIdeas.generation_type === 'preferences' && (
-                  <div className="text-sm text-muted-foreground">
-                    {currentIdeas.post_type} • {currentIdeas.target_audience} • {currentIdeas.content_focus} • {currentIdeas.engagement_goal}
-                  </div>
-                )}
-              </div>
-              <div className="grid gap-4">
-                {currentIdeas.posts.map((post: any, index: number) => (
-                  <Card key={index} className="p-4 relative group">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex items-start gap-3 flex-1">
-                        <div className="mt-1">
-                          <Sparkles className="h-5 w-5 text-primary" />
-                        </div>
-                        <div className="space-y-2">
-                          <p className="text-base font-medium">{post.headline}</p>
-                          <p className="text-sm text-muted-foreground">{post.content}</p>
-                          {post.hashtags && (
-                            <p className="text-sm text-primary">
-                              {post.hashtags}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => copyToClipboard(`${post.headline}\n\n${post.content}\n\n${post.hashtags || ''}`)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </Card>
-                ))}
-              </div>
+              )}
             </div>
-          </Card>
+            <div className="grid gap-6">
+              {currentIdeas.ideas.map((idea, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  {renderIdea(idea)}
+                </motion.div>
+              ))}
+            </div>
+          </div>
         )}
 
         {/* History Section */}
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <History className="h-5 w-5 text-primary" />
               <h2 className="text-xl font-semibold">Previously Generated Ideas</h2>
             </div>
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={loadHistory}
-              className="text-muted-foreground hover:text-primary"
+              className="gap-2"
             >
-              <History className="mr-2 h-4 w-4" />
+              <History className="h-4 w-4" />
               Refresh History
             </Button>
           </div>
 
           {history.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-6">
               {history.map((item) => (
-                <Card key={item.id} className="p-4 relative group bg-card/50 backdrop-blur-sm hover:shadow-lg transition-all duration-300">
-                  <div className="absolute right-2 top-2 flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setCurrentIdeas(item)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <MessageSquare className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => deleteIdea(item.id)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+                <Card 
+                  key={item.id} 
+                  className="p-6 bg-card/50 backdrop-blur-sm hover:shadow-lg transition-all duration-300"
+                >
                   <div className="space-y-4">
+                    {/* Header */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Clock className="h-4 w-4" />
                         {formatDate(item.created_at)}
                       </div>
-                      {item.generation_type === 'preferences' && (
-                        <div className="text-sm text-muted-foreground">
-                          {item.post_type} • {item.target_audience} • {item.content_focus} • {item.engagement_goal}
-                        </div>
-                      )}
-                    </div>
-                    <div className="space-y-3">
-                      {item.posts.slice(0, 2).map((post: any, index: number) => (
-                        <div key={index} className="space-y-1">
-                          <p className="text-sm font-medium">{post.headline}</p>
-                          <p className="text-xs text-muted-foreground line-clamp-2">
-                            {post.content}
-                          </p>
-                        </div>
-                      ))}
-                      {item.posts.length > 2 && (
+                      <div className="flex items-center gap-2">
                         <Button
                           variant="ghost"
-                          className="w-full text-muted-foreground hover:text-primary"
+                          size="icon"
                           onClick={() => setCurrentIdeas(item)}
+                          title="View Details"
                         >
-                          View {item.posts.length - 2} more posts
+                          <MessageSquare className="h-4 w-4" />
                         </Button>
-                      )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => deleteIdea(item.id)}
+                          title="Delete"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
+
+                    {/* Preview */}
+                    <div className="space-y-4">
+                      {item.ideas.slice(0, 1).map((idea, index) => (
+                        <div key={index} className="space-y-2">
+                          <h3 className="text-lg font-medium">{idea.headline}</h3>
+                          <p className="text-sm text-muted-foreground line-clamp-2">{idea.content}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* View More Button */}
+                    {item.ideas.length > 1 && (
+                      <Button
+                        variant="ghost"
+                        className="w-full mt-2 hover:bg-secondary/50"
+                        onClick={() => setCurrentIdeas(item)}
+                      >
+                        View all generated ideas
+                        <ChevronRight className="h-4 w-4 ml-2" />
+                      </Button>
+                    )}
                   </div>
                 </Card>
               ))}
