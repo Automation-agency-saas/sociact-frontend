@@ -9,6 +9,7 @@ import { useTheme } from "next-themes";
 import Glow from "./ui/glow";
 import { useEffect, useState } from "react";
 import { HeroParallax } from "./ui/hero-parallax";
+import { BgGrid } from "./BgGrid";
 export const Hero = () => {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -56,8 +57,12 @@ export const Hero = () => {
   ];
 
   return (
+   
     <Section className="fade-bottom overflow-hidden pb-0 sm:pb-0 md:pb-0">
+
       <HeroParallax products={products} />
+ 
     </Section>
+    
   );
 };
