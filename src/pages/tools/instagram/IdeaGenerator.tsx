@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Copy, Loader2, Trash2, History, Sparkles, Wand2, MessageSquare, Clock, Settings, PenLine, Lightbulb, ChevronRight } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from 'react-hot-toast';
 import { ToolLayout } from '../../../components/tool-page/ToolLayout';
 import { Button } from '../../../components/ui/button';
 import { Card } from '../../../components/ui/card';
@@ -59,9 +59,9 @@ const loadingMessages = [
 // Update the type references
 interface InstagramIdea {
   content: string;
-  hashtags?: string;
   visual_elements?: string;
   caption?: string;
+  hashtags?: string;
   engagement_strategy?: string;
 }
 
@@ -74,7 +74,12 @@ interface InstagramPreferences {
 
 interface InstagramIdeaGeneration extends IdeaGeneration {
   ideas: InstagramIdea[];
-  preferences: InstagramPreferences;
+  preferences: {
+    content_type: string;
+    niche: string;
+    target_audience: string;
+    engagement_style: string;
+  };
 }
 
 export function InstagramIdeaGeneratorPage() {
@@ -96,6 +101,33 @@ export function InstagramIdeaGeneratorPage() {
   useEffect(() => {
     loadHistory();
   }, []);
+
+  // Simulate loading progress
+  useEffect(() => {
+    if (loading) {
+      const interval = setInterval(() => {
+        setLoadingProgress(prev => {
+          if (prev >= 100) {
+            clearInterval(interval);
+            return 100;
+          }
+          return prev + 2;
+        });
+
+        setLoadingMessageIndex(prev => 
+          loadingProgress < 20 ? 0 :
+          loadingProgress < 40 ? 1 :
+          loadingProgress < 60 ? 2 :
+          loadingProgress < 80 ? 3 : 4
+        );
+      }, 100);
+
+      return () => clearInterval(interval);
+    } else {
+      setLoadingProgress(0);
+      setLoadingMessageIndex(0);
+    }
+  }, [loading]);
 
   const loadHistory = async () => {
     try {
