@@ -1,0 +1,297 @@
+import { useState } from 'react';
+import { ToolPageWrapper } from '../../../components/tool-page/ToolPageWrapper';
+import { Button } from '../../../components/ui/button';
+import { Textarea } from '../../../components/ui/textarea';
+import { Input } from '../../../components/ui/input';
+import { Wand2, Copy, RefreshCw, Hash, MessageSquare } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../../../components/ui/card";
+
+type Step = 'input' | 'generating' | 'results';
+
+const loadingMessages = [
+  "Analyzing your content...",
+  "Crafting engaging captions...",
+  "Finding relevant hashtags...",
+  "Optimizing for engagement...",
+  "Finalizing your caption..."
+];
+
+export function InstagramCaptionGeneratorPage() {
+  const [topic, setTopic] = useState('');
+  const [description, setDescription] = useState('');
+  const [currentStep, setCurrentStep] = useState<Step>('input');
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
+  const [generatedCaption, setGeneratedCaption] = useState('');
+  const [generatedHashtags, setGeneratedHashtags] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleGenerate = async () => {
+    if (!topic || !description) {
+      toast.error('Please provide both topic and description');
+      return;
+    }
+    
+    setCurrentStep('generating');
+    setLoadingProgress(0);
+    setLoadingMessageIndex(0);
+    setError(null);
+
+    const intervals = {
+      initial: { target: 85, speed: 50, increment: 1 },
+      slow: { target: 98, speed: 500, increment: 2 },
+    };
+
+    let loadingInterval: NodeJS.Timeout | null = null;
+    const startLoading = () => {
+      loadingInterval = setInterval(() => {
+        setLoadingProgress(prev => {
+          if (prev >= intervals.slow.target) {
+            if (loadingInterval) clearInterval(loadingInterval);
+            return prev;
+          }
+          if (prev >= intervals.initial.target) {
+            if (loadingInterval) clearInterval(loadingInterval);
+            startSlowProgress();
+            return prev;
+          }
+          return prev + intervals.initial.increment;
+        });
+        setLoadingMessageIndex(prev => (prev + 1) % loadingMessages.length);
+      }, intervals.initial.speed);
+    };
+
+    const startSlowProgress = () => {
+      loadingInterval = setInterval(() => {
+        setLoadingProgress(prev => {
+          if (prev >= intervals.slow.target) {
+            if (loadingInterval) clearInterval(loadingInterval);
+            return prev;
+          }
+          return prev + intervals.slow.increment;
+        });
+        setLoadingMessageIndex(prev => (prev + 1) % loadingMessages.length);
+      }, intervals.slow.speed);
+    };
+
+    startLoading();
+
+    try {
+      // TODO: Replace with actual API call
+      const caption = "✨ Embracing the journey and sharing the magic with you all! 🌟\n\nEvery step forward is a story worth telling, and today's chapter is all about growth and inspiration. Can't wait to hear your thoughts! 💭\n\nDouble tap if you're on this journey with me! 🙌";
+      const hashtags = [
+        "#InstagramCreator",
+        "#ContentCreation",
+        "#SocialMediaTips",
+        "#DigitalCreator",
+        "#InstagramGrowth",
+        "#CreativeContent",
+        "#InstagramCommunity",
+        "#CreatorLife",
+        "#SocialMediaStrategy",
+        "#EngagingContent"
+      ];
+
+      setLoadingProgress(100);
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      setGeneratedCaption(caption);
+      setGeneratedHashtags(hashtags);
+      setCurrentStep('results');
+      toast.success('Caption generated successfully!');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to generate caption';
+      setError(errorMessage);
+      toast.error(errorMessage);
+      setCurrentStep('input');
+    } finally {
+      if (loadingInterval) clearInterval(loadingInterval);
+    }
+  };
+
+  const handleReset = () => {
+    setTopic('');
+    setDescription('');
+    setCurrentStep('input');
+    setGeneratedCaption('');
+    setGeneratedHashtags([]);
+    setError(null);
+  };
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success('Copied to clipboard!');
+    } catch (err) {
+      toast.error('Failed to copy to clipboard');
+    }
+  };
+
+  return (
+    <ToolPageWrapper
+      title="Instagram Caption Generator"
+      description="Create engaging captions that drive interaction and growth"
+    >
+      <div className="space-y-6">
+        {currentStep === 'input' && (
+          <div className="grid gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5 text-primary" />
+                  Caption Details
+                </CardTitle>
+                <CardDescription>
+                  Provide information about your content
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Topic/Theme</label>
+                  <Input
+                    placeholder="Enter the main topic or theme of your post..."
+                    value={topic}
+                    onChange={(e) => setTopic(e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Description</label>
+                  <Textarea
+                    placeholder="Describe what your post is about, key messages, or any specific points to include..."
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="min-h-[120px]"
+                  />
+                </div>
+
+                <Button
+                  onClick={handleGenerate}
+                  disabled={!topic || !description}
+                  className="w-full bg-primary hover:bg-primary/90"
+                >
+                  <Wand2 className="mr-2 h-4 w-4" />
+                  Generate Caption
+                </Button>
+
+                {error && (
+                  <div className="p-4 rounded-lg bg-destructive/10 text-destructive text-sm">
+                    {error}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {currentStep === 'generating' && (
+          <div className="flex flex-col items-center justify-center py-8 space-y-6">
+            <div className="relative w-24 h-24">
+              <div className="absolute inset-0 flex items-center justify-center">
+                <MessageSquare className="w-12 h-12 text-primary animate-pulse" />
+              </div>
+              <div className="absolute inset-0">
+                <svg className="w-full h-full animate-spin-slow" viewBox="0 0 100 100">
+                  <circle
+                    className="text-primary/20"
+                    strokeWidth="8"
+                    stroke="currentColor"
+                    fill="transparent"
+                    r="42"
+                    cx="50"
+                    cy="50"
+                  />
+                  <circle
+                    className="text-primary"
+                    strokeWidth="8"
+                    strokeDasharray={264}
+                    strokeDashoffset={264 - (loadingProgress / 100) * 264}
+                    strokeLinecap="round"
+                    stroke="currentColor"
+                    fill="transparent"
+                    r="42"
+                    cx="50"
+                    cy="50"
+                  />
+                </svg>
+              </div>
+            </div>
+            <div className="text-center space-y-2">
+              <p className="text-lg font-medium text-primary">
+                {loadingMessages[loadingMessageIndex]}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {loadingProgress}% complete
+              </p>
+            </div>
+          </div>
+        )}
+
+        {currentStep === 'results' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold">Generated Caption</h3>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => copyToClipboard(generatedCaption)}
+                >
+                  <Copy className="h-4 w-4 mr-2" />
+                  Copy Caption
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleReset}
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Generate New
+                </Button>
+              </div>
+            </div>
+
+            <Card>
+              <CardContent className="p-4">
+                <div className="prose prose-sm dark:prose-invert max-w-none">
+                  <pre className="whitespace-pre-wrap bg-muted/50 p-4 rounded-lg">
+                    {generatedCaption}
+                  </pre>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Hash className="h-5 w-5 text-primary" />
+                  Suggested Hashtags
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-2">
+                  {generatedHashtags.map((hashtag, index) => (
+                    <span
+                      key={index}
+                      className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium cursor-pointer hover:bg-primary/20"
+                      onClick={() => copyToClipboard(hashtag)}
+                    >
+                      {hashtag}
+                    </span>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+      </div>
+    </ToolPageWrapper>
+  );
+} 
