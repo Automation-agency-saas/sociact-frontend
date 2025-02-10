@@ -1,12 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../lib/context/AuthContext';
 import { useIsMobile } from '../hooks/use-mobile';
-import { IdeaGeneratorModal, PlatformType as IdeaPlatformType } from '../components/ui/IdeaGeneratorModal';
-import { ThumbnailProModal } from '../components/ui/ThumbnailProModal';
-import { ThumbnailGenModal } from '../components/ui/ThumbnailGenModal';
-import { ContentGeneratorModal, ContentType } from '../components/ui/ContentGeneratorModal';
-import { SEOOptimizerModal } from '../components/ui/SEOOptimizerModal';
-import { CommentAutomationModal, PlatformType as CommentPlatformType } from '../components/ui/CommentAutomationModal';
+import { useNavigate } from 'react-router-dom';
 import { Sidebar } from '../components/dashboard/Sidebar';
 import { Header } from '../components/dashboard/Header';
 import { ToolGrid } from '../components/dashboard/ToolGrid';
@@ -15,23 +10,12 @@ import { Platform, Category } from '../lib/types';
 
 export default function Home() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
   const [activePlatform, setActivePlatform] = useState<Platform>('all');
   const [activeCategory, setActiveCategory] = useState<Category | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-
-  // Modal states
-  const [isIdeaGeneratorOpen, setIsIdeaGeneratorOpen] = useState(false);
-  const [isThumbnailProOpen, setIsThumbnailProOpen] = useState(false);
-  const [isThumbnailGenOpen, setIsThumbnailGenOpen] = useState(false);
-  const [isContentGeneratorOpen, setIsContentGeneratorOpen] = useState(false);
-  const [isSEOOptimizerOpen, setIsSEOOptimizerOpen] = useState(false);
-  const [selectedPlatform, setSelectedPlatform] = useState<IdeaPlatformType>('youtube');
-  const [selectedContentType, setSelectedContentType] = useState<ContentType>('youtube_script');
-  const [selectedSEOPlatform, setSelectedSEOPlatform] = useState<IdeaPlatformType>('youtube');
-  const [isCommentAutomationOpen, setIsCommentAutomationOpen] = useState(false);
-  const [selectedCommentPlatform, setSelectedCommentPlatform] = useState<CommentPlatformType>('instagram');
 
   // Filter tools based on category, platform, and search
   const filteredTools = tools.filter(tool => {
@@ -56,47 +40,48 @@ export default function Home() {
   };
 
   const handleToolLaunch = (tool: Tool, platform: Platform) => {
-    if (tool.name.includes('IdeaForge') || tool.name.includes('ReelSpark') ||
-      tool.name.includes('ThreadMind') || tool.name.includes('ProMind')) {
-      setSelectedPlatform((platform === 'all' ? tool.platforms[0] : platform) as IdeaPlatformType);
-      setIsIdeaGeneratorOpen(true);
-    } else if (tool.name.includes('ScriptCraft')) {
-      setSelectedContentType('youtube_script');
-      setIsContentGeneratorOpen(true);
-    } else if (tool.name.includes('ThreadCraft')) {
-      setSelectedContentType('twitter_thread');
-      setIsContentGeneratorOpen(true);
-    } else if (tool.name.includes('ProCraft')) {
-      setSelectedContentType('linkedin_post');
-      setIsContentGeneratorOpen(true);
-    } else if (tool.name.includes('CaptionCraft')) {
-      setSelectedContentType('instagram_caption');
-      setIsContentGeneratorOpen(true);
-    } else if (tool.name.includes('SEOPro')) {
-      setSelectedSEOPlatform((platform === 'all' ? tool.platforms[0] : platform) as IdeaPlatformType);
-      setIsSEOOptimizerOpen(true);
-    } else if (tool.name.includes('CommentPro')) {
-      if (platform !== 'linkedin') {
-        const commentPlatform = tool.name.includes('Facebook') ? 'facebook' : 'instagram';
-        setSelectedCommentPlatform(commentPlatform as CommentPlatformType);
-        setIsCommentAutomationOpen(true);
-      }
-    } else if (tool.name === 'ThumbnailPro') {
-      setIsThumbnailProOpen(true);
-    } else if (tool.name === 'ThumbnailGen') {
-      setIsThumbnailGenOpen(true);
+    // Ideation tools
+    if (tool.name === 'IdeaForge') {
+      navigate('/youtube/idea-generator');
+    } else if (tool.name === 'ReelSpark') {
+      navigate('/instagram/idea-generator');
+    } else if (tool.name === 'ThreadMind') {
+      navigate('/twitter/idea-generator');
+    } else if (tool.name === 'ProMind') {
+      navigate('/linkedin/idea-generator');
+    }
+    
+    // Content creation tools
+    else if (tool.name === 'ScriptCraft') {
+      navigate('/youtube/script-generator');
+    } else if (tool.name === 'CaptionCraft') {
+      navigate('/instagram/caption-generator');
+    } else if (tool.name === 'ThreadCraft') {
+      navigate('/twitter/thread-generator');
+    } else if (tool.name === 'ProCraft') {
+      navigate('/linkedin/post-generator');
+    }
+    
+    // Analytics and SEO tools
+    else if (tool.name === 'SEOPro') {
+      navigate('/youtube/seo-optimizer');
+    }
+    
+    // Engagement tools
+    else if (tool.name === 'CommentPro - Instagram') {
+      navigate('/instagram/comment-automation');
+    } else if (tool.name === 'CommentPro - Facebook') {
+      navigate('/facebook/comment-automation');
+    }
+    
+    // Thumbnail tools
+    else if (tool.name === 'ThumbnailPro' || tool.name === 'ThumbnailGen') {
+      navigate('/youtube/thumbnail-generator');
     }
   };
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      {/* {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm md:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )} */}
-
       <Sidebar
         user={user}
         sidebarOpen={sidebarOpen}
@@ -115,13 +100,6 @@ export default function Home() {
             activePlatform={activePlatform}
             setActivePlatform={setActivePlatform}
           />
-          {/* <div className="z-40 flex items-center justify-between gap-2 md:gap-4">
-            <SearchInput onSearch={handleSearch} />
-            <PlatformSelector
-              activePlatform={activePlatform}
-              setActivePlatform={setActivePlatform}
-            />
-          </div> */}
           <ToolGrid
             tools={filteredTools}
             activePlatform={activePlatform}
@@ -129,35 +107,6 @@ export default function Home() {
           />
         </main>
       </div>
-
-      <IdeaGeneratorModal
-        isOpen={isIdeaGeneratorOpen}
-        onClose={() => setIsIdeaGeneratorOpen(false)}
-        platform={selectedPlatform}
-      />
-      <ContentGeneratorModal
-        isOpen={isContentGeneratorOpen}
-        onClose={() => setIsContentGeneratorOpen(false)}
-        contentType={selectedContentType}
-      />
-      <SEOOptimizerModal
-        isOpen={isSEOOptimizerOpen}
-        onClose={() => setIsSEOOptimizerOpen(false)}
-        platform={selectedSEOPlatform}
-      />
-      <CommentAutomationModal
-        isOpen={isCommentAutomationOpen}
-        onClose={() => setIsCommentAutomationOpen(false)}
-        platform={selectedCommentPlatform}
-      />
-      <ThumbnailProModal
-        isOpen={isThumbnailProOpen}
-        onClose={() => setIsThumbnailProOpen(false)}
-      />
-      <ThumbnailGenModal
-        isOpen={isThumbnailGenOpen}
-        onClose={() => setIsThumbnailGenOpen(false)}
-      />
     </div>
   );
 }

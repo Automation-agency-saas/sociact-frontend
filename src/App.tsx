@@ -35,6 +35,20 @@ import { PrivacyPolicy } from './pages/PrivacyPolicy';
 import { Profile } from "./pages/Profile";
 import NewHome from './pages/home/new-home';
 
+// Import tool pages
+import { YouTubeIdeaGeneratorPage } from "./pages/tools/youtube/IdeaGenerator";
+import { YouTubeScriptGeneratorPage } from "./pages/tools/youtube/ScriptGenerator";
+import { YouTubeThumbnailGeneratorPage } from "./pages/tools/youtube/ThumbnailGenerator";
+import { YouTubeSEOOptimizerPage } from "./pages/tools/youtube/SEOOptimizer";
+import { InstagramIdeaGeneratorPage } from './pages/tools/instagram/IdeaGenerator';
+import { InstagramCaptionGeneratorPage } from './pages/tools/instagram/CaptionGenerator';
+import { InstagramCommentAutomationPage } from './pages/tools/instagram/CommentAutomation';
+// import { TwitterIdeaGeneratorPage } from './pages/tools/twitter/IdeaGenerator';
+import { LinkedInIdeaGeneratorPage } from './pages/tools/linkedin/IdeaGenerator';
+import { LinkedInPostGeneratorPage } from './pages/tools/linkedin/PostGenerator';
+import { FacebookCommentAutomationPage } from './pages/tools/facebook/CommentAutomation';
+import { TwitterIdeaGeneratorPage } from './pages/tools/twitter/IdeaGenerator';
+
 function LandingPage() {
   return (
     <>
@@ -114,6 +128,76 @@ function AppRoutes() {
           </ProtectedRoute>
         } />
 
+        {/* Tool Routes */}
+        <Route path="/youtube/idea-generator" element={
+          <ProtectedRoute>
+            <YouTubeIdeaGeneratorPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/youtube/script-generator" element={
+          <ProtectedRoute>
+            <YouTubeScriptGeneratorPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/youtube/thumbnail-generator" element={
+          <ProtectedRoute>
+            <YouTubeThumbnailGeneratorPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/youtube/seo-optimizer" element={
+          <ProtectedRoute>
+            <YouTubeSEOOptimizerPage />
+          </ProtectedRoute>
+        } />
+        
+        {/* Instagram Tools */}
+        <Route path="/instagram/idea-generator" element={
+          <ProtectedRoute>
+            <InstagramIdeaGeneratorPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/instagram/caption-generator" element={
+          <ProtectedRoute>
+            <InstagramCaptionGeneratorPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/instagram/comment-automation" element={
+          <ProtectedRoute>
+            <InstagramCommentAutomationPage />
+          </ProtectedRoute>
+        } />
+        
+        {/* Twitter Tools */}
+        <Route path="/twitter/idea-generator" element={
+          <ProtectedRoute>
+            <TwitterIdeaGeneratorPage />
+          </ProtectedRoute>
+        } />
+        {/* <Route path="/twitter/thread-generator" element={
+          <ProtectedRoute>
+            <TwitterThreadGeneratorPage />
+          </ProtectedRoute>
+        } /> */}
+        
+        {/* LinkedIn Tools */}
+        <Route path="/linkedin/idea-generator" element={
+          <ProtectedRoute>
+            <LinkedInIdeaGeneratorPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/linkedin/post-generator" element={
+          <ProtectedRoute>
+            <LinkedInPostGeneratorPage />
+          </ProtectedRoute>
+        } />
+        
+        {/* Facebook Tools */}
+        <Route path="/facebook/comment-automation" element={
+          <ProtectedRoute>
+            <FacebookCommentAutomationPage />
+          </ProtectedRoute>
+        } />
+
         {/* Catch all route */}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
@@ -154,29 +238,7 @@ function App() {
         <Router>
           <AuthProvider>
             <AppRoutes />
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                duration: 5000,
-                style: {
-                  background: 'hsl(var(--background))',
-                  color: 'hsl(var(--foreground))',
-                  border: '1px solid hsl(var(--border))',
-                },
-                success: {
-                  iconTheme: {
-                    primary: 'hsl(var(--primary))',
-                    secondary: 'hsl(var(--primary-foreground))',
-                  },
-                },
-                error: {
-                  iconTheme: {
-                    primary: 'hsl(var(--destructive))',
-                    secondary: 'hsl(var(--destructive-foreground))',
-                  },
-                },
-              }}
-            />
+            <Toaster position="top-right" />
           </AuthProvider>
         </Router>
       </GoogleOAuthProvider>
