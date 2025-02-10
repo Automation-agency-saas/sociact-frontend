@@ -6,7 +6,7 @@ export default function LandingPage() {
       <Navbar />
       <Hero />
   
-      <div className="relative">
+      <div className="relative ">
         <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[800px] h-[600px] -z-10">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(139,51,255,0.15)_0%,rgba(139,51,255,0.1)_45%,transparent_80%)] blur-[120px]" />
         </div>
@@ -14,9 +14,9 @@ export default function LandingPage() {
         </div>
       {/* About Section with right-side glow */}
       <div className="relative">
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[800px] h-[600px] -z-10">
+        {/* <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[800px] h-[600px] -z-10">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(139,51,255,0.15)_0%,rgba(139,51,255,0.1)_45%,transparent_80%)] blur-[120px]" />
-        </div>
+        </div> */}
         <About />
       </div>
 
