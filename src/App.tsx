@@ -42,10 +42,11 @@ import { YouTubeSEOOptimizerPage } from "./pages/tools/youtube/SEOOptimizer";
 import { InstagramIdeaGeneratorPage } from './pages/tools/instagram/IdeaGenerator';
 import { InstagramCaptionGeneratorPage } from './pages/tools/instagram/CaptionGenerator';
 import { InstagramCommentAutomationPage } from './pages/tools/instagram/CommentAutomation';
-import { TwitterIdeaGeneratorPage } from './pages/tools/twitter/IdeaGenerator';
+// import { TwitterIdeaGeneratorPage } from './pages/tools/twitter/IdeaGenerator';
 import { LinkedInIdeaGeneratorPage } from './pages/tools/linkedin/IdeaGenerator';
 import { LinkedInPostGeneratorPage } from './pages/tools/linkedin/PostGenerator';
 import { FacebookCommentAutomationPage } from './pages/tools/facebook/CommentAutomation';
+import { TwitterIdeaGeneratorPage } from './pages/tools/twitter/IdeaGenerator';
 
 function LandingPage() {
   return (
@@ -171,11 +172,11 @@ function AppRoutes() {
             <TwitterIdeaGeneratorPage />
           </ProtectedRoute>
         } />
-        <Route path="/twitter/thread-generator" element={
+        {/* <Route path="/twitter/thread-generator" element={
           <ProtectedRoute>
             <TwitterThreadGeneratorPage />
           </ProtectedRoute>
-        } />
+        } /> */}
         
         {/* LinkedIn Tools */}
         <Route path="/linkedin/idea-generator" element={
@@ -236,7 +237,7 @@ function App() {
         <Router>
           <AuthProvider>
             <AppRoutes />
-            <Toaster richColors position="top-right" />
+            <Toaster position="top-right" />
           </AuthProvider>
         </Router>
       </GoogleOAuthProvider>
