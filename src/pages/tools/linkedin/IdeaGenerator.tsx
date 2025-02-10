@@ -1,186 +1,177 @@
-import { useState } from 'react';
-import { ToolPageWrapper } from '../../../components/tool-page/ToolPageWrapper';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Copy, Loader2, Trash2, History, Sparkles, Wand2, MessageSquare, Clock, Settings, PenLine, Lightbulb } from 'lucide-react';
+import { toast } from 'sonner';
+import { ToolLayout } from '../../../components/tool-page/ToolLayout';
 import { Button } from '../../../components/ui/button';
+import { Card } from '../../../components/ui/card';
+import { Input } from '../../../components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
 import { Textarea } from '../../../components/ui/textarea';
-import { Wand2, Sparkles, RefreshCw, History, Trash2, Copy, Clock } from 'lucide-react';
-import { toast } from 'react-hot-toast';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from "../../../components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/ui/tabs';
+import { containerVariants, itemVariants, cardHoverVariants } from '../../../lib/animations';
+import { LoadingModal } from "@/components/ui/loading-modal";
+import { ToolTitle } from "@/components/ui/tool-title";
 
-type Step = 'input' | 'generating' | 'results';
-type HistoryItem = {
-  id: string;
-  niche: string;
-  ideas: string[];
-  timestamp: Date;
-};
+// Constants for dropdowns
+const POST_TYPES = [
+  { value: 'career_story', label: '📖 Personal Career Story' },
+  { value: 'industry_trends', label: '📈 Industry Trends & Insights' },
+  { value: 'lessons_learned', label: '🎓 Lessons Learned' },
+  { value: 'how_to', label: '📝 How-To or Guide' },
+  { value: 'announcement', label: '📢 Company/Product Announcement' },
+  { value: 'job_advice', label: '💼 Job-Related Advice' },
+  { value: 'networking', label: '🤝 Networking & Collaboration Opportunity' }
+];
+
+const TARGET_AUDIENCES = [
+  { value: 'job_seekers', label: '🔍 Job Seekers' },
+  { value: 'entrepreneurs', label: '🚀 Entrepreneurs' },
+  { value: 'business_owners', label: '💼 Business Owners' },
+  { value: 'corporate', label: '👔 Corporate Professionals' },
+  { value: 'students', label: '📚 Students & Interns' }
+];
+
+const CONTENT_FOCUS = [
+  { value: 'motivation', label: '🌟 Motivation & Career Growth' },
+  { value: 'business_strategy', label: '📊 Business Strategy & Startups' },
+  { value: 'ai_tech', label: '🤖 AI & Tech Innovations' },
+  { value: 'work_culture', label: '🏢 Work Culture & Productivity' },
+  { value: 'marketing', label: '📢 Marketing & Sales' }
+];
+
+const ENGAGEMENT_GOALS = [
+  { value: 'inspire', label: '✨ Inspire & Motivate' },
+  { value: 'educate', label: '📚 Educate & Share Knowledge' },
+  { value: 'discuss', label: '💬 Start a Discussion' },
+  { value: 'promote', label: '📣 Promote a Service or Product' }
+];
 
 const loadingMessages = [
   "Analyzing LinkedIn trends...",
-  "Identifying professional opportunities...",
-  "Crafting engaging ideas...",
-  "Optimizing for LinkedIn...",
-  "Finalizing your content ideas..."
+  "Identifying professional insights...",
+  "Crafting engaging content...",
+  "Optimizing for engagement...",
+  "Finalizing your post ideas..."
 ];
 
-const containerVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.5,
-      staggerChildren: 0.1
-    }
-  }
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, x: -20 },
-  visible: {
-    opacity: 1,
-    x: 0,
-    transition: { duration: 0.3 }
-  }
-};
-
-const cardHoverVariants = {
-  hover: {
-    scale: 1.02,
-    transition: { duration: 0.2 }
-  }
-};
-
 export function LinkedInIdeaGeneratorPage() {
-  const [niche, setNiche] = useState('');
-  const [currentStep, setCurrentStep] = useState<Step>('input');
+  // Form states
+  const [postType, setPostType] = useState('');
+  const [targetAudience, setTargetAudience] = useState('');
+  const [contentFocus, setContentFocus] = useState('');
+  const [engagementGoal, setEngagementGoal] = useState('');
+  const [customPrompt, setCustomPrompt] = useState('');
+  
+  // Loading and results states
+  const [loading, setLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
-  const [generatedIdeas, setGeneratedIdeas] = useState<string[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [currentIdeas, setCurrentIdeas] = useState<any | null>(null);
+  const [history, setHistory] = useState<any[]>([]);
 
-  const handleGenerate = async () => {
-    if (!niche) {
-      toast.error('Please enter your niche or topic');
+  // Load history on mount
+  useEffect(() => {
+    loadHistory();
+  }, []);
+
+  const loadHistory = async () => {
+    try {
+      const response = await fetch('/api/linkedin/ideas/history');
+      const data = await response.json();
+      setHistory(data.items);
+    } catch (error) {
+      toast.error("Failed to load idea history");
+    }
+  };
+
+  const generateFromPreferences = async () => {
+    if (!postType || !targetAudience || !contentFocus || !engagementGoal) {
+      toast.error("Please fill in all fields or use custom prompt");
       return;
     }
-    
-    setCurrentStep('generating');
-    setLoadingProgress(0);
-    setLoadingMessageIndex(0);
-    setError(null);
 
-    const intervals = {
-      initial: { target: 85, speed: 50, increment: 1 },
-      slow: { target: 98, speed: 500, increment: 2 },
-    };
-
-    let loadingInterval: NodeJS.Timeout | null = null;
-    const startLoading = () => {
-      loadingInterval = setInterval(() => {
-        setLoadingProgress(prev => {
-          if (prev >= intervals.slow.target) {
-            if (loadingInterval) clearInterval(loadingInterval);
-            return prev;
-          }
-          if (prev >= intervals.initial.target) {
-            if (loadingInterval) clearInterval(loadingInterval);
-            startSlowProgress();
-            return prev;
-          }
-          return prev + intervals.initial.increment;
-        });
-        setLoadingMessageIndex(prev => (prev + 1) % loadingMessages.length);
-      }, intervals.initial.speed);
-    };
-
-    const startSlowProgress = () => {
-      loadingInterval = setInterval(() => {
-        setLoadingProgress(prev => {
-          if (prev >= intervals.slow.target) {
-            if (loadingInterval) clearInterval(loadingInterval);
-            return prev;
-          }
-          return prev + intervals.slow.increment;
-        });
-        setLoadingMessageIndex(prev => (prev + 1) % loadingMessages.length);
-      }, intervals.slow.speed);
-    };
-
-    startLoading();
-
+    setLoading(true);
     try {
-      // TODO: Replace with actual API call
-      const ideas = [
-        "Share a success story from your professional journey",
-        "Create a how-to guide for industry best practices",
-        "Share insights from a recent industry conference or event",
-        "Post about emerging trends in your field",
-        "Share a case study of a successful project",
-        "Create a list of essential tools for professionals",
-        "Share lessons learned from a career challenge",
-        "Post about industry innovations and their impact",
-        "Share tips for professional development",
-        "Create a thought leadership piece on industry changes"
-      ];
-
-      setLoadingProgress(100);
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const response = await fetch('/api/linkedin/ideas/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          post_type: postType,
+          target_audience: targetAudience,
+          content_focus: contentFocus,
+          engagement_goal: engagementGoal
+        })
+      });
       
-      setGeneratedIdeas(ideas);
-      setCurrentStep('results');
-
-      // Add to history
-      const historyItem: HistoryItem = {
-        id: Date.now().toString(),
-        niche,
-        ideas,
-        timestamp: new Date()
-      };
-      setHistory(prev => [historyItem, ...prev]);
-      
-      toast.success('Ideas generated successfully!');
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to generate ideas';
-      setError(errorMessage);
-      toast.error(errorMessage);
-      setCurrentStep('input');
+      const data = await response.json();
+      setCurrentIdeas(data);
+      setHistory(prev => [data, ...prev]);
+      toast.success("Ideas generated successfully!");
+    } catch (error) {
+      toast.error("Failed to generate ideas");
     } finally {
-      if (loadingInterval) clearInterval(loadingInterval);
+      setLoading(false);
     }
   };
 
-  const handleReset = () => {
-    setNiche('');
-    setCurrentStep('input');
-    setGeneratedIdeas([]);
-    setError(null);
-  };
+  const generateCustomIdeas = async () => {
+    if (!customPrompt.trim()) {
+      toast.error("Please enter your custom idea description");
+      return;
+    }
 
-  const copyToClipboard = async (text: string) => {
+    setLoading(true);
     try {
-      await navigator.clipboard.writeText(text);
-      toast.success('Copied to clipboard!');
-    } catch (err) {
-      toast.error('Failed to copy to clipboard');
+      const response = await fetch('/api/linkedin/ideas/custom', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: customPrompt })
+      });
+      
+      const data = await response.json();
+      setCurrentIdeas(data);
+      setHistory(prev => [data, ...prev]);
+      toast.success("Custom ideas generated successfully!");
+    } catch (error) {
+      toast.error("Failed to generate custom ideas");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const deleteHistoryItem = (id: string) => {
-    setHistory(prev => prev.filter(item => item.id !== id));
-    toast.success('History item deleted');
+  const generateSurprise = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/linkedin/ideas/surprise');
+      const data = await response.json();
+      setCurrentIdeas(data);
+      setHistory(prev => [data, ...prev]);
+      toast.success("Surprise ideas generated!");
+    } catch (error) {
+      toast.error("Failed to generate surprise ideas");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString('en-US', {
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success("Copied to clipboard!");
+  };
+
+  const deleteIdea = async (ideaId: string) => {
+    try {
+      await fetch(`/api/linkedin/ideas/${ideaId}`, { method: 'DELETE' });
+      setHistory(prev => prev.filter(item => item.id !== ideaId));
+      toast.success("Idea deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete idea");
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
@@ -189,229 +180,355 @@ export function LinkedInIdeaGeneratorPage() {
   };
 
   return (
-    <ToolPageWrapper
-      title="LinkedIn Content Idea Generator"
-      description="Generate professional content ideas that resonate with your network"
-    >
-      <motion.div 
-        className="space-y-8"
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-      >
-        {/* Main Generation Section */}
-        <motion.div variants={itemVariants} className="bg-card rounded-lg border shadow-lg">
-          <div className="p-6">
-            {currentStep === 'input' && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <div className="space-y-4">
+    <ToolLayout>
+      <ToolTitle 
+        title="LinkedIn Post Generator ✨" 
+        description="Generate engaging post ideas that grow your professional network"
+      />
+      
+      <div className="space-y-8">
+        <Tabs defaultValue="preferences" className="space-y-8">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="preferences" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Preferences
+            </TabsTrigger>
+            <TabsTrigger value="custom" className="flex items-center gap-2">
+              <PenLine className="h-4 w-4" />
+              Custom
+            </TabsTrigger>
+            <TabsTrigger value="surprise" className="flex items-center gap-2">
+              <Lightbulb className="h-4 w-4" />
+              Surprise Me
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Preferences Tab */}
+          <TabsContent value="preferences">
+            <Card className="p-6">
+              <div className="space-y-6">
+                <div className="flex items-center gap-2">
+                  <Settings className="h-5 w-5 text-primary" />
+                  <h2 className="text-xl font-semibold">Generate with Preferences</h2>
+                </div>
+                
+                <div className="grid gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <label className="text-lg font-semibold">Your Niche/Topic</label>
-                    <Textarea
-                      placeholder="Enter your professional niche or topic (e.g., digital marketing, software development, leadership)..."
-                      value={niche}
-                      onChange={(e) => setNiche(e.target.value)}
-                      className="min-h-[100px] text-base"
-                    />
+                    <label className="text-sm font-medium">Post Type</label>
+                    <Select value={postType} onValueChange={setPostType}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select post type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {POST_TYPES.map(type => (
+                          <SelectItem key={type.value} value={type.value}>
+                            {type.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
-                  <Button
-                    onClick={handleGenerate}
-                    disabled={!niche}
-                    className="w-full bg-primary hover:bg-primary/90 h-12 text-lg"
-                  >
-                    <Wand2 className="mr-2 h-5 w-5" />
-                    Generate Ideas
-                  </Button>
-
-                  {error && (
-                    <motion.div 
-                      className="p-4 rounded-lg bg-destructive/10 text-destructive"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                    >
-                      {error}
-                    </motion.div>
-                  )}
-                </div>
-              </motion.div>
-            )}
-
-            {currentStep === 'generating' && (
-              <motion.div 
-                className="flex flex-col items-center justify-center py-12 space-y-6"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-              >
-                <div className="relative w-32 h-32">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Sparkles className="w-16 h-16 text-primary animate-pulse" />
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Target Audience</label>
+                    <Select value={targetAudience} onValueChange={setTargetAudience}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select audience" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {TARGET_AUDIENCES.map(audience => (
+                          <SelectItem key={audience.value} value={audience.value}>
+                            {audience.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <svg className="w-full h-full animate-spin-slow" viewBox="0 0 100 100">
-                    <circle
-                      className="text-primary/20"
-                      strokeWidth="8"
-                      stroke="currentColor"
-                      fill="transparent"
-                      r="42"
-                      cx="50"
-                      cy="50"
-                    />
-                    <circle
-                      className="text-primary"
-                      strokeWidth="8"
-                      strokeDasharray={264}
-                      strokeDashoffset={264 - (loadingProgress / 100) * 264}
-                      strokeLinecap="round"
-                      stroke="currentColor"
-                      fill="transparent"
-                      r="42"
-                      cx="50"
-                      cy="50"
-                    />
-                  </svg>
-                </div>
-                <div className="text-center space-y-3">
-                  <p className="text-xl font-medium text-primary">
-                    {loadingMessages[loadingMessageIndex]}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {loadingProgress}% complete
-                  </p>
-                </div>
-              </motion.div>
-            )}
 
-            {currentStep === 'results' && (
-              <motion.div 
-                className="space-y-6"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-              >
-                <div className="flex justify-between items-center">
-                  <h3 className="text-xl font-semibold">Generated Ideas</h3>
-                  <Button
-                    variant="outline"
-                    onClick={handleReset}
-                    className="flex items-center gap-2"
-                  >
-                    <RefreshCw className="h-4 w-4" />
-                    Generate New Ideas
-                  </Button>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Content Focus</label>
+                    <Select value={contentFocus} onValueChange={setContentFocus}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select focus" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CONTENT_FOCUS.map(focus => (
+                          <SelectItem key={focus.value} value={focus.value}>
+                            {focus.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Engagement Goal</label>
+                    <Select value={engagementGoal} onValueChange={setEngagementGoal}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select goal" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ENGAGEMENT_GOALS.map(goal => (
+                          <SelectItem key={goal.value} value={goal.value}>
+                            {goal.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
-                <motion.div 
-                  className="grid gap-4"
-                  variants={containerVariants}
+                <Button
+                  className="w-full"
+                  onClick={generateFromPreferences}
+                  disabled={loading || (!postType || !targetAudience || !contentFocus || !engagementGoal)}
                 >
-                  {generatedIdeas.map((idea, index) => (
-                    <motion.div
-                      key={index}
-                      variants={itemVariants}
-                      whileHover={cardHoverVariants.hover}
-                    >
-                      <Card className="bg-card/50 backdrop-blur-sm">
-                        <CardContent className="p-4">
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex items-start gap-3 flex-1">
-                              <div className="mt-1">
-                                <Sparkles className="h-5 w-5 text-primary" />
-                              </div>
-                              <p className="text-base">{idea}</p>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => copyToClipboard(idea)}
-                              className="shrink-0"
-                            >
-                              <Copy className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  ))}
-                </motion.div>
-              </motion.div>
-            )}
-          </div>
-        </motion.div>
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Generating Ideas...
+                    </>
+                  ) : (
+                    <>
+                      <Wand2 className="mr-2 h-4 w-4" />
+                      Generate Ideas
+                    </>
+                  )}
+                </Button>
+              </div>
+            </Card>
+          </TabsContent>
 
-        {/* History Section */}
-        <motion.div variants={itemVariants} className="space-y-4">
-          <div className="flex items-center gap-2 text-lg font-semibold">
-            <History className="h-5 w-5" />
-            <h2>Generation History</h2>
-          </div>
-
-          <AnimatePresence>
-            {history.length === 0 ? (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center py-8 text-muted-foreground"
-              >
-                No generation history yet
-              </motion.div>
-            ) : (
-              <motion.div 
-                className="grid gap-4"
-                variants={containerVariants}
-              >
-                {history.map((item) => (
-                  <motion.div
-                    key={item.id}
-                    variants={itemVariants}
-                    initial="hidden"
-                    animate="visible"
-                    exit={{ opacity: 0, x: -20 }}
-                    whileHover={cardHoverVariants.hover}
+          {/* Custom Tab */}
+          <TabsContent value="custom">
+            <Card className="p-6">
+              <div className="space-y-6">
+                <div className="flex items-center gap-2">
+                  <PenLine className="h-5 w-5 text-primary" />
+                  <h2 className="text-xl font-semibold">Custom Description</h2>
+                </div>
+                
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    Describe your post idea in detail. Include any specific requirements, themes, or elements you want to incorporate.
+                  </p>
+                  <Textarea
+                    placeholder="E.g., 'I want to create an engaging LinkedIn post about my recent career transition, focusing on key lessons learned and advice for others...'"
+                    value={customPrompt}
+                    onChange={(e) => setCustomPrompt(e.target.value)}
+                    className="min-h-[200px] resize-none"
+                  />
+                  <Button
+                    className="w-full"
+                    onClick={generateCustomIdeas}
+                    disabled={loading || !customPrompt.trim()}
                   >
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <CardTitle className="text-base">{item.niche}</CardTitle>
-                            <CardDescription className="flex items-center gap-1">
-                              <Clock className="h-3 w-3" />
-                              {formatDate(item.timestamp)}
-                            </CardDescription>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => deleteHistoryItem(item.id)}
-                          >
-                            <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
-                          </Button>
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Generating Ideas...
+                      </>
+                    ) : (
+                      <>
+                        <Wand2 className="mr-2 h-4 w-4" />
+                        Generate Custom Ideas
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          </TabsContent>
+
+          {/* Surprise Tab */}
+          <TabsContent value="surprise">
+            <Card className="p-6">
+              <div className="space-y-6">
+                <div className="flex items-center gap-2">
+                  <Lightbulb className="h-5 w-5 text-primary" />
+                  <h2 className="text-xl font-semibold">Surprise Me!</h2>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="text-center space-y-4 py-8">
+                    <Sparkles className="h-12 w-12 mx-auto text-primary animate-pulse" />
+                    <div className="space-y-2">
+                      <h3 className="text-lg font-medium">Get Creative Inspiration</h3>
+                      <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                        Let AI surprise you with unique and engaging LinkedIn post ideas! Perfect when you're looking for fresh, professional content inspiration.
+                      </p>
+                    </div>
+                  </div>
+
+                  <Button
+                    size="lg"
+                    className="w-full"
+                    onClick={generateSurprise}
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Generating Surprise Ideas...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        Surprise Me!
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          </TabsContent>
+        </Tabs>
+
+        {/* Loading State */}
+        {loading && (
+          <LoadingModal 
+            progress={loadingProgress} 
+            message={loadingMessages[loadingMessageIndex]}
+          />
+        )}
+
+        {/* Generated Ideas Section */}
+        {currentIdeas && (
+          <Card className="p-6 bg-card/50 backdrop-blur-sm">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                  <h2 className="text-xl font-semibold">Generated Ideas</h2>
+                </div>
+                {currentIdeas.generation_type === 'preferences' && (
+                  <div className="text-sm text-muted-foreground">
+                    {currentIdeas.post_type} • {currentIdeas.target_audience} • {currentIdeas.content_focus} • {currentIdeas.engagement_goal}
+                  </div>
+                )}
+              </div>
+              <div className="grid gap-4">
+                {currentIdeas.posts.map((post: any, index: number) => (
+                  <Card key={index} className="p-4 relative group">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-start gap-3 flex-1">
+                        <div className="mt-1">
+                          <Sparkles className="h-5 w-5 text-primary" />
                         </div>
-                      </CardHeader>
-                      <CardContent className="pb-4">
                         <div className="space-y-2">
-                          {item.ideas.slice(0, 3).map((idea, index) => (
-                            <div key={index} className="flex items-start gap-2">
-                              <div className="mt-1">
-                                <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                              </div>
-                              <p className="text-sm text-muted-foreground">{idea}</p>
-                            </div>
-                          ))}
-                          {item.ideas.length > 3 && (
-                            <p className="text-xs text-muted-foreground pl-3">
-                              +{item.ideas.length - 3} more ideas
+                          <p className="text-base font-medium">{post.headline}</p>
+                          <p className="text-sm text-muted-foreground">{post.content}</p>
+                          {post.hashtags && (
+                            <p className="text-sm text-primary">
+                              {post.hashtags}
                             </p>
                           )}
                         </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => copyToClipboard(`${post.headline}\n\n${post.content}\n\n${post.hashtags || ''}`)}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </Card>
                 ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-      </motion.div>
-    </ToolPageWrapper>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* History Section */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <History className="h-5 w-5 text-primary" />
+              <h2 className="text-xl font-semibold">Previously Generated Ideas</h2>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={loadHistory}
+              className="text-muted-foreground hover:text-primary"
+            >
+              <History className="mr-2 h-4 w-4" />
+              Refresh History
+            </Button>
+          </div>
+
+          {history.length > 0 ? (
+            <div className="grid gap-4 md:grid-cols-2">
+              {history.map((item) => (
+                <Card key={item.id} className="p-4 relative group bg-card/50 backdrop-blur-sm hover:shadow-lg transition-all duration-300">
+                  <div className="absolute right-2 top-2 flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setCurrentIdeas(item)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => deleteIdea(item.id)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Clock className="h-4 w-4" />
+                        {formatDate(item.created_at)}
+                      </div>
+                      {item.generation_type === 'preferences' && (
+                        <div className="text-sm text-muted-foreground">
+                          {item.post_type} • {item.target_audience} • {item.content_focus} • {item.engagement_goal}
+                        </div>
+                      )}
+                    </div>
+                    <div className="space-y-3">
+                      {item.posts.slice(0, 2).map((post: any, index: number) => (
+                        <div key={index} className="space-y-1">
+                          <p className="text-sm font-medium">{post.headline}</p>
+                          <p className="text-xs text-muted-foreground line-clamp-2">
+                            {post.content}
+                          </p>
+                        </div>
+                      ))}
+                      {item.posts.length > 2 && (
+                        <Button
+                          variant="ghost"
+                          className="w-full text-muted-foreground hover:text-primary"
+                          onClick={() => setCurrentIdeas(item)}
+                        >
+                          View {item.posts.length - 2} more posts
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Card className="p-8 text-center bg-card/50 backdrop-blur-sm">
+              <div className="space-y-3">
+                <History className="h-12 w-12 mx-auto text-muted-foreground" />
+                <h3 className="text-lg font-medium">No Previous Ideas</h3>
+                <p className="text-sm text-muted-foreground">
+                  Generate your first post using the tools above!
+                </p>
+              </div>
+            </Card>
+          )}
+        </div>
+      </div>
+    </ToolLayout>
   );
 } 
