@@ -19,12 +19,6 @@ export function AuthLayout() {
     );
   }
 
-  // Redirect authenticated users to home
-  if (isAuthenticated) {
-    console.log('AuthLayout - Redirecting authenticated user to home');
-    return <Navigate to="/home" replace />;
-  }
-
   return (
     <div className="min-h-screen bg-background relative">
       {/* Theme toggle at bottom right */}
