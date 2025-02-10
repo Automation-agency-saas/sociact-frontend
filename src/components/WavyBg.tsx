@@ -17,7 +17,7 @@
 "use client";
 import { WavyBackground } from "@/components/ui/wavy-background";
 
-export default function WavyBackgroundDemo() {
+export  function WavyBackgroundDemo() {
   return (
     <section className="w-full mt-20">
       <WavyBackground

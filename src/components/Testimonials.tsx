@@ -213,20 +213,30 @@ const ReviewCard = ({
 
 export function Testimonials() {
   return (
-    <div className="relative flex h-[500px] w-full flex-col items-center justify-center overflow-hidden ">
-      
-      <Marquee pauseOnHover className="[--duration:20s]">
-        {firstRow.map((review) => (
-          <ReviewCard key={review.role} {...review} />
-        ))}
-      </Marquee>
-      {/* <Marquee reverse pauseOnHover className="[--duration:20s]">
-        {secondRow.map((review) => (
-          <ReviewCard key={review.role} {...review} />
-        ))}
-      </Marquee> */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-white dark:from-background"></div>
-      <div className="pointer-events-none absolute inset-y-0 right-0 w-1/3 bg-gradient-to-l from-white dark:from-background"></div>
+    <section id="testimonials" className="relative">
+
+ 
+    <div className="relative">
+      {/* Heading */}
+      <div className="text-center mb-16 pt-20">
+        <h2 className="text-4xl md:text-5xl font-bold">
+          What our <span className="text-[#8B33FF]">Customers</span> Say
+        </h2>
+        <p className="mt-4 text-lg text-muted-foreground">
+          What Our Early Adopters Say About Us
+        </p>
+      </div>
+
+      <div className="relative flex h-[250px] w-full flex-col items-center justify-center overflow-hidden">
+        <Marquee pauseOnHover className="[--duration:20s]">
+          {firstRow.map((review) => (
+            <ReviewCard key={review.role} {...review} />
+          ))}
+        </Marquee>
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-white dark:from-background"></div>
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-1/3 bg-gradient-to-l from-white dark:from-background"></div>
+      </div>
     </div>
+    </section>
   );
 }
