@@ -80,18 +80,6 @@ export default function Home() {
 
   return (
     <ToolLayout>
-      {/* <Header
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        onSearch={handleSearch}
-        activePlatform={activePlatform}
-        setActivePlatform={setActivePlatform}
-      /> */}
-      {/* <ToolGrid
-        tools={filteredTools}
-        activePlatform={activePlatform}
-        onToolLaunch={handleToolLaunch}
-      /> */}
       <DashboardHero />
       <CardGrids />
     </ToolLayout>
