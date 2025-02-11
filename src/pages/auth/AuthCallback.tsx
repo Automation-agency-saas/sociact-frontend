@@ -15,19 +15,19 @@ export function AuthCallback() {
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Log all URL and search parameters immediately
-  console.log('Current URL:', window.location.href);
-  console.log('Current pathname:', window.location.pathname);
-  console.log('Current search:', window.location.search);
-  console.log('Current hash:', window.location.hash);
-  console.log('All search params:', Object.fromEntries(searchParams.entries()));
-  console.log('Auth token in localStorage:', localStorage.getItem('token'));
+  // console.log('Current URL:', window.location.href);
+  // console.log('Current pathname:', window.location.pathname);
+  // console.log('Current search:', window.location.search);
+  // console.log('Current hash:', window.location.hash);
+  // console.log('All search params:', Object.fromEntries(searchParams.entries()));
+  // console.log('Auth token in localStorage:', localStorage.getItem('token'));
 
   useEffect(() => {
-    console.log('AuthCallback useEffect triggered');
+    // console.log('AuthCallback useEffect triggered');
     
     const handleCallback = async () => {
       if (isProcessing) {
-        console.log('Already processing callback, skipping...');
+        // console.log('Already processing callback, skipping...');
         return;
       }
 
@@ -41,22 +41,22 @@ export function AuthCallback() {
         // Clean the code by removing any hash or extra parameters
         const code = rawCode ? rawCode.split('#')[0] : null;
 
-        console.log('Auth Callback - Received params:', { 
-          rawCode,
-          cleanedCode: code,
-          credential, 
-          state,
-          hash
-        });
+        // console.log('Auth Callback - Received params:', { 
+        //   rawCode,
+        //   cleanedCode: code,
+        //   credential, 
+        //   state,
+        //   hash
+        // });
 
         if (!code && !credential && !hash) {
-          console.error('No code, credential, or hash found in URL');
+          // console.error('No code, credential, or hash found in URL');
           setError('No authentication code found');
           return;
         }
 
         if (credential) {
-          console.log('Processing Google auth...');
+          // console.log('Processing Google auth...');
           try {
             await signInWithGoogle(credential);
             toast.success('Successfully signed in with Google!');
@@ -64,28 +64,28 @@ export function AuthCallback() {
             localStorage.removeItem('redirectPath');
             navigate(redirectPath, { replace: true });
           } catch (err: any) {
-            console.error('Google auth error:', err);
+            // console.error('Google auth error:', err);
             toast.error(err.message || 'Failed to authenticate with Google');
             setError(err.message || 'Failed to authenticate with Google');
             // Redirect to sign in page after error
             navigate('/auth/sign-in', { replace: true });
           }
         } else if (code && state === 'instagram') {
-          console.log('Processing Instagram auth callback...');
+          // console.log('Processing Instagram auth callback...');
           try {
             const authResponse = await instagramService.handleAuthCallback(code);
-            console.log('Instagram auth response:', authResponse);
+            // console.log('Instagram auth response:', authResponse);
             
             if (authResponse.success) {
               const savedState = localStorage.getItem('instagram_auth_return_state');
-              console.log('Saved Instagram state:', savedState);
+              // console.log('Saved Instagram state:', savedState);
               
               if (savedState) {
                 try {
                   const parsedState = JSON.parse(savedState);
                   localStorage.removeItem('instagram_auth_return_state');
                   
-                  console.log('Instagram auth successful, navigating to home');
+                  // console.log('Instagram auth successful, navigating to home');
                   toast.success('Successfully connected Instagram account');
                   navigate('/home', { 
                     replace: true,
@@ -95,24 +95,24 @@ export function AuthCallback() {
                     }
                   });
                 } catch (parseError) {
-                  console.error('Error parsing saved state:', parseError);
+                  // console.error('Error parsing saved state:', parseError);
                   setError('Error restoring previous state. Please try connecting again.');
                 }
               } else {
-                console.log('No saved state found, navigating to home');
+                // console.log('No saved state found, navigating to home');
                 toast.success('Successfully connected Instagram account');
                 navigate('/home', { replace: true });
               }
             } else {
-              console.error('Instagram auth failed:', authResponse);
+              // console.error('Instagram auth failed:', authResponse);
               setError(authResponse.message || 'Failed to connect Instagram account');
             }
           } catch (err: any) {
-            console.error('Instagram auth error:', err);
+            // console.error('Instagram auth error:', err);
             setError(err.message || 'Failed to connect Instagram account');
           }
         } else if (hash) {
-          console.log('Processing Facebook auth callback...');
+          // console.log('Processing Facebook auth callback...');
           try {
             // Parse the hash fragment
             const params = new URLSearchParams(hash.replace('#', ''));
@@ -129,18 +129,18 @@ export function AuthCallback() {
             }
 
             const authResponse = await facebookService.handleAuthCallback(token);
-            console.log('Facebook auth response:', authResponse);
+            // console.log('Facebook auth response:', authResponse);
             
             if (authResponse.success) {
               const savedState = localStorage.getItem('facebook_auth_return_state');
-              console.log('Saved Facebook state:', savedState);
+              // console.log('Saved Facebook state:', savedState);
               
               if (savedState) {
                 try {
                   const parsedState = JSON.parse(savedState);
                   localStorage.removeItem('facebook_auth_return_state');
                   
-                  console.log('Facebook auth successful, navigating to home');
+                  // console.log('Facebook auth successful, navigating to home');
                   toast.success('Successfully connected Facebook account');
                   navigate('/home', { 
                     replace: true,
@@ -150,28 +150,28 @@ export function AuthCallback() {
                     }
                   });
                 } catch (parseError) {
-                  console.error('Error parsing saved state:', parseError);
+                  // console.error('Error parsing saved state:', parseError);
                   setError('Error restoring previous state. Please try connecting again.');
                 }
               } else {
-                console.log('No saved state found, navigating to home');
+                // console.log('No saved state found, navigating to home');
                 toast.success('Successfully connected Facebook account');
                 navigate('/home', { replace: true });
               }
             } else {
-              console.error('Facebook auth failed:', authResponse);
+              // console.error('Facebook auth failed:', authResponse);
               setError(authResponse.message || 'Failed to connect Facebook account');
             }
           } catch (err: any) {
-            console.error('Facebook auth error:', err);
+            // console.error('Facebook auth error:', err);
             setError(err.message || 'Failed to connect Facebook account');
           }
         } else {
-          console.error('Invalid callback parameters');
+          // console.error('Invalid callback parameters');
           setError('Invalid callback parameters');
         }
       } catch (err) {
-        console.error('Auth callback error:', err);
+        // console.error('Auth callback error:', err);
         setError(err instanceof Error ? err.message : 'An error occurred during authentication');
       } finally {
         setIsProcessing(false);

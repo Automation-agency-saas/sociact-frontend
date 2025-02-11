@@ -1,15 +1,8 @@
-"use client";
 
-import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
-import { ArrowRightIcon } from "lucide-react";
 import { Section } from "./ui/section";
-import { Mockup, MockupFrame } from "./ui/mockup";
 import { useTheme } from "next-themes";
-import Glow from "./ui/glow";
 import { useEffect, useState } from "react";
 import { HeroParallax } from "./ui/hero-parallax";
-import { BgGrid } from "./BgGrid";
 export const Hero = () => {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);

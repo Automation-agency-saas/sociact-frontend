@@ -63,7 +63,7 @@ export const FAQ = () => {
           ))}
         </div>
 
-        <h3 className="font-medium mt-4">
+        <h3 className="font-medium mt-4 py-4">
           Still have questions?{" "}
           <a
             rel="noreferrer noopener"
