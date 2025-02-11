@@ -18,7 +18,7 @@ export const ShimmerButton = React.forwardRef<
 >(
   (
     {
-      shimmerColor = "#ffffff",
+      shimmerColor = "rgba(255, 255, 255, 0.4)",
       shimmerSize = "0.05em",
       shimmerDuration = "3s",
       borderRadius = "100px",
@@ -38,11 +38,11 @@ export const ShimmerButton = React.forwardRef<
             "--radius": borderRadius,
             "--speed": shimmerDuration,
             "--cut": shimmerSize,
-            "--bg": background,
+            "--bg": "transparent",
           } as CSSProperties
         }
         className={cn(
-          "group relative z-0 flex cursor-pointer items-center justify-center overflow-hidden whitespace-nowrap border border-white/10 px-6 py-3 text-white [background:var(--bg)] [border-radius:var(--radius)] dark:text-black",
+          "group relative z-0 flex cursor-pointer items-center justify-center overflow-hidden whitespace-nowrap border border-white/10 px-6 py-3 text-white bg-gradient-to-r from-[#F596D3] to-[#D247BF] hover:from-[#D247BF] hover:to-[#F596D3] [border-radius:var(--radius)] dark:text-black",
           "transform-gpu transition-transform duration-300 ease-in-out active:translate-y-px",
           className,
         )}
@@ -52,7 +52,7 @@ export const ShimmerButton = React.forwardRef<
         {/* spark container */}
         <div
           className={cn(
-            "-z-30 blur-[2px]",
+            "-z-30 blur-[1px]",
             "absolute inset-0 overflow-visible [container-type:size]",
           )}
         >
@@ -85,7 +85,7 @@ export const ShimmerButton = React.forwardRef<
         {/* backdrop */}
         <div
           className={cn(
-            "absolute -z-20 [background:var(--bg)] [border-radius:var(--radius)] [inset:var(--cut)]",
+            "absolute -z-20 bg-gradient-to-r from-[#F596D3] to-[#D247BF] group-hover:from-[#D247BF] group-hover:to-[#F596D3] [border-radius:var(--radius)] [inset:var(--cut)]",
           )}
         />
       </button>

@@ -75,17 +75,17 @@ export function SignIn() {
       // Try to decode the credential to see its contents
       try {
         const decoded = JSON.parse(atob(credentialResponse.credential.split('.')[1]));
-        console.log('Decoded credential:', decoded);
-        console.log('Token audience:', decoded.aud);
+        // console.log('Decoded credential:', decoded);
+        // console.log('Token audience:', decoded.aud);
       } catch (e) {
-        console.error('Error decoding credential:', e);
+        // console.error('Error decoding credential:', e);
       }
       
       await signInWithGoogle(credentialResponse.credential);
       toast.success('Successfully signed in with Google!', { id: toastId });
       navigate(redirectPath || "/home");
     } catch (err) {
-      console.error('Google sign in error:', err);
+      // console.error('Google sign in error:', err);
       let errorMessage = 'Failed to sign in with Google';
       if (err instanceof Error) {
         errorMessage = err.message;

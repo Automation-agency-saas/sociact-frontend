@@ -140,7 +140,7 @@ export function LinkedInIdeaGeneratorPage() {
       setHistory(prev => [response, ...prev]);
       toast.success("Ideas generated successfully!");
     } catch (error: any) {
-      console.error('Error generating ideas:', error);
+      // console.error('Error generating ideas:', error);
       toast.error(error.message || 'Failed to generate ideas. Please try again.');
     } finally {
       setLoading(false);
@@ -167,7 +167,7 @@ export function LinkedInIdeaGeneratorPage() {
       setHistory(prev => [response, ...prev]);
       toast.success("Custom ideas generated successfully!");
     } catch (error: any) {
-      console.error('Error generating custom ideas:', error);
+      // console.error('Error generating custom ideas:', error);
       toast.error(error.message || 'Failed to generate custom ideas');
     } finally {
       setLoading(false);
@@ -182,7 +182,7 @@ export function LinkedInIdeaGeneratorPage() {
       setHistory(prev => [response, ...prev]);
       toast.success("Surprise ideas generated!");
     } catch (error: any) {
-      console.error('Error generating surprise ideas:', error);
+      // console.error('Error generating surprise ideas:', error);
       toast.error(error.message || 'Failed to generate surprise ideas');
     } finally {
       setLoading(false);

@@ -19,7 +19,7 @@ const stats = [
 
 export const Statistics = () => {
   return (
-    <section id="statistics" className="container  sm:py-24">
+    <section id="statistics" className="container  sm:pt-14">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
         {stats.map((stat) => (
           <div key={stat.text} className="space-y-2">

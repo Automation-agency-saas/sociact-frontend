@@ -1,7 +1,6 @@
 import { Badge } from "./ui/badge";
 import React from "react";
 import { CardBody, CardContainer, CardItem } from "@/components/ui/3d-card";
-import { Link } from "react-router-dom";
 
 const features = [
   {
@@ -64,7 +63,7 @@ export function Features() {
       </p>
     </div>
 
-    <div className="relative w-full max-w-7xl mx-auto px-4 py-12">
+    <div className="relative w-full max-w-7xl mx-auto px-4 py-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {features.map((feature, index) => (
           <CardContainer className="inter-var" key={feature.title}>
