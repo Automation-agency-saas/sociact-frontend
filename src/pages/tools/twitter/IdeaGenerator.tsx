@@ -92,11 +92,16 @@ export function TwitterIdeaGeneratorPage() {
     if (loading) {
       const interval = setInterval(() => {
         setLoadingProgress(prev => {
-          if (prev >= 100) {
+          if (prev >= 95) {
             clearInterval(interval);
-            return 100;
+            return 95;
           }
-          return prev + 2;
+          // Slower increment for longer API time
+          const increment = prev < 30 ? 0.7 : // Initial phase
+                          prev < 60 ? 0.5 : // Middle phase
+                          prev < 80 ? 0.3 : // Later phase
+                          0.1; // Final phase
+          return Math.round((prev + increment) * 10) / 10; // Round to 1 decimal place
         });
 
         setLoadingMessageIndex(prev => 
@@ -112,7 +117,7 @@ export function TwitterIdeaGeneratorPage() {
       setLoadingProgress(0);
       setLoadingMessageIndex(0);
     }
-  }, [loading]);
+  }, [loading, loadingProgress]);
 
   const loadHistory = async () => {
     try {

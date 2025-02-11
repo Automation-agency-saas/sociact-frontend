@@ -130,13 +130,13 @@ export const ideaGeneratorService = {
 
     deleteIdea: async (platform: PlatformType, ideaId: string): Promise<void> => {
         try {
-            await apiClient.delete(`/api/v1/ideas/${platform}/${ideaId}`);
+            const response = await apiClient.delete(`/idea-generator/${platform}/ideas/${ideaId}`);
+            if (response.status !== 200 && response.status !== 204) {
+                throw new Error('Failed to delete idea');
+            }
         } catch (error: any) {
-            const errorMessage = error.response?.data?.detail || 
-                               error.response?.data?.message ||
-                               error.message ||
-                               'Failed to delete idea';
-            throw new Error(errorMessage);
+            console.error('Error deleting idea:', error);
+            throw new Error(error.message || 'Failed to delete idea');
         }
     }
 }; 

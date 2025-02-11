@@ -1,13 +1,9 @@
-"use client";
-
-import { useState } from "react";
 import { ShootingStars } from "../ui/shooting-stars";
 import { StarsBackground } from "../ui/stars-background";
-import { cn } from "@/lib/utils";
-import { Sidebar } from "../../components/dashboard/Sidebar";
-import { useAuth } from "@/lib/context/AuthContext";
-import { useNavigate } from "react-router-dom";
-import type { Category } from "@/lib/types";
+
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "../ui/sidebar";
+import { AppSidebar } from "../dashboard/sidebar/app-sidebar";
+import { Separator } from "../ui/separator";
 
 interface ToolLayoutProps {
   children: React.ReactNode;
@@ -15,25 +11,12 @@ interface ToolLayoutProps {
 }
 
 export function ToolLayout({ children, className }: ToolLayoutProps) {
-  const { user } = useAuth();
-  const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [activeCategory, setActiveCategory] = useState<Category | null>(null);
-
-  const handleDashboardClick = () => {
-    navigate("/home");
-  };
-
-  const toggleCategory = (category: Category) => {
-    setActiveCategory(activeCategory === category ? null : category);
-  };
-
   return (
-    <div className="relative min-h-screen w-full bg-black/10">
+    <div className="relative w-full ">
       {/* Background Effects */}
       <div className="fixed inset-0 overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <StarsBackground 
+          <StarsBackground
             starDensity={0.003}
             allStarsTwinkle={true}
             twinkleProbability={0.9}
@@ -41,7 +24,7 @@ export function ToolLayout({ children, className }: ToolLayoutProps) {
           />
         </div>
         <div className="absolute inset-0 z-10">
-          <ShootingStars 
+          <ShootingStars
             minDelay={1500}
             maxDelay={3000}
             starColor="#ffffff"
@@ -54,27 +37,20 @@ export function ToolLayout({ children, className }: ToolLayoutProps) {
       </div>
 
       {/* Layout Structure */}
-      <div className="relative flex min-h-screen">
-        {/* Sidebar */}
-        <Sidebar 
-          user={user}
-          sidebarOpen={sidebarOpen}
-          setSidebarOpen={setSidebarOpen}
-          activeCategory={activeCategory}
-          toggleCategory={toggleCategory}
-          handleDashboardClick={handleDashboardClick}
-        />
 
-        {/* Main Content */}
-        <main className={cn(
-          "flex-1 transition-all duration-300 max-w-screen-xl mx-auto",
-          sidebarOpen ? "md:ml-16" : "md:ml-34"
-        )}>
-          <div className={cn("container mx-auto py-2 px-4", className)}>
-            {children}
-          </div>
-        </main>
-      </div>
+      <SidebarProvider defaultOpen={true}>
+        <AppSidebar />
+        <SidebarInset>
+          <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+            <div className="flex items-center gap-2 px-4">
+              <SidebarTrigger className="fixed max-md:right-2 -ml-1 z-[999]" />
+              <Separator orientation="vertical" className="mr-2 h-4" />
+            </div>
+          </header>
+          {/* Main Content */}
+          <main className="px-4">{children}</main>
+        </SidebarInset>
+      </SidebarProvider>
     </div>
   );
-} 
+}
