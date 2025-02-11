@@ -20,6 +20,7 @@ import { AuthLayout } from "./pages/auth/AuthLayout";
 import Home from "./pages/Home";
 import { PrivacyPolicy } from './pages/PrivacyPolicy';
 import { Profile } from "./pages/Profile";
+
 // Import tool pages
 import { YouTubeIdeaGeneratorPage } from "./pages/tools/youtube/IdeaGenerator";
 import { YouTubeScriptGeneratorPage } from "./pages/tools/youtube/ScriptGenerator";
