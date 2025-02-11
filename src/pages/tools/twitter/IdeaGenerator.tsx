@@ -125,11 +125,11 @@ export function TwitterIdeaGeneratorPage() {
       if (response && response.items) {
         setHistory(response.items as TwitterIdeaGeneration[]);
       } else {
-        console.warn('History response is missing items array');
+        // console.warn('History response is missing items array');
         setHistory([]);
       }
     } catch (error: any) {
-      console.error('Error loading history:', error);
+      // console.error('Error loading history:', error);
       toast.error(error.message || 'Failed to load history');
       setHistory([]);
     }

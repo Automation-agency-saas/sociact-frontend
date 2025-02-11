@@ -1,7 +1,6 @@
 import { TypingAnimationDemo } from "../TypingAnimation";
 import { AnimatedGradientTextDemo } from "../AnimatedText";
 import { ShimmerButtonDemo } from "../ShinyButton";
-import AutoScrollCarousel from "../Curosal";
 import React from "react";
 import {
   motion,
@@ -20,6 +19,7 @@ export const HeroParallax = ({
     thumbnail: string;
   }[];
 }) => {
+
   const firstRow = products.slice(0, 5);
   const secondRow = products.slice(5, 10);
   const thirdRow = products.slice(10, 15);
@@ -52,13 +52,13 @@ export const HeroParallax = ({
     springConfig
   );
   const translateY = useSpring(
-    useTransform(scrollYProgress, [0, 0.2], [-700, 80]),
+    useTransform(scrollYProgress, [0, 0.2], [-700, 90]),
     springConfig
   );
   return (
     <div
       ref={ref}
-      className="h-[150vh] overflow-hidden  antialiased relative flex flex-col self-auto [perspective:1000px] [transform-style:preserve-3d]"
+      className="h-[200vh] overflow-hidden  antialiased relative flex flex-col self-auto [perspective:1000px] [transform-style:preserve-3d]"
     >
       <Header />
 
@@ -102,7 +102,6 @@ export const Header = () => {
             className="space-y-6"
           >
             <AnimatedGradientTextDemo text="Social Media Automation" />
-
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -114,7 +113,6 @@ export const Header = () => {
                 <TypingAnimationDemo text="Social Media" />
               </span>
             </motion.h1>
-
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -125,9 +123,10 @@ export const Header = () => {
               across all platforms with our AI-powered automation tools.
             </motion.p>
             <div className="flex justify-center">
-              <ShimmerButtonDemo text="Get Started" />
+              <Link to="/auth/sign-up">
+                <ShimmerButtonDemo text="Get Started" />
+              </Link>
             </div>
-            {/* <AutoScrollCarousel /> */}
           </motion.div>
         </div>
       </div>

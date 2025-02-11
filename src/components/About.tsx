@@ -4,7 +4,7 @@ export const About = () => {
   return (
  
 
-  <section id="about" className="relative py-24 overflow-hidden">
+  <section id="about" className="relative  overflow-hidden py-12">
   {/* Container for content width */}
 
 
