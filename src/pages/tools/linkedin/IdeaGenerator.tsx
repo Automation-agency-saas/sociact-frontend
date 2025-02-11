@@ -95,11 +95,16 @@ export function LinkedInIdeaGeneratorPage() {
     if (loading) {
       const interval = setInterval(() => {
         setLoadingProgress(prev => {
-          if (prev >= 100) {
+          if (prev >= 95) {
             clearInterval(interval);
-            return 100;
+            return 95;
           }
-          return prev + 2;
+          // Slower increment for longer API time
+          const increment = prev < 30 ? 0.7 : // Initial phase
+                          prev < 60 ? 0.5 : // Middle phase
+                          prev < 80 ? 0.3 : // Later phase
+                          0.1; // Final phase
+          return Math.round((prev + increment) * 10) / 10; // Round to 1 decimal place
         });
 
         setLoadingMessageIndex(prev => 
@@ -115,7 +120,7 @@ export function LinkedInIdeaGeneratorPage() {
       setLoadingProgress(0);
       setLoadingMessageIndex(0);
     }
-  }, [loading]);
+  }, [loading, loadingProgress]);
 
   const loadHistory = async () => {
     try {
@@ -531,7 +536,10 @@ export function LinkedInIdeaGeneratorPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => setCurrentIdeas(item.ideas)}
+                          onClick={() => {
+                            setCurrentIdeas(item.ideas);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                          }}
                           title="View Details"
                         >
                           <MessageSquare className="h-4 w-4" />
@@ -539,7 +547,15 @@ export function LinkedInIdeaGeneratorPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => deleteIdea(item.id)}
+                          onClick={async () => {
+                            try {
+                              await ideaGeneratorService.deleteIdea('linkedin', item.id);
+                              toast.success("Idea deleted successfully");
+                              setHistory(prev => prev.filter(h => h.id !== item.id));
+                            } catch (error: any) {
+                              toast.error(error.message || 'Failed to delete idea');
+                            }
+                          }}
                           title="Delete"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -562,7 +578,10 @@ export function LinkedInIdeaGeneratorPage() {
                       <Button
                         variant="ghost"
                         className="w-full mt-2 hover:bg-secondary/50"
-                        onClick={() => setCurrentIdeas(item.ideas)}
+                        onClick={() => {
+                          setCurrentIdeas(item.ideas);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
                       >
                         View all generated ideas
                         <ChevronRight className="h-4 w-4 ml-2" />
