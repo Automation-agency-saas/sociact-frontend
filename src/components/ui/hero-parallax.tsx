@@ -1,4 +1,7 @@
-"use client";
+import { TypingAnimationDemo } from "../TypingAnimation";
+import { AnimatedGradientTextDemo } from "../AnimatedText";
+import { ShimmerButtonDemo } from "../ShinyButton";
+import AutoScrollCarousel from "../Curosal";
 import React from "react";
 import {
   motion,
@@ -8,7 +11,6 @@ import {
   MotionValue,
 } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Highlight } from "./hero-highlight";
 export const HeroParallax = ({
   products,
 }: {
@@ -50,17 +52,16 @@ export const HeroParallax = ({
     springConfig
   );
   const translateY = useSpring(
-    useTransform(scrollYProgress, [0, 0.2], [-700, 500]),
+    useTransform(scrollYProgress, [0, 0.2], [-700, 80]),
     springConfig
   );
   return (
     <div
       ref={ref}
-      className="h-[200vh] py-20 overflow-hidden  antialiased relative flex flex-col self-auto [perspective:1000px] [transform-style:preserve-3d]"
+      className="h-[150vh] overflow-hidden  antialiased relative flex flex-col self-auto [perspective:1000px] [transform-style:preserve-3d]"
     >
-      <div className="absolute inset-0 z-0 bg-gradient-to-b from-primary/20 to-secondary/20" />
-
       <Header />
+
       <motion.div
         style={{
           rotateX,
@@ -68,7 +69,7 @@ export const HeroParallax = ({
           translateY,
           opacity,
         }}
-        className=""
+        className="mt-60"
       >
         <motion.div className="flex flex-row-reverse space-x-reverse space-x-20 ">
           {firstRow.map((product) => (
@@ -79,24 +80,7 @@ export const HeroParallax = ({
             />
           ))}
         </motion.div>
-        <motion.div className="flex flex-row  space-x-20 ">
-          {secondRow.map((product) => (
-            <ProductCard
-              product={product}
-              translate={translateXReverse}
-              key={product.title}
-            />
-          ))}
-        </motion.div>
-        <motion.div className="flex flex-row-reverse space-x-reverse space-x-20">
-          {thirdRow.map((product) => (
-            <ProductCard
-              product={product}
-              translate={translateX}
-              key={product.title}
-            />
-          ))}
-        </motion.div>
+
       </motion.div>
     </div>
   );
@@ -104,17 +88,51 @@ export const HeroParallax = ({
 
 export const Header = () => {
   return (
-    <div className="max-w-7xl relative mx-auto py-20 md:py-40 px-4 w-full  left-0 top-0">
-      <h1 className="text-2xl md:text-7xl font-bold dark:text-white">
-      Automate <br/> Your 
-      <Highlight className="text-black dark:text-white">
-     {"    "} Social Media
-      </Highlight>
-      </h1>
-      <p className="max-w-2xl text-base md:text-xl mt-8 dark:text-neutral-200">
-      Schedule posts, generate engaging content, and grow your audience across all platforms with our AI-powered automation tools.
-      </p>
-    </div>
+    <>
+      <div className="flex items-center justify-center relative">
+         {/* {GlowEffect} */}
+        <div className="absolute top-0 left-0 w-[500px] h-[500px] -z-50">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(139,51,255,1)_0%,rgba(139,51,255,0.6)_40%,transparent_70%)]" />
+        </div>
+        <div className="max-w-7xl w-full px-4 sm:px-6 lg:px-8 mx-auto text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="space-y-6"
+          >
+            <AnimatedGradientTextDemo text="Social Media Automation" />
+
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="text-4xl sm:text-5xl md:text-7xl font-bold dark:text-white tracking-tight"
+            >
+              Transform Your <br className="hidden sm:block" />
+              <span className="text-primary">
+                <TypingAnimationDemo text="Social Media" />
+              </span>
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              className="max-w-2xl text-base sm:text-lg md:text-xl dark:text-neutral-200 mx-auto"
+            >
+              Schedule posts, generate engaging content, and grow your audience
+              across all platforms with our AI-powered automation tools.
+            </motion.p>
+            <div className="flex justify-center">
+              <ShimmerButtonDemo text="Get Started" />
+            </div>
+            {/* <AutoScrollCarousel /> */}
+          </motion.div>
+        </div>
+      </div>
+ 
+    </>
   );
 };
 
@@ -135,15 +153,12 @@ export const ProductCard = ({
         x: translate,
       }}
       whileHover={{
-        y: -20,
+        y: -30,
       }}
       key={product.title}
       className="group/product h-96 w-[30rem] relative flex-shrink-0"
     >
-      <Link
-        to={product.link}
-        className="block group-hover/product:shadow-2xl "
-      >
+      <Link to={product.link} className="block group-hover/product:shadow-2xl ">
         <img
           src={product.thumbnail}
           height="600"

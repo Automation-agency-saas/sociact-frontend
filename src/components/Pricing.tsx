@@ -60,8 +60,9 @@ export const Pricing = () => {
   return (
     <section
       id="pricing"
-      className="container py-24 sm:py-32"
+      className="container  sm:py-24"
     >
+       
       <div className="text-center">
         <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Simple, Transparent Pricing</h2>
         <p className="mt-6 text-lg leading-8 text-muted-foreground">

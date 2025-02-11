@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Copy, Loader2, Trash2, History, Sparkles, Wand2, MessageSquare, Clock, Settings, PenLine, Lightbulb, ChevronRight } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from 'react-hot-toast';
 import { ToolLayout } from '../../../components/tool-page/ToolLayout';
 import { Button } from '../../../components/ui/button';
 import { Card } from '../../../components/ui/card';
@@ -56,45 +56,66 @@ const loadingMessages = [
   "Finalizing your post ideas..."
 ];
 
-interface LinkedInPost {
-  headline: string;
+interface LinkedInIdea {
+  title: string;
   content: string;
-  hashtags?: string;
+  key_points?: string[];
+  hashtags?: string[];
+  engagement_strategy?: string;
 }
 
 interface LinkedInIdeaGeneration extends IdeaGeneration {
-  ideas: LinkedInPost[];
+  ideas: LinkedInIdea[];
   preferences: {
     post_type: string;
-    target_audience: string;
-    content_focus: string;
-    engagement_goal: string;
+    topic: string;
+    tone_of_voice: string;
   };
-  post_type?: string;
-  target_audience?: string;
-  content_focus?: string;
-  engagement_goal?: string;
 }
 
 export function LinkedInIdeaGeneratorPage() {
-  // Form states
-  const [postType, setPostType] = useState('');
-  const [targetAudience, setTargetAudience] = useState('');
-  const [contentFocus, setContentFocus] = useState('');
-  const [engagementGoal, setEngagementGoal] = useState('');
-  const [customPrompt, setCustomPrompt] = useState('');
-  
-  // Loading and results states
+  const [currentIdeas, setCurrentIdeas] = useState<LinkedInIdea[]>([]);
+  const [history, setHistory] = useState<LinkedInIdeaGeneration[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
-  const [currentIdeas, setCurrentIdeas] = useState<LinkedInIdeaGeneration | null>(null);
-  const [history, setHistory] = useState<LinkedInIdeaGeneration[]>([]);
+  const [preferences, setPreferences] = useState({
+    post_type: '',
+    topic: '',
+    tone_of_voice: ''
+  });
 
   // Load history on mount
   useEffect(() => {
     loadHistory();
   }, []);
+
+  // Simulate loading progress
+  useEffect(() => {
+    if (loading) {
+      const interval = setInterval(() => {
+        setLoadingProgress(prev => {
+          if (prev >= 100) {
+            clearInterval(interval);
+            return 100;
+          }
+          return prev + 2;
+        });
+
+        setLoadingMessageIndex(prev => 
+          loadingProgress < 20 ? 0 :
+          loadingProgress < 40 ? 1 :
+          loadingProgress < 60 ? 2 :
+          loadingProgress < 80 ? 3 : 4
+        );
+      }, 100);
+
+      return () => clearInterval(interval);
+    } else {
+      setLoadingProgress(0);
+      setLoadingMessageIndex(0);
+    }
+  }, [loading]);
 
   const loadHistory = async () => {
     try {
@@ -105,59 +126,64 @@ export function LinkedInIdeaGeneratorPage() {
     }
   };
 
-  const generateFromPreferences = async () => {
-    if (!postType || !targetAudience || !contentFocus || !engagementGoal) {
+  const handlePreferencesSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!preferences.post_type || !preferences.topic || !preferences.tone_of_voice) {
       toast.error("Please fill in all fields or use custom prompt");
       return;
     }
-
+    
     setLoading(true);
     try {
-      const response = await ideaGeneratorService.generateFromPreferences('linkedin', {
-        post_type: postType,
-        target_audience: targetAudience,
-        content_focus: contentFocus,
-        engagement_goal: engagementGoal
-      });
-      
-      setCurrentIdeas(response as LinkedInIdeaGeneration);
-      setHistory(prev => [response as LinkedInIdeaGeneration, ...prev]);
+      const response = await ideaGeneratorService.generateFromPreferences('linkedin', preferences) as LinkedInIdeaGeneration;
+      setCurrentIdeas(response.ideas);
+      setHistory(prev => [response, ...prev]);
       toast.success("Ideas generated successfully!");
     } catch (error: any) {
-      toast.error(error.message);
+      console.error('Error generating ideas:', error);
+      toast.error(error.message || 'Failed to generate ideas. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
+  const handlePreferenceChange = (field: string, value: string) => {
+    setPreferences(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
   const generateCustomIdeas = async () => {
-    if (!customPrompt.trim()) {
-      toast.error("Please enter your custom idea description");
+    if (!preferences.topic.trim()) {
+      toast.error("Please enter a topic");
       return;
     }
 
     setLoading(true);
     try {
-      const response = await ideaGeneratorService.generateCustom('linkedin', customPrompt);
-      setCurrentIdeas(response as LinkedInIdeaGeneration);
-      setHistory(prev => [response as LinkedInIdeaGeneration, ...prev]);
+      const response = await ideaGeneratorService.generateCustom('linkedin', preferences.topic) as LinkedInIdeaGeneration;
+      setCurrentIdeas(response.ideas);
+      setHistory(prev => [response, ...prev]);
       toast.success("Custom ideas generated successfully!");
     } catch (error: any) {
-      toast.error(error.message);
+      console.error('Error generating custom ideas:', error);
+      toast.error(error.message || 'Failed to generate custom ideas');
     } finally {
       setLoading(false);
     }
   };
 
-  const generateSurprise = async () => {
+  const generateSurpriseIdeas = async () => {
     setLoading(true);
     try {
-      const response = await ideaGeneratorService.generateSurprise('linkedin');
-      setCurrentIdeas(response as LinkedInIdeaGeneration);
-      setHistory(prev => [response as LinkedInIdeaGeneration, ...prev]);
+      const response = await ideaGeneratorService.generateSurprise('linkedin') as LinkedInIdeaGeneration;
+      setCurrentIdeas(response.ideas);
+      setHistory(prev => [response, ...prev]);
       toast.success("Surprise ideas generated!");
     } catch (error: any) {
-      toast.error(error.message);
+      console.error('Error generating surprise ideas:', error);
+      toast.error(error.message || 'Failed to generate surprise ideas');
     } finally {
       setLoading(false);
     }
@@ -187,41 +213,66 @@ export function LinkedInIdeaGeneratorPage() {
     });
   };
 
-  const renderIdea = (idea: LinkedInPost) => (
+  const renderIdea = (idea: LinkedInIdea) => (
     <Card className="p-6 hover:shadow-lg transition-all duration-300 bg-card/50 backdrop-blur-sm">
-      <div className="space-y-4">
-        {/* Title Section */}
-        <div className="flex justify-between items-start gap-4">
-          <h3 className="text-xl font-semibold">{idea.headline}</h3>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => copyToClipboard(idea.headline)}
-            className="shrink-0"
-          >
-            <Copy className="h-4 w-4" />
-          </Button>
-        </div>
-
-        {/* Content */}
-        <div className="space-y-2">
-          <p className="text-base">{idea.content}</p>
-        </div>
-
-        {/* Hashtags */}
-        {idea.hashtags && (
-          <div className="flex flex-wrap gap-2">
-            {idea.hashtags.split(',').map((tag, i) => (
-              <span
-                key={i}
-                className="px-3 py-1 text-sm rounded-full bg-primary/10 text-primary hover:bg-primary/20 cursor-pointer transition-colors"
-                onClick={() => copyToClipboard(tag)}
-              >
-                #{tag}
-              </span>
-            ))}
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start gap-3 flex-1">
+          <div className="mt-1">
+            <Sparkles className="h-5 w-5 text-primary" />
           </div>
-        )}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <p className="text-lg font-medium">{idea.title}</p>
+              <p className="text-muted-foreground whitespace-pre-wrap">{idea.content}</p>
+            </div>
+
+            {/* Key Points */}
+            {idea.key_points && idea.key_points.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">🎯 Key Points</p>
+                <div className="space-y-1">
+                  {idea.key_points.map((point, i) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <span className="text-primary font-medium">•</span>
+                      <p className="text-sm">{point}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Engagement Strategy */}
+            {idea.engagement_strategy && (
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">💡 Engagement Strategy</p>
+                <p className="text-sm">{idea.engagement_strategy}</p>
+              </div>
+            )}
+
+            {/* Hashtags */}
+            {idea.hashtags && idea.hashtags.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {idea.hashtags.map((tag, i) => (
+                  <span
+                    key={i}
+                    className="px-3 py-1 text-sm rounded-full bg-primary/10 text-primary hover:bg-primary/20 cursor-pointer transition-colors"
+                    onClick={() => copyToClipboard(tag)}
+                  >
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => copyToClipboard(`${idea.title}\n\n${idea.content}`)}
+          className="shrink-0"
+        >
+          <Copy className="h-4 w-4" />
+        </Button>
       </div>
     </Card>
   );
@@ -251,99 +302,80 @@ export function LinkedInIdeaGeneratorPage() {
           </TabsList>
 
           {/* Preferences Tab */}
-          <TabsContent value="preferences">
-            <Card className="p-6">
-              <div className="space-y-6">
-                <div className="flex items-center gap-2">
-                  <Settings className="h-5 w-5 text-primary" />
-                  <h2 className="text-xl font-semibold">Generate with Preferences</h2>
-                </div>
-                
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Post Type</label>
-                    <Select value={postType} onValueChange={setPostType}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select post type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {POST_TYPES.map(type => (
-                          <SelectItem key={type.value} value={type.value}>
-                            {type.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Target Audience</label>
-                    <Select value={targetAudience} onValueChange={setTargetAudience}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select audience" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {TARGET_AUDIENCES.map(audience => (
-                          <SelectItem key={audience.value} value={audience.value}>
-                            {audience.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Content Focus</label>
-                    <Select value={contentFocus} onValueChange={setContentFocus}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select focus" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {CONTENT_FOCUS.map(focus => (
-                          <SelectItem key={focus.value} value={focus.value}>
-                            {focus.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Engagement Goal</label>
-                    <Select value={engagementGoal} onValueChange={setEngagementGoal}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select goal" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {ENGAGEMENT_GOALS.map(goal => (
-                          <SelectItem key={goal.value} value={goal.value}>
-                            {goal.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <Button
-                  className="w-full"
-                  onClick={generateFromPreferences}
-                  disabled={loading || (!postType || !targetAudience || !contentFocus || !engagementGoal)}
+          <TabsContent value="preferences" className="space-y-4">
+            <div className="grid gap-4">
+              <div className="grid gap-2">
+                <Select
+                  value={preferences.post_type}
+                  onValueChange={(value) => handlePreferenceChange('post_type', value)}
                 >
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Generating Ideas...
-                    </>
-                  ) : (
-                    <>
-                      <Wand2 className="mr-2 h-4 w-4" />
-                      Generate Ideas
-                    </>
-                  )}
-                </Button>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select post type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {POST_TYPES.map((type) => (
+                      <SelectItem key={type.value} value={type.value}>
+                        {type.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            </Card>
+
+              <div className="grid gap-2">
+                <Select
+                  value={preferences.topic}
+                  onValueChange={(value) => handlePreferenceChange('topic', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select topic" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CONTENT_FOCUS.map((topic) => (
+                      <SelectItem key={topic.value} value={topic.value}>
+                        {topic.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid gap-2">
+                <Select
+                  value={preferences.tone_of_voice}
+                  onValueChange={(value) => handlePreferenceChange('tone_of_voice', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select tone of voice" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TARGET_AUDIENCES.map((tone) => (
+                      <SelectItem key={tone.value} value={tone.value}>
+                        {tone.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Button
+                className="w-full"
+                onClick={handlePreferencesSubmit}
+                disabled={loading || !preferences.post_type || !preferences.topic || !preferences.tone_of_voice}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Wand2 className="mr-2 h-4 w-4" />
+                    Generate Ideas
+                  </>
+                )}
+              </Button>
+            </div>
           </TabsContent>
 
           {/* Custom Tab */}
@@ -361,14 +393,14 @@ export function LinkedInIdeaGeneratorPage() {
                   </p>
                   <Textarea
                     placeholder="E.g., 'I want to create an engaging LinkedIn post about my recent career transition, focusing on key lessons learned and advice for others...'"
-                    value={customPrompt}
-                    onChange={(e) => setCustomPrompt(e.target.value)}
+                    value={preferences.topic}
+                    onChange={(e) => handlePreferenceChange('topic', e.target.value)}
                     className="min-h-[200px] resize-none"
                   />
                   <Button
                     className="w-full"
                     onClick={generateCustomIdeas}
-                    disabled={loading || !customPrompt.trim()}
+                    disabled={loading || !preferences.topic.trim()}
                   >
                     {loading ? (
                       <>
@@ -410,7 +442,7 @@ export function LinkedInIdeaGeneratorPage() {
                   <Button
                     size="lg"
                     className="w-full"
-                    onClick={generateSurprise}
+                    onClick={generateSurpriseIdeas}
                     disabled={loading}
                   >
                     {loading ? (
@@ -440,27 +472,16 @@ export function LinkedInIdeaGeneratorPage() {
         )}
 
         {/* Generated Ideas Section */}
-        {currentIdeas && (
+        {currentIdeas.length > 0 && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-primary" />
                 <h2 className="text-xl font-semibold">Generated Ideas</h2>
               </div>
-              {currentIdeas.generation_type === 'preferences' && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <span className="px-2 py-1 rounded-full bg-secondary/50">{currentIdeas.preferences.post_type}</span>
-                  <span>•</span>
-                  <span className="px-2 py-1 rounded-full bg-secondary/50">{currentIdeas.preferences.target_audience}</span>
-                  <span>•</span>
-                  <span className="px-2 py-1 rounded-full bg-secondary/50">{currentIdeas.preferences.content_focus}</span>
-                  <span>•</span>
-                  <span className="px-2 py-1 rounded-full bg-secondary/50">{currentIdeas.preferences.engagement_goal}</span>
-                </div>
-              )}
             </div>
             <div className="grid gap-6">
-              {currentIdeas.ideas.map((idea, index) => (
+              {currentIdeas.map((idea, index) => (
                 <motion.div
                   key={index}
                   initial={{ opacity: 0, y: 20 }}
@@ -510,7 +531,7 @@ export function LinkedInIdeaGeneratorPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => setCurrentIdeas(item)}
+                          onClick={() => setCurrentIdeas(item.ideas)}
                           title="View Details"
                         >
                           <MessageSquare className="h-4 w-4" />
@@ -530,7 +551,7 @@ export function LinkedInIdeaGeneratorPage() {
                     <div className="space-y-4">
                       {item.ideas.slice(0, 1).map((idea, index) => (
                         <div key={index} className="space-y-2">
-                          <h3 className="text-lg font-medium">{idea.headline}</h3>
+                          <h3 className="text-lg font-medium">{idea.title}</h3>
                           <p className="text-sm text-muted-foreground line-clamp-2">{idea.content}</p>
                         </div>
                       ))}
@@ -541,7 +562,7 @@ export function LinkedInIdeaGeneratorPage() {
                       <Button
                         variant="ghost"
                         className="w-full mt-2 hover:bg-secondary/50"
-                        onClick={() => setCurrentIdeas(item)}
+                        onClick={() => setCurrentIdeas(item.ideas)}
                       >
                         View all generated ideas
                         <ChevronRight className="h-4 w-4 ml-2" />

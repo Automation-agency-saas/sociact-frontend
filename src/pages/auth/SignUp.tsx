@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../lib/context/AuthContext';
 import { Button } from '../../components/ui/button';
@@ -31,6 +31,7 @@ export function SignUp() {
   const navigate = useNavigate();
   const { signUp, signInWithGoogle } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [redirectPath, setRedirectPath] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -64,9 +65,7 @@ export function SignUp() {
 
       await signUp(name, email, password);
       toast.success('Account created successfully!', { id: toastId });
-      const redirectPath = localStorage.getItem('redirectPath') || '/home';
-      localStorage.removeItem('redirectPath');
-      navigate(redirectPath, { replace: true });
+      navigate(redirectPath || '/home');
     } catch (err) {
       let errorMessage = 'Failed to create account';
       if (err instanceof Error) {
@@ -77,6 +76,14 @@ export function SignUp() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirect = urlParams.get('redirect');
+    if (redirect) {
+      setRedirectPath(redirect);
+    }
+  }, []);
 
   const handleGoogleSuccess = async (credentialResponse: any) => {
     const toastId = toast.loading('Signing up with Google...');
@@ -90,9 +97,7 @@ export function SignUp() {
       
       await signInWithGoogle(credentialResponse.credential);
       toast.success('Successfully signed up with Google!', { id: toastId });
-      const redirectPath = localStorage.getItem('redirectPath') || '/home';
-      localStorage.removeItem('redirectPath');
-      navigate(redirectPath, { replace: true });
+      navigate(redirectPath || '/home');
     } catch (err) {
       console.error('Google sign up error:', err);
       let errorMessage = 'Failed to sign up with Google';
@@ -210,7 +215,7 @@ export function SignUp() {
       <p className="text-center text-sm text-muted-foreground">
         Already have an account?{' '}
         <Link
-          to="/auth/sign-in"
+          to={redirectPath ? `/auth/sign-in?redirect=${redirectPath}` : '/auth/sign-in'}
           className="font-medium text-primary hover:underline"
         >
           Sign in

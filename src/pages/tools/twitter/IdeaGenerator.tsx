@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Copy, Loader2, Trash2, History, Sparkles, Wand2, MessageSquare, Clock, Settings, PenLine, Lightbulb, ChevronRight } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from 'react-hot-toast';
 import { ToolLayout } from '../../../components/tool-page/ToolLayout';
 import { Button } from '../../../components/ui/button';
 import { Card } from '../../../components/ui/card';
@@ -52,6 +52,8 @@ const loadingMessages = [
 interface TwitterIdea {
   hook: string;
   outline: string[];
+  engagement_hooks?: string;
+  hashtags?: string[];
 }
 
 interface TwitterIdeaGeneration extends IdeaGeneration {
@@ -85,12 +87,46 @@ export function TwitterIdeaGeneratorPage() {
     loadHistory();
   }, []);
 
+  // Simulate loading progress
+  useEffect(() => {
+    if (loading) {
+      const interval = setInterval(() => {
+        setLoadingProgress(prev => {
+          if (prev >= 100) {
+            clearInterval(interval);
+            return 100;
+          }
+          return prev + 2;
+        });
+
+        setLoadingMessageIndex(prev => 
+          loadingProgress < 20 ? 0 :
+          loadingProgress < 40 ? 1 :
+          loadingProgress < 60 ? 2 :
+          loadingProgress < 80 ? 3 : 4
+        );
+      }, 100);
+
+      return () => clearInterval(interval);
+    } else {
+      setLoadingProgress(0);
+      setLoadingMessageIndex(0);
+    }
+  }, [loading]);
+
   const loadHistory = async () => {
     try {
       const response = await ideaGeneratorService.getHistory('twitter');
-      setHistory(response.items as TwitterIdeaGeneration[]);
+      if (response && response.items) {
+        setHistory(response.items as TwitterIdeaGeneration[]);
+      } else {
+        console.warn('History response is missing items array');
+        setHistory([]);
+      }
     } catch (error: any) {
-      toast.error(error.message);
+      console.error('Error loading history:', error);
+      toast.error(error.message || 'Failed to load history');
+      setHistory([]);
     }
   };
 
@@ -174,6 +210,62 @@ export function TwitterIdeaGeneratorPage() {
       minute: '2-digit'
     });
   };
+
+  const renderIdea = (idea: TwitterIdea) => (
+    <Card className="p-6 hover:shadow-lg transition-all duration-300 bg-card/50 backdrop-blur-sm">
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start gap-3 flex-1">
+          <div className="mt-1">
+            <Sparkles className="h-5 w-5 text-primary" />
+          </div>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <p className="text-lg font-medium">{idea.hook}</p>
+              <div className="space-y-2">
+                {idea.outline.map((point: string, i: number) => (
+                  <div key={i} className="flex items-start gap-2">
+                    <span className="text-primary font-medium">{i + 1}.</span>
+                    <p className="text-muted-foreground">{point}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Engagement Hooks */}
+            {idea.engagement_hooks && (
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">🎯 Engagement Hooks</p>
+                <p className="text-sm">{idea.engagement_hooks}</p>
+              </div>
+            )}
+
+            {/* Hashtags */}
+            {idea.hashtags && idea.hashtags.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {idea.hashtags.map((tag, i) => (
+                  <span
+                    key={i}
+                    className="px-3 py-1 text-sm rounded-full bg-primary/10 text-primary hover:bg-primary/20 cursor-pointer transition-colors"
+                    onClick={() => copyToClipboard(tag)}
+                  >
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => copyToClipboard(`${idea.hook}\n\n${idea.outline.map((point: string, i: number) => `${i + 1}. ${point}`).join('\n')}`)}
+          className="shrink-0"
+        >
+          <Copy className="h-4 w-4" />
+        </Button>
+      </div>
+    </Card>
+  );
 
   return (
     <ToolLayout>
@@ -399,36 +491,7 @@ export function TwitterIdeaGeneratorPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
                   >
-                    <Card className="p-6 hover:shadow-lg transition-all duration-300">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-start gap-3 flex-1">
-                          <div className="mt-1">
-                            <Sparkles className="h-5 w-5 text-primary" />
-                          </div>
-                          <div className="space-y-4">
-                            <div className="space-y-2">
-                              <p className="text-lg font-medium">{idea.hook}</p>
-                              <div className="space-y-2">
-                                {idea.outline.map((point: string, i: number) => (
-                                  <div key={i} className="flex items-start gap-2">
-                                    <span className="text-primary font-medium">{i + 1}.</span>
-                                    <p className="text-muted-foreground">{point}</p>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => copyToClipboard(`${idea.hook}\n\n${idea.outline.map((point: string, i: number) => `${i + 1}. ${point}`).join('\n')}`)}
-                          className="shrink-0"
-                        >
-                          <Copy className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </Card>
+                    {renderIdea(idea)}
                   </motion.div>
                 ))}
               </div>
@@ -490,22 +553,24 @@ export function TwitterIdeaGeneratorPage() {
 
                     {/* Preview */}
                     <div className="space-y-4">
-                      {item.ideas.slice(0, 1).map((idea, index) => (
+                      {item.ideas && item.ideas.length > 0 && item.ideas.slice(0, 1).map((idea, index) => (
                         <div key={index} className="space-y-2">
                           <p className="text-lg font-medium">{idea.hook}</p>
-                          <div className="space-y-1">
-                            {idea.outline.slice(0, 2).map((point, i) => (
-                              <p key={i} className="text-sm text-muted-foreground">
-                                {i + 1}. {point}
-                              </p>
-                            ))}
-                          </div>
+                          {idea.outline && idea.outline.length > 0 && (
+                            <div className="space-y-1">
+                              {idea.outline.slice(0, 2).map((point, i) => (
+                                <p key={i} className="text-sm text-muted-foreground">
+                                  {i + 1}. {point}
+                                </p>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
 
                     {/* View More Button */}
-                    {item.ideas.length > 1 && (
+                    {item.ideas && item.ideas.length > 1 && (
                       <Button
                         variant="ghost"
                         className="w-full mt-2 hover:bg-secondary/50"

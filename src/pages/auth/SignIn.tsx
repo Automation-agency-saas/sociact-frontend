@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../lib/context/AuthContext';
 import { Button } from '../../components/ui/button';
@@ -23,12 +23,9 @@ declare global {
   }
 }
 
-interface GoogleResponse {
-  credential: string;
-}
-
 export function SignIn() {
   const navigate = useNavigate();
+  const [redirectPath, setRedirectPath] = useState<string | null>(null);
   const { signIn, signInWithGoogle } = useAuth();
   const [loading, setLoading] = useState(false);
 
@@ -45,9 +42,7 @@ export function SignIn() {
     try {
       await signIn(email, password);
       toast.success('Successfully signed in!', { id: toastId });
-      const redirectPath = localStorage.getItem('redirectPath') || '/home';
-      localStorage.removeItem('redirectPath');
-      navigate(redirectPath, { replace: true });
+      navigate(redirectPath || "/home");
     } catch (err) {
       let errorMessage = 'An error occurred during sign in';
       
@@ -88,9 +83,7 @@ export function SignIn() {
       
       await signInWithGoogle(credentialResponse.credential);
       toast.success('Successfully signed in with Google!', { id: toastId });
-      const redirectPath = localStorage.getItem('redirectPath') || '/home';
-      localStorage.removeItem('redirectPath');
-      navigate(redirectPath, { replace: true });
+      navigate(redirectPath || "/home");
     } catch (err) {
       console.error('Google sign in error:', err);
       let errorMessage = 'Failed to sign in with Google';
@@ -100,6 +93,15 @@ export function SignIn() {
       toast.error(errorMessage, { id: toastId });
     }
   };
+
+ 
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirect = urlParams.get('redirect');
+    if (redirect) {
+      setRedirectPath(redirect);
+    }
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -183,7 +185,7 @@ export function SignIn() {
       <p className="text-center text-sm text-muted-foreground">
         Don't have an account?{' '}
         <Link
-          to="/auth/sign-up"
+          to={redirectPath ? `/auth/sign-up?redirect=${redirectPath}` : "/auth/sign-up"}
           className="font-medium text-primary hover:underline"
         >
           Sign up
