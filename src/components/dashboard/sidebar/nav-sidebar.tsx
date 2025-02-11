@@ -1,8 +1,15 @@
+import { Button } from "@/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -14,16 +21,23 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import {
+  ArrowDownAZ,
   ChevronRight,
+  Facebook,
   FileText,
+  Instagram,
+  Linkedin,
   LucideChartColumn,
   MessageSquare,
   Sparkles,
+  Twitter,
+  Youtube,
 } from "lucide-react";
-import { title } from "process";
 import React from "react";
 
-const NavSidebar = () => {
+const NavSidebar: React.FC = () => {
+  const [selectedApp, setSelectedApp] = React.useState<string | null>(null);
+
   const categories = [
     {
       title: "Ideation",
@@ -31,19 +45,27 @@ const NavSidebar = () => {
       subcategories: [
         {
           title: "idea_forge",
-          url: "/idea_forge",
+          desc: "Generate viral video ideas tailored to your niche",
+          url: "/youtube/idea-generator",
+          app: "youtube",
         },
         {
           title: "reel_spark",
-          url: "/reel_spark",
+          desc: "Create engaging reel concepts that capture attention",
+          url: "/instagram/idea-generator",
+          app: "instagram",
         },
         {
           title: "thread_mind",
-          url: "/thread_mind",
+          desc: "Generate viral ideas for twitter",
+          url: "/twitter/idea-generator",
+          app: "twitter",
         },
         {
           title: "pro_mind",
-          url: "/pro_mind",
+          desc: "Generate professional posts for linkedin",
+          url: "/linkedin/idea-generator",
+          app: "linkedin",
         },
       ],
     },
@@ -53,19 +75,39 @@ const NavSidebar = () => {
       subcategories: [
         {
           title: "script_craft",
-          url: "/script_craft",
+          desc: "Create engaging video scripts with AI",
+          url: "/youtube/script-generator",
+          app: "youtube",
         },
         {
           title: "caption_craft",
-          url: "/caption_craft",
+          desc: "Generate engaging captions for your posts",
+          url: "/instagram/caption-generator",
+          app: "instagram",
         },
         {
           title: "thread_craft",
-          url: "/thread_craft",
+          desc: "Create viral thread ideas for twitter with AI",
+          url: "/twitter/thread-generator",
+          app: "twitter",
         },
         {
           title: "pro_craft",
-          url: "/pro_craft",
+          desc: "Create professional post ideas for linkedin",
+          url: "/linkedin/post-generator",
+          app: "linkedin",
+        },
+        {
+          title: "thumbnail_pro",
+          desc: "Generate AI powered thumbnails for your videos",
+          url: "/youtube/thumbnail-generator",
+          app: "youtube",
+        },
+        {
+          title: "thumbnail_gen",
+          desc: "Create stunning thumbnails from text description",
+          url: "/youtube/thumbnail-generator",
+          app: "youtube",
         },
       ],
     },
@@ -74,20 +116,16 @@ const NavSidebar = () => {
       icon: Sparkles,
       subcategories: [
         {
-          title: "idea_forge",
-          url: "/idea_forge",
+          title: "comment_pro_insta",
+          desc: "Automate engaging responses to comments on your instagram posts",
+          url: "/instagram/comment-automation",
+          app: "instagram",
         },
         {
-          title: "idea_forge",
-          url: "/idea_forge",
-        },
-        {
-          title: "idea_forge",
-          url: "/idea_forge",
-        },
-        {
-          title: "idea_forge",
-          url: "/idea_forge",
+          title: "comment_pro_fb",
+          desc: "Automate engaging responses to comments on your facebook posts",
+          url: "/facebook/comment-automation",
+          app: "facebook",
         },
       ],
     },
@@ -96,30 +134,70 @@ const NavSidebar = () => {
       icon: LucideChartColumn,
       subcategories: [
         {
-          title: "idea_forge",
-          url: "/idea_forge",
-        },
-        {
-          title: "idea_forge",
-          url: "/idea_forge",
-        },
-        {
-          title: "idea_forge",
-          url: "/idea_forge",
-        },
-        {
-          title: "idea_forge",
-          url: "/idea_forge",
+          title: "seo_pro",
+          desc: "Optimize your content for better visibility",
+          url: "/seo_pro",
+          app: "youtube",
         },
       ],
     },
   ];
+
+  const apps = [
+    "All",
+    "youtube",
+    "instagram",
+    "twitter",
+    "linkedin",
+    "facebook",
+  ];
+  const renderAppIcon = (app: string | null) => {
+    switch (app) {
+      case "youtube":
+        return <Youtube className=" w-4 h-4" />;
+      case "instagram":
+        return <Instagram className=" w-4 h-4" />;
+      case "facebook":
+        return <Facebook className=" w-4 h-4" />;
+      case "twitter":
+        return <Twitter className=" w-4 h-4" />;
+      case "linkedin":
+        return <Linkedin className=" w-4 h-4" />;
+      default:
+        return <ArrowDownAZ className="w-4 h-4" />;
+    }
+  };
+
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Categories</SidebarGroupLabel>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="outline"
+            className="flex items-center justify-start gap-2 px-2 my-4"
+          >
+            <span>{renderAppIcon(selectedApp)}</span>
+            <span className="group-data-[collapsible=icon]:hidden">
+              {selectedApp ? `Filter by ${selectedApp}` : "Filter by App"}
+            </span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent side="right">
+          {apps.map((app) => (
+            <DropdownMenuItem
+              key={app}
+              onSelect={() => setSelectedApp(app === "All" ? null : app)}
+            >
+              {app}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
       <SidebarMenu>
         {categories.map((category) => (
           <Collapsible
+            defaultOpen={true}
             key={category.title}
             asChild
             className="group/collapsible"
@@ -134,15 +212,20 @@ const NavSidebar = () => {
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <SidebarMenuSub>
-                  {category.subcategories?.map((subcategory) => (
-                    <SidebarMenuSubItem key={subcategory.title}>
-                      <SidebarMenuSubButton asChild>
-                        <a href={subcategory.url}>
-                          <span>{subcategory.title}</span>
-                        </a>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  ))}
+                  {category.subcategories
+                    ?.filter(
+                      (subcategory) =>
+                        !selectedApp || subcategory.app === selectedApp
+                    )
+                    .map((subcategory) => (
+                      <SidebarMenuSubItem key={subcategory.title}>
+                        <SidebarMenuSubButton asChild>
+                          <a href={subcategory.url}>
+                            <span>{subcategory.title}</span>
+                          </a>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    ))}
                 </SidebarMenuSub>
               </CollapsibleContent>
             </SidebarMenuItem>

@@ -3,7 +3,13 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { VariantProps, cva } from "class-variance-authority";
-import { ChevronLeft, ChevronRight, PanelLeft } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  PanelLeft,
+  PanelLeftClose,
+  PanelLeftOpen,
+} from "lucide-react";
 
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -263,7 +269,7 @@ const SidebarTrigger = React.forwardRef<
   React.ElementRef<typeof Button>,
   React.ComponentProps<typeof Button>
 >(({ className, onClick, ...props }, ref) => {
-  const { toggleSidebar, state } = useSidebar();
+  const { toggleSidebar, state, isMobile } = useSidebar();
 
   return (
     <Button
@@ -271,20 +277,24 @@ const SidebarTrigger = React.forwardRef<
       data-sidebar="trigger"
       variant="ghost"
       size="icon"
-      className={cn("h-7 w-7", className)}
+      className={cn("p-2", className)}
       onClick={(event) => {
         onClick?.(event);
         toggleSidebar();
       }}
       {...props}
     >
-      <ChevronLeft
-        className={cn(
-          "w-4 h-4",
-          state === "collapsed" &&
-            "transition duration-300 ease-in-out rotate-180"
-        )}
-      />
+      {isMobile ? (
+        state === "expanded" ? (
+          <PanelLeftClose className="size-6" />
+        ) : (
+          <PanelLeftOpen className="size-6" />
+        )
+      ) : state === "collapsed" ? (
+        <PanelLeftOpen className="size-6" />
+      ) : (
+        <PanelLeftClose className="size-6" />
+      )}
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   );

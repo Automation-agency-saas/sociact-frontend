@@ -119,7 +119,7 @@ function AppRoutes() {
         {/* Protected Routes */}
         <Route path="/home" element={
           <ProtectedRoute>
-            <NewHome />
+            <Home />
           </ProtectedRoute>
         } />
         <Route path="/profile/me" element={
