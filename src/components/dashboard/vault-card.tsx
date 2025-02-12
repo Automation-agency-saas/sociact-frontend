@@ -38,7 +38,7 @@ export const EvervaultCard = ({
       case "facebook":
         return <Facebook className="w-6 h-6 text-blue-500" />;
       case "twitter":
-        return <Twitter className="w-6 h-6 text-blue-400" />;
+        return <Twitter className="w-6 h-6 text-blue-700" />;
       case "linkedin":
         return <Linkedin className="w-6 h-6 text-blue-700" />;
       default:
@@ -49,17 +49,19 @@ export const EvervaultCard = ({
   return (
     <div
       className={cn(
-        "p-0.5 bg-transparent aspect-video flex items-center justify-center w-full h-full relative",
+        "bg-transparent flex items-center justify-center w-full h-full relative",
         className
       )}
     >
-      <div className="rounded-3xl w-full relative overflow-hidden bg-black flex items-center justify-center h-full border border-purple-500/50">
+      <div className="rounded-3xl w-full relative overflow-hidden bg-purple-200 dark:bg-black/80 flex items-center justify-center h-full border border-purple-500">
         <CardPattern randomString={randomString} />
-        <Button className="absolute top-4 left-4 p-2 bg-secondary hover:bg-secondary/50">{renderAppIcon(app)}</Button>
+        <Button className="absolute top-2 left-2 p-2 bg-white dark:bg-gray-200">
+          {renderAppIcon(app)}
+        </Button>
         <div className="relative z-10 flex items-center justify-center">
-          <div className="relative h-44 w-44 rounded-full flex items-center justify-center text-white font-bold text-4xl">
-            <div className="absolute w-full h-full bg-primary/30 blur-lg rounded-full" />
-            <Icon className="z-20 w-16 h-16 text-purple-300" />
+          <div className="relative h-32 w-32 rounded-full flex items-center justify-center text-white font-bold text-4xl">
+            <div className="absolute w-full h-full bg-gray-100 dark:bg-primary/30 blur-lg rounded-full" />
+            <Icon className="z-20 w-16 h-16 text-purple-900 dark:text-purple-300" />
           </div>
         </div>
       </div>
@@ -79,7 +81,7 @@ export function CardPattern({ randomString }: { randomString: string }) {
           duration: 20,
           ease: "linear",
         }}
-        className="absolute inset-0 text-xs break-words whitespace-pre-wrap text-muted font-mono"
+        className="absolute inset-0 text-xs break-words whitespace-pre-wrap text-gray-500 font-mono"
       >
         {randomString.repeat(2)}
       </motion.div>

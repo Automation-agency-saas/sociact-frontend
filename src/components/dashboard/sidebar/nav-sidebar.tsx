@@ -44,28 +44,28 @@ const NavSidebar: React.FC = () => {
       icon: Sparkles,
       subcategories: [
         {
-          title: "idea_forge",
+          title: "Idea Forge",
           desc: "Generate viral video ideas tailored to your niche",
           url: "/youtube/idea-generator",
-          app: "youtube",
+          app: "Youtube",
         },
         {
-          title: "reel_spark",
+          title: "Reel Spark",
           desc: "Create engaging reel concepts that capture attention",
           url: "/instagram/idea-generator",
-          app: "instagram",
+          app: "Instagram",
         },
         {
-          title: "thread_mind",
+          title: "Thread Mind",
           desc: "Generate viral ideas for twitter",
           url: "/twitter/idea-generator",
-          app: "twitter",
+          app: "Twitter",
         },
         {
-          title: "pro_mind",
+          title: "Pro Mind",
           desc: "Generate professional posts for linkedin",
           url: "/linkedin/idea-generator",
-          app: "linkedin",
+          app: "Linkedin",
         },
       ],
     },
@@ -74,40 +74,40 @@ const NavSidebar: React.FC = () => {
       icon: MessageSquare,
       subcategories: [
         {
-          title: "script_craft",
+          title: "Script Craft",
           desc: "Create engaging video scripts with AI",
           url: "/youtube/script-generator",
-          app: "youtube",
+          app: "Youtube",
         },
         {
-          title: "caption_craft",
+          title: "Caption Craft",
           desc: "Generate engaging captions for your posts",
           url: "/instagram/caption-generator",
-          app: "instagram",
+          app: "Instagram",
         },
         {
-          title: "thread_craft",
+          title: "Thread Craft",
           desc: "Create viral thread ideas for twitter with AI",
           url: "/twitter/thread-generator",
-          app: "twitter",
+          app: "Twitter",
         },
         {
-          title: "pro_craft",
+          title: "Pro Craft",
           desc: "Create professional post ideas for linkedin",
           url: "/linkedin/post-generator",
-          app: "linkedin",
+          app: "Linkedin",
         },
         {
-          title: "thumbnail_pro",
+          title: "Thumbnail Pro",
           desc: "Generate AI powered thumbnails for your videos",
           url: "/youtube/thumbnail-generator",
-          app: "youtube",
+          app: "Youtube",
         },
         {
-          title: "thumbnail_gen",
+          title: "Thumbnail Gen",
           desc: "Create stunning thumbnails from text description",
           url: "/youtube/thumbnail-generator",
-          app: "youtube",
+          app: "Youtube",
         },
       ],
     },
@@ -116,16 +116,16 @@ const NavSidebar: React.FC = () => {
       icon: Sparkles,
       subcategories: [
         {
-          title: "comment_pro_insta",
-          desc: "Automate engaging responses to comments on your instagram posts",
+          title: "Comment Pro",
+          desc: "Automate engaging responses to comments on your posts",
           url: "/instagram/comment-automation",
-          app: "instagram",
+          app: "Instagram",
         },
         {
-          title: "comment_pro_fb",
-          desc: "Automate engaging responses to comments on your facebook posts",
+          title: "Comment Pro",
+          desc: "Automate engaging responses to comments on your posts",
           url: "/facebook/comment-automation",
-          app: "facebook",
+          app: "Facebook",
         },
       ],
     },
@@ -134,10 +134,10 @@ const NavSidebar: React.FC = () => {
       icon: LucideChartColumn,
       subcategories: [
         {
-          title: "seo_pro",
+          title: "Seo Pro",
           desc: "Optimize your content for better visibility",
           url: "/seo_pro",
-          app: "youtube",
+          app: "Youtube",
         },
       ],
     },
@@ -145,23 +145,23 @@ const NavSidebar: React.FC = () => {
 
   const apps = [
     "All",
-    "youtube",
-    "instagram",
-    "twitter",
-    "linkedin",
-    "facebook",
+    "Youtube",
+    "Instagram",
+    "Twitter",
+    "Linkedin",
+    "Facebook",
   ];
   const renderAppIcon = (app: string | null) => {
     switch (app) {
-      case "youtube":
+      case "Youtube":
         return <Youtube className=" w-4 h-4" />;
-      case "instagram":
+      case "Instagram":
         return <Instagram className=" w-4 h-4" />;
-      case "facebook":
+      case "Facebook":
         return <Facebook className=" w-4 h-4" />;
-      case "twitter":
+      case "Twitter":
         return <Twitter className=" w-4 h-4" />;
-      case "linkedin":
+      case "Linkedin":
         return <Linkedin className=" w-4 h-4" />;
       default:
         return <ArrowDownAZ className="w-4 h-4" />;
@@ -179,17 +179,20 @@ const NavSidebar: React.FC = () => {
           >
             <span>{renderAppIcon(selectedApp)}</span>
             <span className="group-data-[collapsible=icon]:hidden">
-              {selectedApp ? `Filter by ${selectedApp}` : "Filter by App"}
+              {selectedApp ? `Filter : ${selectedApp}` : "Filter : All"}
             </span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent side="right">
+        <DropdownMenuContent side="right" className="min-w-max grid grid-cols-2">
           {apps.map((app) => (
             <DropdownMenuItem
               key={app}
               onSelect={() => setSelectedApp(app === "All" ? null : app)}
+              className="w-max"
             >
-              {app}
+              <Button size={"icon"} className="">
+                {renderAppIcon(app)}
+              </Button>
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>
@@ -205,9 +208,9 @@ const NavSidebar: React.FC = () => {
             <SidebarMenuItem>
               <CollapsibleTrigger asChild>
                 <SidebarMenuButton tooltip={category.title}>
-                  {category.icon && <category.icon />}
-                  <span>{category.title}</span>
-                  <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                  {category.icon && <category.icon className="text-purple-400" />}
+                  <span className="font-semibold">{category.title}</span>
+                  <ChevronRight className="ml-auto text-purple-400 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                 </SidebarMenuButton>
               </CollapsibleTrigger>
               <CollapsibleContent>
@@ -221,7 +224,7 @@ const NavSidebar: React.FC = () => {
                       <SidebarMenuSubItem key={subcategory.title}>
                         <SidebarMenuSubButton asChild>
                           <a href={subcategory.url}>
-                            <span>{subcategory.title}</span>
+                            <span className="text-muted-foreground">{subcategory.title}</span>
                           </a>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
