@@ -1,230 +1,348 @@
-import { useState } from 'react';
-import { ToolPageWrapper } from '../../../components/tool-page/ToolPageWrapper';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Textarea } from '../../../components/ui/textarea';
-import { MessageCircle, Play, Pause, Settings2, RefreshCw, Clock } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/ui/tabs';
+import { MessageCircle, Copy, Trash2, Settings2, History, Sparkles } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "../../../components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../../../components/ui/select";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select";
+import { ToolLayout } from "@/components/tool-page/ToolLayout";
+import { ToolTitle } from "@/components/ui/tool-title";
+import { LoadingModal } from "@/components/ui/loading-modal";
 
-type CommentMode = 'scheduled' | 'instant';
+// Constants for dropdown options
+const RESPONSE_TONES = [
+  'Friendly',
+  'Professional',
+  'Casual',
+  'Enthusiastic',
+  'Supportive',
+  'Engaging'
+];
+
+const COMMENT_TYPES = [
+  'General Engagement',
+  'Question Response',
+  'Appreciation',
+  'Story Reply',
+  'Feedback'
+];
+
+const RESPONSE_LENGTHS = [
+  'Brief (1-2 words)',
+  'Short (3-5 words)',
+  'Medium (6-10 words)',
+  'Long (10+ words)'
+];
+
+interface AutoResponse {
+  id: string;
+  text: string;
+  timestamp: Date;
+}
+
+interface ResponseGeneration {
+  commentType: string;
+  responseTone: string;
+  responseLength: string;
+  customPrompt: string;
+  responses: AutoResponse[];
+}
 
 export function InstagramCommentAutomationPage() {
-  const [postUrl, setPostUrl] = useState('');
-  const [commentText, setCommentText] = useState('');
-  const [mode, setMode] = useState<CommentMode>('instant');
-  const [schedule, setSchedule] = useState('');
-  const [isRunning, setIsRunning] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('preferences');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState(0);
+  const [loadingMessage, setLoadingMessage] = useState('');
+  const [responseGeneration, setResponseGeneration] = useState<ResponseGeneration>({
+    commentType: '',
+    responseTone: '',
+    responseLength: '',
+    customPrompt: '',
+    responses: []
+  });
 
-  const handleStart = async () => {
-    if (!postUrl || !commentText) {
-      toast.error('Please provide both post URL and comment text');
+  const generateFromPreferences = async () => {
+    if (!responseGeneration.commentType || !responseGeneration.responseTone || !responseGeneration.responseLength) {
+      toast.error('Please select all preferences');
       return;
     }
 
-    try {
-      setIsRunning(true);
-      // TODO: Replace with actual API call
-      toast.success('Comment automation started successfully!');
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to start automation';
-      setError(errorMessage);
-      toast.error(errorMessage);
-      setIsRunning(false);
+    setIsGenerating(true);
+    simulateLoading();
+
+    // Simulated response generation
+    setTimeout(() => {
+      const newResponse: AutoResponse = {
+        id: Date.now().toString(),
+        text: 'This is a simulated response based on your preferences! 🎯',
+        timestamp: new Date()
+      };
+
+      setResponseGeneration(prev => ({
+        ...prev,
+        responses: [newResponse, ...prev.responses]
+      }));
+
+      setIsGenerating(false);
+      toast.success('Response generated successfully!');
+    }, 3000);
+  };
+
+  const generateCustomResponses = async () => {
+    if (!responseGeneration.customPrompt) {
+      toast.error('Please enter a custom prompt');
+      return;
     }
+
+    setIsGenerating(true);
+    simulateLoading();
+
+    // Simulated response generation
+    setTimeout(() => {
+      const newResponse: AutoResponse = {
+        id: Date.now().toString(),
+        text: 'This is a custom generated response based on your prompt! 💫',
+        timestamp: new Date()
+      };
+
+      setResponseGeneration(prev => ({
+        ...prev,
+        responses: [newResponse, ...prev.responses]
+      }));
+
+      setIsGenerating(false);
+      toast.success('Custom response generated successfully!');
+    }, 3000);
   };
 
-  const handleStop = () => {
-    setIsRunning(false);
-    toast.success('Comment automation stopped');
+  const simulateLoading = () => {
+    const messages = [
+      'Analyzing engagement patterns...',
+      'Crafting personalized responses...',
+      'Optimizing for engagement...',
+      'Finalizing response generation...'
+    ];
+
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 25;
+      setGenerationProgress(progress);
+      setLoadingMessage(messages[progress/25 - 1]);
+      
+      if (progress === 100) {
+        clearInterval(interval);
+      }
+    }, 750);
   };
 
-  const handleReset = () => {
-    setPostUrl('');
-    setCommentText('');
-    setMode('instant');
-    setSchedule('');
-    setIsRunning(false);
-    setError(null);
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success('Copied to clipboard!');
+  };
+
+  const deleteResponse = (id: string) => {
+    setResponseGeneration(prev => ({
+      ...prev,
+      responses: prev.responses.filter(response => response.id !== id)
+    }));
+    toast.success('Response deleted');
   };
 
   return (
-    <ToolPageWrapper
-      title="Instagram Comment Automation"
-      description="Automate your Instagram engagement with smart commenting"
-    >
-      <div className="space-y-6">
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* Comment Settings Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageCircle className="h-5 w-5 text-primary" />
-                Comment Settings
-              </CardTitle>
-              <CardDescription>
-                Configure your automated comments
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Post URL</label>
-                <Input
-                  placeholder="Enter the Instagram post URL..."
-                  value={postUrl}
-                  onChange={(e) => setPostUrl(e.target.value)}
-                  disabled={isRunning}
-                />
-              </div>
+    <ToolLayout>
+      <ToolTitle 
+        title="Instagram Comment Automation 📸" 
+        description="Generate engaging responses to Instagram comments and mentions"
+      />
+      
+      <div className="space-y-8">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="preferences">
+              <Settings2 className="w-4 h-4 mr-2" />
+              Preferences
+            </TabsTrigger>
+            <TabsTrigger value="custom">
+              <Sparkles className="w-4 h-4 mr-2" />
+              Custom
+            </TabsTrigger>
+          </TabsList>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Comment Text</label>
-                <Textarea
-                  placeholder="Enter your comment text..."
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                  className="min-h-[100px]"
-                  disabled={isRunning}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Automation Settings Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Settings2 className="h-5 w-5 text-primary" />
-                Automation Settings
-              </CardTitle>
-              <CardDescription>
-                Configure timing and automation preferences
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Comment Mode</label>
-                <Select
-                  value={mode}
-                  onValueChange={(value) => setMode(value as CommentMode)}
-                  disabled={isRunning}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select comment mode" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="instant">
-                      <div className="flex flex-col">
-                        <span className="font-medium">Instant</span>
-                        <span className="text-xs text-muted-foreground">
-                          Comment immediately
-                        </span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="scheduled">
-                      <div className="flex flex-col">
-                        <span className="font-medium">Scheduled</span>
-                        <span className="text-xs text-muted-foreground">
-                          Comment at specific times
-                        </span>
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {mode === 'scheduled' && (
+          <TabsContent value="preferences" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Response Preferences</CardTitle>
+                <CardDescription>
+                  Configure your automated response preferences
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Schedule</label>
-                  <Input
-                    type="datetime-local"
-                    value={schedule}
-                    onChange={(e) => setSchedule(e.target.value)}
-                    disabled={isRunning}
-                  />
+                  <label className="text-sm font-medium">Comment Type</label>
+                  <Select
+                    value={responseGeneration.commentType}
+                    onValueChange={(value) => setResponseGeneration(prev => ({ ...prev, commentType: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select comment type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COMMENT_TYPES.map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-              )}
 
-              <div className="pt-4 space-y-4">
-                {!isRunning ? (
-                  <Button
-                    onClick={handleStart}
-                    disabled={!postUrl || !commentText}
-                    className="w-full bg-primary hover:bg-primary/90"
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Response Tone</label>
+                  <Select
+                    value={responseGeneration.responseTone}
+                    onValueChange={(value) => setResponseGeneration(prev => ({ ...prev, responseTone: value }))}
                   >
-                    <Play className="mr-2 h-4 w-4" />
-                    Start Automation
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={handleStop}
-                    variant="destructive"
-                    className="w-full"
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select response tone" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {RESPONSE_TONES.map((tone) => (
+                        <SelectItem key={tone} value={tone}>
+                          {tone}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Response Length</label>
+                  <Select
+                    value={responseGeneration.responseLength}
+                    onValueChange={(value) => setResponseGeneration(prev => ({ ...prev, responseLength: value }))}
                   >
-                    <Pause className="mr-2 h-4 w-4" />
-                    Stop Automation
-                  </Button>
-                )}
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select response length" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {RESPONSE_LENGTHS.map((length) => (
+                        <SelectItem key={length} value={length}>
+                          {length}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
                 <Button
-                  variant="outline"
-                  onClick={handleReset}
-                  className="w-full"
-                  disabled={isRunning}
+                  onClick={generateFromPreferences}
+                  disabled={isGenerating}
+                  className="w-full mt-4"
                 >
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  Reset Settings
+                  {isGenerating ? 'Generating...' : 'Generate Responses'}
                 </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        {/* Status Card */}
-        {isRunning && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5 text-primary" />
-                Automation Status
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full bg-green-500 animate-pulse" />
-                  <span className="text-sm font-medium">Active</span>
+          <TabsContent value="custom" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Custom Response</CardTitle>
+                <CardDescription>
+                  Generate responses using your custom prompt
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Custom Prompt</label>
+                  <Textarea
+                    placeholder="Enter your custom prompt..."
+                    value={responseGeneration.customPrompt}
+                    onChange={(e) => setResponseGeneration(prev => ({ ...prev, customPrompt: e.target.value }))}
+                    className="min-h-[100px]"
+                  />
                 </div>
-                <span className="text-sm text-muted-foreground">
-                  {mode === 'scheduled'
-                    ? `Scheduled for ${new Date(schedule).toLocaleString()}`
-                    : 'Running in instant mode'}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
-        {error && (
-          <div className="p-4 rounded-lg bg-destructive/10 text-destructive text-sm">
-            {error}
-          </div>
-        )}
+                <Button
+                  onClick={generateCustomResponses}
+                  disabled={isGenerating}
+                  className="w-full mt-4"
+                >
+                  {isGenerating ? 'Generating...' : 'Generate Custom Responses'}
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {isGenerating && (
+            <Card className="mt-4">
+              <CardContent className="py-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span>{loadingMessage}</span>
+                    <span>{generationProgress}%</span>
+                  </div>
+                  <div className="w-full bg-secondary rounded-full h-2">
+                    <motion.div
+                      className="bg-primary h-2 rounded-full"
+                      style={{ width: `${generationProgress}%` }}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${generationProgress}%` }}
+                      transition={{ duration: 0.5 }}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {responseGeneration.responses.length > 0 && (
+            <Card className="mt-4">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <History className="w-5 h-5" />
+                  Generated Responses
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {responseGeneration.responses.map((response) => (
+                  <div
+                    key={response.id}
+                    className="p-4 rounded-lg border bg-card text-card-foreground"
+                  >
+                    <div className="flex justify-between items-start gap-4">
+                      <p className="text-sm">{response.text}</p>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => copyToClipboard(response.text)}
+                        >
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => deleteResponse(response.id)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Generated {response.timestamp.toLocaleString()}
+                    </p>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+        </Tabs>
       </div>
-    </ToolPageWrapper>
+    </ToolLayout>
   );
 } 
