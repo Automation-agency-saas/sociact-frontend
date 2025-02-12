@@ -275,7 +275,7 @@ export function TwitterIdeaGeneratorPage() {
   return (
     <ToolLayout>
       <ToolTitle 
-        title="Twitter Thread Generator ✨" 
+        title="Twitter Thread Idea Generator ✨" 
         description="Generate viral thread ideas that grow your audience"
       />
       

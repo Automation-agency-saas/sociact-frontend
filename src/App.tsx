@@ -34,7 +34,7 @@ import { LinkedInIdeaGeneratorPage } from './pages/tools/linkedin/IdeaGenerator'
 import { LinkedInPostGeneratorPage } from './pages/tools/linkedin/PostGenerator';
 import { FacebookCommentAutomationPage } from './pages/tools/facebook/CommentAutomation';
 import { TwitterIdeaGeneratorPage } from './pages/tools/twitter/IdeaGenerator';
-
+import {TwitterThreadGeneratorPage} from './pages/tools/twitter/ThreadGenerator'
 
 
 
@@ -141,11 +141,11 @@ function AppRoutes() {
             <TwitterIdeaGeneratorPage />
           </ProtectedRoute>
         } />
-        {/* <Route path="/twitter/thread-generator" element={
+        <Route path="/twitter/thread-generator" element={
           <ProtectedRoute>
             <TwitterThreadGeneratorPage />
           </ProtectedRoute>
-        } /> */}
+        } />
         
         {/* LinkedIn Tools */}
         <Route path="/linkedin/idea-generator" element={
