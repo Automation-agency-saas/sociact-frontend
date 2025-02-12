@@ -26,14 +26,16 @@ import { YouTubeIdeaGeneratorPage } from "./pages/tools/youtube/IdeaGenerator";
 import { YouTubeScriptGeneratorPage } from "./pages/tools/youtube/ScriptGenerator";
 import { YouTubeThumbnailGeneratorPage } from "./pages/tools/youtube/ThumbnailGenerator";
 import { YouTubeSEOOptimizerPage } from "./pages/tools/youtube/SEOOptimizer";
+import { YouTubeCommentAutomationPage } from './pages/tools/youtube/CommentAutomation';
 import { InstagramIdeaGeneratorPage } from './pages/tools/instagram/IdeaGenerator';
 import { InstagramCaptionGeneratorPage } from './pages/tools/instagram/CaptionGenerator';
 import { InstagramCommentAutomationPage } from './pages/tools/instagram/CommentAutomation';
-// import { TwitterIdeaGeneratorPage } from './pages/tools/twitter/IdeaGenerator';
+import { TwitterIdeaGeneratorPage } from './pages/tools/twitter/IdeaGenerator';
+import { TwitterCommentAutomationPage } from './pages/tools/twitter/CommentAutomation';
 import { LinkedInIdeaGeneratorPage } from './pages/tools/linkedin/IdeaGenerator';
 import { LinkedInPostGeneratorPage } from './pages/tools/linkedin/PostGenerator';
+import { LinkedInCommentAutomationPage } from './pages/tools/linkedin/CommentAutomation';
 import { FacebookCommentAutomationPage } from './pages/tools/facebook/CommentAutomation';
-import { TwitterIdeaGeneratorPage } from './pages/tools/twitter/IdeaGenerator';
 
 
 
@@ -117,6 +119,11 @@ function AppRoutes() {
             <YouTubeSEOOptimizerPage />
           </ProtectedRoute>
         } />
+        <Route path="/youtube/comment-automation" element={
+          <ProtectedRoute>
+            <YouTubeCommentAutomationPage />
+          </ProtectedRoute>
+        } />
         
         {/* Instagram Tools */}
         <Route path="/instagram/idea-generator" element={
@@ -141,11 +148,11 @@ function AppRoutes() {
             <TwitterIdeaGeneratorPage />
           </ProtectedRoute>
         } />
-        {/* <Route path="/twitter/thread-generator" element={
+        <Route path="/twitter/comment-automation" element={
           <ProtectedRoute>
-            <TwitterThreadGeneratorPage />
+            <TwitterCommentAutomationPage />
           </ProtectedRoute>
-        } /> */}
+        } />
         
         {/* LinkedIn Tools */}
         <Route path="/linkedin/idea-generator" element={
@@ -156,6 +163,11 @@ function AppRoutes() {
         <Route path="/linkedin/post-generator" element={
           <ProtectedRoute>
             <LinkedInPostGeneratorPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/linkedin/comment-automation" element={
+          <ProtectedRoute>
+            <LinkedInCommentAutomationPage />
           </ProtectedRoute>
         } />
         
