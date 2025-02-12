@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../lib/context/AuthContext';
 import { instagramService } from '../../lib/services/instagram.service';
 import { facebookService } from '../../lib/services/facebook.service';
+import { youtubeService } from '../../lib/services/youtube.service';
 import { toast } from 'react-hot-toast';
 
 export function AuthCallback() {
@@ -13,26 +14,16 @@ export function AuthCallback() {
   const { signInWithGoogle } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-
-  // Log all URL and search parameters immediately
-  // console.log('Current URL:', window.location.href);
-  // console.log('Current pathname:', window.location.pathname);
-  // console.log('Current search:', window.location.search);
-  // console.log('Current hash:', window.location.hash);
-  // console.log('All search params:', Object.fromEntries(searchParams.entries()));
-  // console.log('Auth token in localStorage:', localStorage.getItem('token'));
+  const processedCode = useRef<string | null>(null);
 
   useEffect(() => {
-    // console.log('AuthCallback useEffect triggered');
-    
     const handleCallback = async () => {
       if (isProcessing) {
-        // console.log('Already processing callback, skipping...');
+        console.log('Already processing callback, skipping...');
         return;
       }
 
       try {
-        setIsProcessing(true);
         const rawCode = searchParams.get('code');
         const credential = searchParams.get('credential');
         const state = searchParams.get('state');
@@ -41,16 +32,15 @@ export function AuthCallback() {
         // Clean the code by removing any hash or extra parameters
         const code = rawCode ? rawCode.split('#')[0] : null;
 
-        // console.log('Auth Callback - Received params:', { 
-        //   rawCode,
-        //   cleanedCode: code,
-        //   credential, 
-        //   state,
-        //   hash
-        // });
+        // Prevent reprocessing the same code
+        if (code && processedCode.current === code) {
+          console.log('Code already processed, skipping...');
+          return;
+        }
+
+        setIsProcessing(true);
 
         if (!code && !credential && !hash) {
-          // console.error('No code, credential, or hash found in URL');
           setError('No authentication code found');
           return;
         }
@@ -110,6 +100,46 @@ export function AuthCallback() {
           } catch (err: any) {
             // console.error('Instagram auth error:', err);
             setError(err.message || 'Failed to connect Instagram account');
+          }
+        } else if (code && state === 'youtube') {
+          try {
+            processedCode.current = code;  // Mark this code as being processed
+            const authResponse = await youtubeService.handleAuth(code);
+            
+            if (authResponse.status === 'success') {
+              const savedState = localStorage.getItem('youtube_auth_return_state');
+              // console.log('Saved YouTube state:', savedState);
+              
+              if (savedState) {
+                try {
+                  const parsedState = JSON.parse(savedState);
+                  localStorage.removeItem('youtube_auth_return_state');
+                  
+                  // console.log('YouTube auth successful, navigating to home');
+                  toast.success('Successfully connected YouTube account');
+                  navigate('/home', { 
+                    replace: true,
+                    state: { 
+                      youtubeConnected: true,
+                      modalState: parsedState
+                    }
+                  });
+                } catch (parseError) {
+                  // console.error('Error parsing saved state:', parseError);
+                  setError('Error restoring previous state. Please try connecting again.');
+                }
+              } else {
+                // console.log('No saved state found, navigating to home');
+                toast.success('Successfully connected YouTube account');
+                navigate('/home', { replace: true });
+              }
+            } else {
+              // console.error('YouTube auth failed:', authResponse);
+              setError(authResponse.error || 'Failed to connect YouTube account');
+            }
+          } catch (err: any) {
+            // console.error('YouTube auth error:', err);
+            setError(err.message || 'Failed to connect YouTube account');
           }
         } else if (hash) {
           // console.log('Processing Facebook auth callback...');
@@ -179,7 +209,7 @@ export function AuthCallback() {
     };
 
     handleCallback();
-  }, [navigate, searchParams, signInWithGoogle, isProcessing]);
+  }, [navigate, searchParams, signInWithGoogle]);
 
   console.log('AuthCallback rendering, error state:', error, 'isProcessing:', isProcessing);
 

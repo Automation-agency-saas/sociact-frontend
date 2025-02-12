@@ -14,6 +14,8 @@ import { ToolLayout } from "@/components/tool-page/ToolLayout";
 import { ToolTitle } from "@/components/ui/tool-title";
 import { LoadingModal } from "@/components/ui/loading-modal";
 import { cn } from "@/lib/utils";
+import { youtubeService } from '@/lib/services/youtube.service';
+import type { AutomationConfig } from '@/lib/types/youtube';
 
 // Constants for dropdown options
 const RESPONSE_TONES = [
@@ -39,25 +41,6 @@ const RESPONSE_LENGTHS = [
   'Long (10+ words)'
 ];
 
-interface AutoResponse {
-  id: string;
-  text: string;
-  timestamp: Date;
-  type?: 'success' | 'info' | 'error';
-  commentText?: string;
-  userName?: string;
-  generatedReply?: string;
-}
-
-interface AutomationStats {
-  totalComments: number;
-  successfulReplies: number;
-  failedReplies: number;
-  remainingComments: number;
-  startTime?: Date;
-  endTime?: Date;
-}
-
 interface ResponseGeneration {
   mode: 'auto' | 'instant';
   videoUrl: string;
@@ -69,7 +52,33 @@ interface ResponseGeneration {
   responses: AutoResponse[];
   includeEmojis: boolean;
   maxRepliesPerHour: number;
-  stats?: AutomationStats;
+  stats?: {
+    totalComments: number;
+    successfulReplies: number;
+    failedReplies: number;
+    remainingComments: number;
+    startTime?: Date;
+    endTime?: Date;
+    alreadyReplied?: number;
+  };
+  websocket?: WebSocket;
+  automationId?: string;
+}
+
+interface AutoResponse {
+  id: string;
+  text: string;
+  timestamp: Date;
+  type?: 'success' | 'info' | 'error';
+  commentText?: string;
+  userName?: string;
+  generatedReply?: string;
+  generated_response?: string;
+  comment_type?: string;
+  response_tone?: string;
+  response_length?: string;
+  sample_comment?: string;
+  engagement_tips?: string;
 }
 
 export function YouTubeCommentAutomationPage() {
@@ -98,16 +107,13 @@ export function YouTubeCommentAutomationPage() {
 
   // Check YouTube connection on mount
   useEffect(() => {
-    // TODO: Replace with actual API call
     checkYouTubeConnection();
   }, []);
 
   const checkYouTubeConnection = async () => {
     try {
-      // TODO: Replace with actual API call
-      // Simulated API call
-      const connected = false; // This would come from your API
-      setIsYouTubeConnected(connected);
+      const status = await youtubeService.checkAuthStatus();
+      setIsYouTubeConnected(status.isConnected);
     } catch (error) {
       console.error('Failed to check YouTube connection:', error);
       setIsYouTubeConnected(false);
@@ -116,12 +122,34 @@ export function YouTubeCommentAutomationPage() {
 
   const handleConnectYouTube = async () => {
     setShowAuthSimulation(true);
-    // Simulate YouTube auth flow
-    setTimeout(() => {
+    try {
+      // Redirect to YouTube OAuth URL
+      const clientId = import.meta.env.VITE_YOUTUBE_CLIENT_ID;
+      const redirectUri = import.meta.env.VITE_YOUTUBE_REDIRECT_URI;
+      const scope = 'https://www.googleapis.com/auth/youtube.force-ssl';
+      const state = 'youtube'; // Add state parameter for callback handling
+      
+      // Save current state if needed
+      const currentState = {
+        returnPath: window.location.pathname,
+        videoUrl: responseGeneration.videoUrl,
+        useLatestVideo: responseGeneration.useLatestVideo,
+        checkInterval: responseGeneration.checkInterval,
+        responseTone: responseGeneration.responseTone,
+        responseLength: responseGeneration.responseLength,
+        customPrompt: responseGeneration.customPrompt,
+        includeEmojis: responseGeneration.includeEmojis,
+        maxRepliesPerHour: responseGeneration.maxRepliesPerHour
+      };
+      localStorage.setItem('youtube_auth_return_state', JSON.stringify(currentState));
+      
+      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&state=${state}&access_type=offline&prompt=consent`;
+      window.location.href = authUrl;
+    } catch (error) {
+      console.error('Failed to connect YouTube:', error);
       setShowAuthSimulation(false);
-      setIsYouTubeConnected(true);
-      toast.success('YouTube account connected successfully!');
-    }, 3000);
+      toast.error('Failed to connect YouTube account');
+    }
   };
 
   // Form states
@@ -183,25 +211,26 @@ export function YouTubeCommentAutomationPage() {
 
     setLoading(true);
     try {
-      // TODO: Implement actual API call
-      // Simulated response for now
       const response: ResponseGeneration = {
-        id: Date.now().toString(),
-        created_at: new Date().toISOString(),
-        platform: 'youtube',
-        generation_type: 'preferences',
-        preferences: {
-          comment_type: commentType,
-          response_tone: responseTone,
-          response_length: responseLength
-        },
+        mode: 'auto',
+        videoUrl: '',
+        useLatestVideo: false,
+        checkInterval: '15',
+        responseTone,
+        responseLength,
+        customPrompt: '',
+        includeEmojis: true,
+        maxRepliesPerHour: 10,
         responses: [
           {
+            id: Date.now().toString(),
+            text: "Generated response for preferences",
+            timestamp: new Date(),
             comment_type: commentType,
             response_tone: responseTone,
             response_length: responseLength,
             sample_comment: "This video was so helpful! Can you make more content like this?",
-            generated_response: "Thank you so much for your kind words! 🙏 I'm thrilled to hear you found the video helpful. I definitely have more content like this planned - stay tuned for new uploads every week! Is there any specific topic you'd like me to cover next?",
+            generatedReply: "Thank you so much for your kind words! 🙏 I'm thrilled to hear you found the video helpful. I definitely have more content like this planned - stay tuned for new uploads every week! Is there any specific topic you'd like me to cover next?",
             engagement_tips: "Ask a follow-up question to encourage further interaction"
           }
         ]
@@ -225,20 +254,26 @@ export function YouTubeCommentAutomationPage() {
 
     setLoading(true);
     try {
-      // TODO: Implement actual API call
-      // Simulated response for now
       const response: ResponseGeneration = {
-        id: Date.now().toString(),
-        created_at: new Date().toISOString(),
-        platform: 'youtube',
-        generation_type: 'custom',
+        mode: 'auto',
+        videoUrl: '',
+        useLatestVideo: false,
+        checkInterval: '15',
+        responseTone: 'custom',
+        responseLength: 'medium',
+        customPrompt,
+        includeEmojis: true,
+        maxRepliesPerHour: 10,
         responses: [
           {
+            id: Date.now().toString(),
+            text: "Generated custom response",
+            timestamp: new Date(),
             comment_type: 'custom',
             response_tone: 'custom',
             response_length: 'medium',
             sample_comment: customPrompt,
-            generated_response: "Thank you for sharing your thoughts! Your feedback helps me improve the content. I'll definitely take your suggestions into account for future videos. Let me know if you have any other ideas!",
+            generatedReply: "Thank you for sharing your thoughts! Your feedback helps me improve the content. I'll definitely take your suggestions into account for future videos. Let me know if you have any other ideas!",
             engagement_tips: "Personalize the response based on the specific feedback received"
           }
         ]
@@ -254,6 +289,94 @@ export function YouTubeCommentAutomationPage() {
     }
   };
 
+  const handleInstantReply = async () => {
+    if (!responseGeneration.videoUrl && !responseGeneration.useLatestVideo) {
+      toast.error('Please provide a video URL or select latest video');
+      return;
+    }
+
+    setIsGenerating(true);
+    setIsRunning(true);
+    simulateLoading();
+
+    try {
+      const config: AutomationConfig = {
+        mode: 'instant',
+        videoUrl: responseGeneration.videoUrl,
+        useLatestVideo: responseGeneration.useLatestVideo,
+        checkInterval: responseGeneration.checkInterval,
+        responseTone: responseGeneration.responseTone,
+        responseLength: responseGeneration.responseLength,
+        customPrompt: responseGeneration.customPrompt,
+        includeEmojis: responseGeneration.includeEmojis,
+        maxRepliesPerHour: responseGeneration.maxRepliesPerHour
+      };
+
+      // Show processing message
+      const processingLog: AutoResponse = {
+        id: Date.now().toString(),
+        text: 'Processing comments...',
+        timestamp: new Date(),
+        type: 'info'
+      };
+      setAutomationLogs(prev => [processingLog, ...prev]);
+      
+      // Process comments and get final report
+      const result = await youtubeService.processInstantComments(config);
+      
+      // Convert API logs to AutoResponse format and add them to automation logs
+      const apiLogs = result.logs.map(log => ({
+        id: log.id,
+        text: log.text,
+        timestamp: new Date(log.timestamp),
+        type: log.type,
+        userName: log.userName,
+        commentText: log.commentText,
+        generatedReply: log.generatedReply
+      }));
+      
+      setAutomationLogs(prev => [...apiLogs, ...prev]);
+      
+      // Add final report
+      const finalReport: AutoResponse = {
+        id: Date.now().toString(),
+        text: `Completed processing comments:
+        ✅ Successfully replied: ${result.stats.successfulReplies}
+        ❌ Failed replies: ${result.stats.failedReplies}
+        📊 Success rate: ${Math.round((result.stats.successfulReplies / result.stats.totalComments) * 100)}%`,
+        timestamp: new Date(),
+        type: 'info'
+      };
+      
+      setAutomationLogs(prev => [finalReport, ...prev]);
+      setResponseGeneration(prev => ({
+        ...prev,
+        stats: result.stats
+      }));
+      
+      toast.success('Successfully processed all comments!');
+      
+      // Reset UI state after showing the report
+      setTimeout(() => {
+        setIsGenerating(false);
+        setIsRunning(false);
+        setResponseGeneration(prev => ({ ...prev, stats: undefined }));
+        setAutomationLogs([]);
+      }, 10000); // Keep the report visible for 10 seconds
+
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error('Failed to process comments:', error);
+        toast.error(error.message);
+      } else {
+        console.error('Failed to process comments:', error);
+        toast.error('Failed to process comments');
+      }
+      setIsGenerating(false);
+      setIsRunning(false);
+    }
+  };
+
   const startAutomation = async () => {
     if (!responseGeneration.videoUrl && !responseGeneration.useLatestVideo) {
       toast.error('Please provide a video URL or select latest video');
@@ -263,37 +386,70 @@ export function YouTubeCommentAutomationPage() {
     setIsRunning(true);
     simulateLoading();
 
-    // Set start time for 24-hour tracking
-    const startTime = new Date();
-    const endTime = new Date(startTime.getTime() + 3 * 60 * 60 * 1000); // 3 hours from now
-
-    // Simulate automation start
-    setTimeout(() => {
-      const newResponse: AutoResponse = {
-        id: Date.now().toString(),
-        text: 'Started automated comment responses! 🤖',
-        timestamp: new Date(),
-        type: 'info'
+    try {
+      const config: AutomationConfig = {
+        mode: 'auto',
+        videoUrl: responseGeneration.videoUrl,
+        useLatestVideo: responseGeneration.useLatestVideo,
+        checkInterval: responseGeneration.checkInterval,
+        responseTone: responseGeneration.responseTone,
+        responseLength: responseGeneration.responseLength,
+        customPrompt: responseGeneration.customPrompt,
+        includeEmojis: responseGeneration.includeEmojis,
+        maxRepliesPerHour: responseGeneration.maxRepliesPerHour
       };
 
+      const result = await youtubeService.startAutoComments(config);
+      
+      // For auto mode, start polling for updates
+      const pollInterval = setInterval(async () => {
+        try {
+          const statusResult = await youtubeService.getAutomationStatus(result.automationId);
+          
+          setResponseGeneration(prev => ({
+            ...prev,
+            stats: statusResult.stats
+          }));
+
+          // Add status update to logs
+          const newLog: AutoResponse = {
+            id: Date.now().toString(),
+            text: `Status update: ${statusResult.status}`,
+            timestamp: new Date(),
+            type: 'info'
+          };
+          setAutomationLogs(prev => [newLog, ...prev]);
+
+          if (statusResult.status === 'completed' || statusResult.status === 'failed') {
+            clearInterval(pollInterval);
+            setIsRunning(false);
+            
+            if (statusResult.status === 'completed') {
+              toast.success('3-hour automation completed!');
+            } else {
+              toast.error('Automation failed');
+            }
+          }
+        } catch (error) {
+          console.error('Error polling status:', error);
+          clearInterval(pollInterval);
+          setIsRunning(false);
+          toast.error('Failed to get status updates');
+        }
+      }, 2000); // Poll every 2 seconds
+
+      // Store automation ID and initial stats
       setResponseGeneration(prev => ({
         ...prev,
-        responses: [newResponse, ...prev.responses],
-        stats: {
-          totalComments: 15,
-          successfulReplies: 0,
-          failedReplies: 0,
-          remainingComments: 15,
-          startTime: startTime,
-          endTime: endTime
-        }
+        automationId: result.automationId,
+        stats: result.initialStats
       }));
 
-      // Start simulated comment replies
-      simulateCommentReplies(startTime, endTime);
-
-      toast.success('Automation started successfully!');
-    }, 2000);
+    } catch (error) {
+      console.error('Failed to start automation:', error);
+      toast.error(error.message || 'Failed to start automation');
+      setIsRunning(false);
+    }
   };
 
   const simulateCommentReplies = (startTime?: Date, endTime?: Date) => {
@@ -429,47 +585,23 @@ export function YouTubeCommentAutomationPage() {
     return () => clearInterval(interval);
   };
 
-  const stopAutomation = () => {
-    setIsRunning(false);
-    toast.success('Automation stopped');
-  };
-
-  const handleInstantReply = async () => {
-    if (!responseGeneration.videoUrl && !responseGeneration.useLatestVideo) {
-      toast.error('Please provide a video URL or select latest video');
-      return;
-    }
-
-    setIsGenerating(true);
-    setIsRunning(true);
-    simulateLoading();
-
-    // Simulate instant replies
-    setTimeout(() => {
-      const totalComments = Math.floor(Math.random() * 20) + 5;
-
-      const newResponse: AutoResponse = {
-        id: Date.now().toString(),
-        text: `Starting to process ${totalComments} comments...`,
-        timestamp: new Date(),
-        type: 'info'
-      };
-
-      setResponseGeneration(prev => ({
-        ...prev,
-        mode: 'instant',
-        responses: [newResponse, ...prev.responses],
-        stats: {
-          totalComments,
-          successfulReplies: 0,
-          failedReplies: 0,
-          remainingComments: totalComments
+  const stopAutomation = async () => {
+    try {
+      if (responseGeneration.automationId) {
+        await youtubeService.stopAutomation(responseGeneration.automationId);
+        
+        // Close WebSocket connection
+        if (responseGeneration.websocket) {
+          responseGeneration.websocket.close();
         }
-      }));
-
-      // Start simulated comment replies for instant mode
-      simulateCommentReplies();
-    }, 3000);
+        
+        setIsRunning(false);
+        toast.success('Automation stopped');
+      }
+    } catch (error) {
+      console.error('Failed to stop automation:', error);
+      toast.error('Failed to stop automation');
+    }
   };
 
   const simulateLoading = () => {
@@ -492,7 +624,8 @@ export function YouTubeCommentAutomationPage() {
     }, 750);
   };
 
-  const copyToClipboard = (text: string) => {
+  const copyToClipboard = (text: string | undefined) => {
+    if (!text) return;
     navigator.clipboard.writeText(text);
     toast.success('Copied to clipboard!');
   };
@@ -571,6 +704,24 @@ export function YouTubeCommentAutomationPage() {
       </div>
     </Card>
   );
+
+  // Add cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (responseGeneration.websocket) {
+        responseGeneration.websocket.close();
+      }
+    };
+  }, []);
+
+  // Clean up polling on unmount
+  useEffect(() => {
+    return () => {
+      if (responseGeneration.automationId) {
+        // Any cleanup needed
+      }
+    };
+  }, []);
 
   if (showAuthSimulation) {
     return (
@@ -659,8 +810,8 @@ export function YouTubeCommentAutomationPage() {
                   <p className="text-2xl font-bold text-red-500">{responseGeneration.stats.failedReplies}</p>
                 </div>
                 <div className="p-4 bg-blue-500/10 rounded-lg">
-                  <p className="text-sm text-muted-foreground">Remaining</p>
-                  <p className="text-2xl font-bold text-blue-500">{responseGeneration.stats.remainingComments}</p>
+                  <p className="text-sm text-muted-foreground">Already Replied</p>
+                  <p className="text-2xl font-bold text-blue-500">{responseGeneration.stats.alreadyReplied || 0}</p>
                 </div>
               </div>
             </CardContent>
@@ -675,32 +826,36 @@ export function YouTubeCommentAutomationPage() {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Progress</span>
-                  {responseGeneration.mode === 'auto' ? (
-                    <span>
-                      {Math.min(
-                        100,
-                        Math.round(
-                          ((new Date().getTime() - responseGeneration.stats.startTime.getTime()) /
-                            (responseGeneration.stats.endTime.getTime() - responseGeneration.stats.startTime.getTime())) *
-                            100
-                          )
-                        )}%
-                    </span>
-                  ) : (
-                    <span>
-                      {Math.round(
-                        (responseGeneration.stats.successfulReplies + responseGeneration.stats.failedReplies) /
-                          responseGeneration.stats.totalComments *
-                          100
-                      )}%
-                    </span>
-                  )}
+                  {responseGeneration.mode === 'auto' && responseGeneration.stats?.startTime && responseGeneration.stats?.endTime
+                    ? (
+                      <span>
+                        {Math.min(
+                          100,
+                          Math.round(
+                            ((new Date().getTime() - responseGeneration.stats.startTime.getTime()) /
+                              (responseGeneration.stats.endTime.getTime() - responseGeneration.stats.startTime.getTime())) *
+                              100
+                            )
+                          )}%
+                      </span>
+                    )
+                    : (
+                      <span>
+                        {responseGeneration.stats
+                          ? `${Math.round((responseGeneration.stats.successfulReplies + responseGeneration.stats.failedReplies) /
+                              responseGeneration.stats.totalComments *
+                              100)}%`
+                          : '0%'
+                        }
+                      </span>
+                    )
+                  }
                 </div>
                 <div className="w-full bg-secondary rounded-full h-2">
                   <div 
                     className="bg-primary h-2 rounded-full transition-all duration-500"
                     style={{ 
-                      width: responseGeneration.mode === 'auto'
+                      width: responseGeneration.mode === 'auto' && responseGeneration.stats?.startTime && responseGeneration.stats?.endTime
                         ? `${Math.min(
                             100,
                             Math.round(
@@ -709,14 +864,16 @@ export function YouTubeCommentAutomationPage() {
                                 100
                               )
                             )}%`
-                        : `${(responseGeneration.stats.successfulReplies + responseGeneration.stats.failedReplies) /
+                        : responseGeneration.stats
+                        ? `${Math.round((responseGeneration.stats.successfulReplies + responseGeneration.stats.failedReplies) /
                             responseGeneration.stats.totalComments *
-                            100}%`
+                            100)}%`
+                        : '0%'
                     }}
                   />
                 </div>
                 {responseGeneration.mode === 'auto' && (
-                  <p className="text-xs text-muted-foreground mt-2">
+                  <p className="text-sm text-muted-foreground mt-2">
                     Time Remaining: {formatTimeRemaining(responseGeneration.stats.endTime)}
                   </p>
                 )}
@@ -762,6 +919,7 @@ export function YouTubeCommentAutomationPage() {
             </CardContent>
           </Card>
 
+          {/* Button to stop automation */}
           {responseGeneration.mode === 'auto' && (
             <Button
               onClick={stopAutomation}
@@ -1134,7 +1292,9 @@ export function YouTubeCommentAutomationPage() {
   );
 }
 
-const formatTimeRemaining = (endTime: Date) => {
+const formatTimeRemaining = (endTime?: Date) => {
+  if (!endTime) return 'Completed';
+  
   const now = new Date();
   const diff = endTime.getTime() - now.getTime();
   
