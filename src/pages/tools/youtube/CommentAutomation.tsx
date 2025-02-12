@@ -4,7 +4,7 @@ import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Textarea } from '../../../components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/ui/tabs';
-import { MessageCircle, Copy, Trash2, Settings2, History, Sparkles, Link, Clock, Youtube } from 'lucide-react';
+import { MessageCircle, Copy, Trash2, Settings2, History, Sparkles, Link, Clock, Youtube, RefreshCw } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "../../../components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select";
@@ -12,10 +12,11 @@ import { Switch } from "../../../components/ui/switch";
 import { Slider } from "../../../components/ui/slider";
 import { ToolLayout } from "@/components/tool-page/ToolLayout";
 import { ToolTitle } from "@/components/ui/tool-title";
-import { LoadingModal } from "@/components/ui/loading-modal";
 import { cn } from "@/lib/utils";
 import { youtubeService } from '@/lib/services/youtube.service';
 import type { AutomationConfig } from '@/lib/types/youtube';
+import { Badge } from "@/components/ui/badge";
+import { Loader2 } from "lucide-react";
 
 // Constants for dropdown options
 const RESPONSE_TONES = [
@@ -63,6 +64,7 @@ interface ResponseGeneration {
   };
   websocket?: WebSocket;
   automationId?: string;
+  status?: string;
 }
 
 interface AutoResponse {
@@ -104,6 +106,9 @@ export function YouTubeCommentAutomationPage() {
   });
   const [showAuthSimulation, setShowAuthSimulation] = useState(false);
   const [automationLogs, setAutomationLogs] = useState<AutoResponse[]>([]);
+  const [commentHistory, setCommentHistory] = useState<Array<any>>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [historyError, setHistoryError] = useState<string | null>(null);
 
   // Check YouTube connection on mount
   useEffect(() => {
@@ -401,54 +406,119 @@ export function YouTubeCommentAutomationPage() {
 
       const result = await youtubeService.startAutoComments(config);
       
-      // For auto mode, start polling for updates
+      // Store automation ID, status and initial stats
+      setResponseGeneration(prev => ({
+        ...prev,
+        automationId: result.automationId,
+        status: 'running',
+        stats: {
+          totalComments: result.initialStats.totalComments,
+          successfulReplies: result.initialStats.successfulReplies,
+          failedReplies: result.initialStats.failedReplies,
+          remainingComments: result.initialStats.remainingComments,
+          alreadyReplied: result.initialStats.alreadyReplied || 0,
+          startTime: result.initialStats.startTime ? new Date(result.initialStats.startTime) : undefined,
+          endTime: result.initialStats.endTime ? new Date(result.initialStats.endTime) : undefined
+        }
+      }));
+
+      // Add initial log
+      const initialLog: AutoResponse = {
+        id: Date.now().toString(),
+        text: 'Starting 3-hour automation...',
+        timestamp: new Date(),
+        type: 'info'
+      };
+      setAutomationLogs(prev => [initialLog, ...prev]);
+
+      // Start polling for updates
       const pollInterval = setInterval(async () => {
         try {
+          if (!result.automationId) {
+            clearInterval(pollInterval);
+            return;
+          }
+
           const statusResult = await youtubeService.getAutomationStatus(result.automationId);
           
+          // Update stats and status
           setResponseGeneration(prev => ({
             ...prev,
-            stats: statusResult.stats
+            status: statusResult.status,
+            stats: {
+              ...prev.stats!,
+              ...statusResult.stats
+            }
           }));
 
-          // Add status update to logs
-          const newLog: AutoResponse = {
-            id: Date.now().toString(),
-            text: `Status update: ${statusResult.status}`,
-            timestamp: new Date(),
-            type: 'info'
-          };
-          setAutomationLogs(prev => [newLog, ...prev]);
+          // Add status update to logs if there are changes
+          if (statusResult.stats.successfulReplies > 0 || statusResult.stats.failedReplies > 0) {
+            const newLog: AutoResponse = {
+              id: Date.now().toString(),
+              text: `Status update: ${statusResult.status.toUpperCase()}
+                ✅ Successful replies: ${statusResult.stats.successfulReplies}
+                ❌ Failed replies: ${statusResult.stats.failedReplies}
+                ⏳ Remaining comments: ${statusResult.stats.remainingComments}
+                🔄 Already replied: ${statusResult.stats.alreadyReplied}`,
+              timestamp: new Date(),
+              type: 'info'
+            };
+            setAutomationLogs(prev => [newLog, ...prev]);
+          }
 
-          if (statusResult.status === 'completed' || statusResult.status === 'failed') {
+          // Check if automation is complete
+          if (statusResult.status === 'completed' || statusResult.status === 'failed' || statusResult.status === 'stopped') {
             clearInterval(pollInterval);
             setIsRunning(false);
+            
+            const finalLog: AutoResponse = {
+              id: Date.now().toString(),
+              text: statusResult.status === 'completed' 
+                ? '3-hour automation completed successfully!' 
+                : `Automation ${statusResult.status}`,
+              timestamp: new Date(),
+              type: statusResult.status === 'completed' ? 'success' : 'error'
+            };
+            setAutomationLogs(prev => [finalLog, ...prev]);
             
             if (statusResult.status === 'completed') {
               toast.success('3-hour automation completed!');
             } else {
-              toast.error('Automation failed');
+              toast.error(`Automation ${statusResult.status}`);
             }
+
+            // Reset UI after delay
+            setTimeout(() => {
+              setResponseGeneration(prev => ({
+                ...prev,
+                stats: undefined,
+                status: undefined,
+                automationId: undefined
+              }));
+              setAutomationLogs([]);
+            }, 10000);
           }
         } catch (error) {
           console.error('Error polling status:', error);
           clearInterval(pollInterval);
           setIsRunning(false);
+          setResponseGeneration(prev => ({
+            ...prev,
+            status: 'failed'
+          }));
           toast.error('Failed to get status updates');
         }
-      }, 2000); // Poll every 2 seconds
-
-      // Store automation ID and initial stats
-      setResponseGeneration(prev => ({
-        ...prev,
-        automationId: result.automationId,
-        stats: result.initialStats
-      }));
+      }, 2000);
 
     } catch (error) {
       console.error('Failed to start automation:', error);
-      toast.error(error.message || 'Failed to start automation');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to start automation';
+      toast.error(errorMessage);
       setIsRunning(false);
+      setResponseGeneration(prev => ({
+        ...prev,
+        status: 'failed'
+      }));
     }
   };
 
@@ -723,6 +793,32 @@ export function YouTubeCommentAutomationPage() {
     };
   }, []);
 
+  // Add fetchHistory function
+  const fetchHistory = async () => {
+    try {
+      setIsLoadingHistory(true);
+      setHistoryError(null);
+      const response = await youtubeService.getCommentHistory(10, 0);
+      setCommentHistory(response.history);
+    } catch (error) {
+      setHistoryError('Failed to load comment history');
+      console.error('Error fetching history:', error);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
+
+  // Add useEffect to fetch history on mount and after automation completes
+  useEffect(() => {
+    fetchHistory();
+  }, []);
+
+  useEffect(() => {
+    if (responseGeneration.status === 'completed') {
+      fetchHistory();
+    }
+  }, [responseGeneration.status]);
+
   if (showAuthSimulation) {
     return (
       <ToolLayout>
@@ -916,6 +1012,103 @@ export function YouTubeCommentAutomationPage() {
                   </div>
                 </div>
               ))}
+            </CardContent>
+          </Card>
+
+          {/* Comment History Card */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <History className="h-5 w-5" />
+                    Automation History
+                  </CardTitle>
+                  <CardDescription>
+                    View your past automation sessions
+                  </CardDescription>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={fetchHistory}
+                  disabled={isLoadingHistory}
+                >
+                  <RefreshCw className={cn("h-4 w-4", isLoadingHistory && "animate-spin")} />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {isLoadingHistory ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                </div>
+              ) : historyError ? (
+                <div className="text-center py-8 text-destructive">
+                  {historyError}
+                </div>
+              ) : commentHistory.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  No automation history yet
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {commentHistory.map((session) => (
+                    <Card key={session.id} className="p-4">
+                      <div className="space-y-2">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <p className="text-sm font-medium">
+                              {new Date(session.createdAt).toLocaleDateString()} at{' '}
+                              {new Date(session.createdAt).toLocaleTimeString()}
+                            </p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge variant={
+                                session.status === 'completed' ? 'success' :
+                                session.status === 'failed' ? 'destructive' :
+                                session.status === 'running' ? 'default' :
+                                'secondary'
+                              }>
+                                {session.status}
+                              </Badge>
+                              {session.completedAt && (
+                                <span className="text-xs text-muted-foreground">
+                                  Completed: {new Date(session.completedAt).toLocaleTimeString()}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
+                          <div className="text-center p-2 bg-muted rounded-lg">
+                            <p className="text-xs text-muted-foreground">Total Comments</p>
+                            <p className="text-lg font-semibold">{session.stats.totalComments}</p>
+                          </div>
+                          <div className="text-center p-2 bg-muted rounded-lg">
+                            <p className="text-xs text-muted-foreground">Successful</p>
+                            <p className="text-lg font-semibold text-green-500">{session.stats.successfulReplies}</p>
+                          </div>
+                          <div className="text-center p-2 bg-muted rounded-lg">
+                            <p className="text-xs text-muted-foreground">Failed</p>
+                            <p className="text-lg font-semibold text-red-500">{session.stats.failedReplies}</p>
+                          </div>
+                          <div className="text-center p-2 bg-muted rounded-lg">
+                            <p className="text-xs text-muted-foreground">Already Replied</p>
+                            <p className="text-lg font-semibold text-blue-500">{session.stats.alreadyReplied}</p>
+                          </div>
+                        </div>
+                        
+                        {session.error && (
+                          <div className="mt-2 p-2 rounded-lg bg-destructive/10 text-destructive text-sm">
+                            {session.error}
+                          </div>
+                        )}
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -1287,6 +1480,125 @@ export function YouTubeCommentAutomationPage() {
             </Card>
           )}
         </Tabs>
+
+        {/* Automation Logs Section */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <History className="h-5 w-5" />
+                  Automation Logs
+                </CardTitle>
+                <CardDescription>
+                  View your recent automation activities
+                </CardDescription>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={fetchHistory}
+                disabled={isLoadingHistory}
+              >
+                <RefreshCw className={cn("h-4 w-4", isLoadingHistory && "animate-spin")} />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {isLoadingHistory ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin" />
+              </div>
+            ) : historyError ? (
+              <div className="text-center py-8 text-destructive">
+                {historyError}
+              </div>
+            ) : commentHistory.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No automation logs yet
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {commentHistory.map((log) => (
+                  <Card key={log.id} className="p-4">
+                    <div className="space-y-2">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-sm font-medium">
+                            {formatDate(log.createdAt)}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant={
+                              log.status === 'completed' ? 'success' :
+                              log.status === 'failed' ? 'destructive' :
+                              log.status === 'running' ? 'default' :
+                              'secondary'
+                            }>
+                              {log.status}
+                            </Badge>
+                            {log.completedAt && (
+                              <span className="text-xs text-muted-foreground">
+                                Completed: {formatDate(log.completedAt)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4">
+                        <div className="text-center p-2 bg-muted rounded-lg">
+                          <p className="text-xs text-muted-foreground">Total Comments</p>
+                          <p className="text-lg font-semibold">{log.stats.totalComments}</p>
+                        </div>
+                        <div className="text-center p-2 bg-muted rounded-lg">
+                          <p className="text-xs text-muted-foreground">Successful</p>
+                          <p className="text-lg font-semibold text-green-500">{log.stats.successfulReplies}</p>
+                        </div>
+                        <div className="text-center p-2 bg-muted rounded-lg">
+                          <p className="text-xs text-muted-foreground">Failed</p>
+                          <p className="text-lg font-semibold text-red-500">{log.stats.failedReplies}</p>
+                        </div>
+                        <div className="text-center p-2 bg-muted rounded-lg">
+                          <p className="text-xs text-muted-foreground">Already Replied</p>
+                          <p className="text-lg font-semibold text-blue-500">{log.stats.alreadyReplied}</p>
+                        </div>
+                      </div>
+
+                      {/* Settings Summary */}
+                      <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+                        <p className="text-sm font-medium mb-2">Settings Used:</p>
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div>
+                            <span className="text-muted-foreground">Video: </span>
+                            {log.settings.use_latest_video ? 'Latest Video' : 'Custom URL'}
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Response Tone: </span>
+                            {log.settings.response_tone}
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Response Length: </span>
+                            {log.settings.response_length}
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Emojis: </span>
+                            {log.settings.include_emojis ? 'Yes' : 'No'}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {log.error && (
+                        <div className="mt-2 p-2 rounded-lg bg-destructive/10 text-destructive text-sm">
+                          {log.error}
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </ToolLayout>
   );
