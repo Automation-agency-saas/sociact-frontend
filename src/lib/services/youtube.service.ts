@@ -53,11 +53,23 @@ class YouTubeService {
       headers: this.getAuthHeaders(),
       body: JSON.stringify(config)
     });
+    
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.detail || 'Failed to start automation');
     }
-    return response.json();
+    
+    const data = await response.json();
+    
+    // Convert date strings to Date objects
+    if (data.initialStats.startTime) {
+      data.initialStats.startTime = new Date(data.initialStats.startTime);
+    }
+    if (data.initialStats.endTime) {
+      data.initialStats.endTime = new Date(data.initialStats.endTime);
+    }
+    
+    return data;
   }
 
   async processInstantComments(config: AutomationConfig): Promise<{
@@ -99,6 +111,7 @@ class YouTubeService {
       successfulReplies: number;
       failedReplies: number;
       remainingComments: number;
+      alreadyReplied: number;
     };
   }> {
     const response = await fetch(`${this.baseUrl}/comments/status/${automationId}`, {
@@ -117,10 +130,61 @@ class YouTubeService {
       method: 'POST',
       headers: this.getAuthHeaders()
     });
+    
     if (!response.ok) {
       throw new Error('Failed to stop automation');
     }
+    
     return response.json();
+  }
+
+  async getCommentHistory(limit: number = 10, offset: number = 0): Promise<{
+    history: Array<{
+      id: string;
+      toolType: string;
+      platform: string;
+      settings: any;
+      stats: {
+        totalComments: number;
+        successfulReplies: number;
+        failedReplies: number;
+        remainingComments: number;
+        alreadyReplied: number;
+      };
+      status: string;
+      createdAt: string;
+      completedAt: string | null;
+      error: string | null;
+    }>;
+  }> {
+    const response = await fetch(
+      `${this.baseUrl}/comments/history?limit=${limit}&offset=${offset}`,
+      {
+        headers: this.getAuthHeaders()
+      }
+    );
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch comment history');
+    }
+    
+    const data = await response.json();
+    
+    // Convert date strings to Date objects and ensure proper typing
+    return {
+      history: data.history.map((item: any) => ({
+        ...item,
+        createdAt: new Date(item.createdAt).toISOString(),
+        completedAt: item.completedAt ? new Date(item.completedAt).toISOString() : null,
+        stats: {
+          totalComments: item.stats.total_comments || 0,
+          successfulReplies: item.stats.successful_responses || 0,
+          failedReplies: item.stats.failed_responses || 0,
+          remainingComments: item.stats.remaining_comments || 0,
+          alreadyReplied: item.stats.already_replied || 0
+        }
+      }))
+    };
   }
 }
 

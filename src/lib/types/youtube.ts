@@ -33,8 +33,9 @@ export interface AutomationStats {
   successfulReplies: number;
   failedReplies: number;
   remainingComments: number;
-  startTime?: string;
-  endTime?: string;
+  alreadyReplied: number;
+  startTime?: Date;
+  endTime?: Date;
 }
 
 export interface AutoResponse {
@@ -45,4 +46,29 @@ export interface AutoResponse {
   commentText?: string;
   userName?: string;
   generatedReply?: string;
+}
+
+export interface ResponseGeneration {
+  mode: 'auto' | 'instant';
+  videoUrl: string;
+  useLatestVideo: boolean;
+  checkInterval: string;
+  responseTone: string;
+  responseLength: string;
+  customPrompt: string;
+  responses: AutoResponse[];
+  includeEmojis: boolean;
+  maxRepliesPerHour: number;
+  status?: 'running' | 'completed' | 'failed' | 'stopped';
+  stats?: {
+    totalComments: number;
+    successfulReplies: number;
+    failedReplies: number;
+    remainingComments: number;
+    startTime?: Date;
+    endTime?: Date;
+    alreadyReplied?: number;
+  };
+  websocket?: WebSocket;
+  automationId?: string;
 } 
