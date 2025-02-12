@@ -30,7 +30,6 @@ import { YouTubeCommentAutomationPage } from './pages/tools/youtube/CommentAutom
 import { InstagramIdeaGeneratorPage } from './pages/tools/instagram/IdeaGenerator';
 import { InstagramCaptionGeneratorPage } from './pages/tools/instagram/CaptionGenerator';
 import { InstagramCommentAutomationPage } from './pages/tools/instagram/CommentAutomation';
-import { TwitterIdeaGeneratorPage } from './pages/tools/twitter/IdeaGenerator';
 import { TwitterCommentAutomationPage } from './pages/tools/twitter/CommentAutomation';
 import { LinkedInIdeaGeneratorPage } from './pages/tools/linkedin/IdeaGenerator';
 import { LinkedInPostGeneratorPage } from './pages/tools/linkedin/PostGenerator';
@@ -142,7 +141,11 @@ function AppRoutes() {
             <InstagramCommentAutomationPage />
           </ProtectedRoute>
         } />
-        
+        <Route path="/twitter/comment-automation" element={
+          <ProtectedRoute>
+            <TwitterCommentAutomationPage />
+          </ProtectedRoute>
+        } />
         {/* Twitter Tools */}
         <Route path="/twitter/idea-generator" element={
           <ProtectedRoute>
@@ -151,10 +154,10 @@ function AppRoutes() {
         } />
         <Route path="/twitter/thread-generator" element={
           <ProtectedRoute>
-            <TwitterCommentAutomationPage />
+            <TwitterThreadGeneratorPage/>
           </ProtectedRoute>
         } />
-        } />
+        
         
         {/* LinkedIn Tools */}
         <Route path="/linkedin/idea-generator" element={
