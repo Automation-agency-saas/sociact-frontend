@@ -4,7 +4,7 @@ import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Textarea } from '../../../components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../../components/ui/tabs';
-import { MessageCircle, Copy, Trash2, Settings2, History, Sparkles, Link, Clock, Instagram } from 'lucide-react';
+import { MessageCircle, Copy, Trash2, Settings2, History, Sparkles, Link, Clock, Instagram, CheckCircle2, XCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "../../../components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select";
@@ -14,6 +14,9 @@ import { ToolLayout } from "@/components/tool-page/ToolLayout";
 import { ToolTitle } from "@/components/ui/tool-title";
 import { LoadingModal } from "@/components/ui/loading-modal";
 import { cn } from "@/lib/utils";
+import { commentAutomationService } from "@/lib/services/comment-automation";
+import { instagramService } from "@/lib/services/instagram.service";
+import { useLocation } from 'react-router-dom';
 
 // Constants for dropdown options
 const RESPONSE_TONES = [
@@ -68,10 +71,27 @@ interface ResponseGeneration {
   stats?: AutomationStats;
 }
 
+interface AutomationLog {
+  id: string;
+  created_at: string;
+  completed_at?: string;
+  status: string;
+  stats: {
+    comments_processed: number;
+    successful_responses: number;
+    failed_responses: number;
+  };
+  post_url?: string;
+  settings: {
+    tone: string;
+    style: string;
+  };
+}
+
 export function InstagramCommentAutomationPage() {
-  // Account connection state
-  const [isInstagramConnected, setIsInstagramConnected] = useState(false);
-  
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
@@ -80,288 +100,128 @@ export function InstagramCommentAutomationPage() {
     mode: 'instant',
     postUrl: '',
     useLatestPost: false,
-    responseTone: '',
-    responseLength: '',
+    responseTone: 'Professional',
+    responseLength: 'Medium (6-10 words)',
     customPrompt: '',
     responses: [],
     includeEmojis: true
   });
-  const [showAuthSimulation, setShowAuthSimulation] = useState(false);
   const [automationLogs, setAutomationLogs] = useState<AutoResponse[]>([]);
+  const [logs, setLogs] = useState<AutomationLog[]>([]);
+  const location = useLocation();
 
-  // Check Instagram connection on mount
+  // Check Instagram auth status and handle auth return
   useEffect(() => {
-    // TODO: Replace with actual API call
-    checkInstagramConnection();
+    checkAuthStatus();
+    handleAuthReturn();
   }, []);
 
-  const checkInstagramConnection = async () => {
+  const checkAuthStatus = async () => {
     try {
-      // TODO: Replace with actual API call
-      // Simulated API call
-      const connected = false; // This would come from your API
-      setIsInstagramConnected(connected);
+      setIsLoading(true);
+      const response = await instagramService.checkAuthStatus();
+      setIsAuthenticated(response.auth_status);
+      
+      if (response.auth_status) {
+        fetchLogs();
+      }
     } catch (error) {
-      console.error('Failed to check Instagram connection:', error);
-      setIsInstagramConnected(false);
+      console.error('Failed to check Instagram auth status:', error);
+      setIsAuthenticated(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAuthReturn = () => {
+    const state = location.state as { instagramConnected?: boolean };
+    if (state?.instagramConnected) {
+      setIsAuthenticated(true);
+      fetchLogs();
+      // Clear the state after processing
+      window.history.replaceState({}, document.title, location.pathname);
     }
   };
 
   const handleConnectInstagram = async () => {
-    setShowAuthSimulation(true);
-    // Simulate Instagram auth flow
-    setTimeout(() => {
-      setShowAuthSimulation(false);
-      setIsInstagramConnected(true);
-      toast.success('Instagram account connected successfully!');
-    }, 3000);
+    try {
+      setIsAuthenticating(true);
+      const authUrl = await instagramService.getAuthUrl();
+      window.location.href = authUrl;
+    } catch (error: any) {
+      console.error('Failed to initiate Instagram auth:', error);
+      toast.error(error.message || 'Failed to connect Instagram account');
+    } finally {
+      setIsAuthenticating(false);
+    }
   };
 
-  const startAutomation = async () => {
+  const fetchLogs = async () => {
+    try {
+      setIsLoading(true);
+      const response = await commentAutomationService.getLogs();
+      // Filter for Instagram logs only
+      const instagramLogs = response.filter(log => log.platform === 'instagram');
+      setLogs(instagramLogs);
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to fetch automation logs');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleStartAutomation = async () => {
     if (!responseGeneration.postUrl && !responseGeneration.useLatestPost) {
       toast.error('Please provide a post URL or select latest post');
       return;
     }
 
-    setIsRunning(true);
-    simulateLoading();
+    try {
+      setIsLoading(true);
+      setIsRunning(true);
+      simulateLoading();
 
-    // Simulate automation start
-    setTimeout(() => {
-      const newResponse: AutoResponse = {
-        id: Date.now().toString(),
-        text: 'Started automated comment responses! 🤖',
-        timestamp: new Date(),
-        type: 'info'
-      };
+      const response = await commentAutomationService.startAutomation({
+        platform: 'instagram',
+        tone: responseGeneration.responseTone.toLowerCase(),
+        style: responseGeneration.responseLength.split(' ')[0].toLowerCase(),
+        post_url: responseGeneration.postUrl,
+        use_latest_post: responseGeneration.useLatestPost
+      });
 
-      setResponseGeneration(prev => ({
-        ...prev,
-        responses: [newResponse, ...prev.responses],
-        stats: {
-          totalComments: 15,
-          successfulReplies: 0,
-          failedReplies: 0,
-          remainingComments: 15
-        }
-      }));
-
-      // Start simulated comment replies
-      simulateCommentReplies();
-
-      toast.success('Automation started successfully!');
-    }, 2000);
-  };
-
-  const simulateCommentReplies = () => {
-    let repliedCount = 0;
-    let totalComments = 15;
-    
-    const interval = setInterval(() => {
-      // Only increment total comments occasionally
-      if (Math.random() > 0.7) {
-        totalComments++;
-        setResponseGeneration(prev => ({
-          ...prev,
-          stats: prev.stats ? {
-            ...prev.stats,
-            totalComments: prev.stats.totalComments + 1,
-            remainingComments: prev.stats.remainingComments + 1
-          } : prev.stats
-        }));
-      }
-
-      repliedCount++;
-      const success = Math.random() > 0.2; // 80% success rate
-
-      // Generate a random reply based on preferences
-      const generatedReply = success ? 
-        `Thanks for your support! ${responseGeneration.includeEmojis ? '🙏 ' : ''}Really appreciate your feedback. ${responseGeneration.includeEmojis ? '💫' : ''}` :
-        '';
-
-      const newLog: AutoResponse = {
-        id: Date.now().toString(),
-        text: success 
-          ? `Successfully replied to comment` 
-          : `Failed to reply to comment`,
-        timestamp: new Date(),
-        type: success ? 'success' : 'error',
-        userName: `user_${Math.floor(Math.random() * 1000)}`,
-        commentText: 'Great content! Keep it up! 🔥',
-        generatedReply: success ? generatedReply : undefined
-      };
-
-      setAutomationLogs(prev => [newLog, ...prev]);
-      
-      setResponseGeneration(prev => ({
-        ...prev,
-        stats: {
-          totalComments,
-          successfulReplies: prev.stats!.successfulReplies + (success ? 1 : 0),
-          failedReplies: prev.stats!.failedReplies + (success ? 0 : 1),
-          remainingComments: totalComments - repliedCount
-        }
-      }));
-
-      // Stop when all comments are processed
-      if (repliedCount >= totalComments) {
-        clearInterval(interval);
-        toast.success('All comments have been processed!');
-        
-        // Add final report
-        const finalReport: AutoResponse = {
+      if (response.success) {
+        const newResponse: AutoResponse = {
           id: Date.now().toString(),
-          text: `Completed processing ${totalComments} comments:
-          ✅ Successfully replied: ${responseGeneration.stats?.successfulReplies}
-          ❌ Failed replies: ${responseGeneration.stats?.failedReplies}
-          📊 Success rate: ${Math.round((responseGeneration.stats?.successfulReplies || 0) / totalComments * 100)}%`,
+          text: 'Started automated comment responses! 🤖',
           timestamp: new Date(),
           type: 'info'
         };
 
         setResponseGeneration(prev => ({
           ...prev,
-          responses: [finalReport, ...prev.responses]
+          responses: [newResponse, ...prev.responses],
+          stats: {
+            totalComments: response.stats.comments_processed,
+            successfulReplies: response.stats.successful_responses,
+            failedReplies: response.stats.failed_responses,
+            remainingComments: response.stats.comments_processed - (response.stats.successful_responses + response.stats.failed_responses)
+          }
         }));
 
-        // Reset UI after delay
-        setTimeout(() => {
-          setResponseGeneration(prev => ({
-            ...prev,
-            stats: undefined
-          }));
-          setIsRunning(false);
-          setAutomationLogs([]);
-        }, 5000);
+        toast.success('Automation started successfully!');
+        fetchLogs();
       }
-    }, 1000); // Fixed interval for instant mode
-
-    // Cleanup interval on component unmount
-    return () => clearInterval(interval);
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to start automation');
+      setIsRunning(false);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const stopAutomation = () => {
     setIsRunning(false);
     toast.success('Automation stopped');
-  };
-
-  const handleInstantReply = async () => {
-    if (!responseGeneration.postUrl && !responseGeneration.useLatestPost) {
-      toast.error('Please provide a post URL or select latest post');
-      return;
-    }
-
-    setIsGenerating(true);
-    setIsRunning(true);
-    simulateLoading();
-
-    // Simulate instant replies
-    setTimeout(() => {
-      const totalComments = Math.floor(Math.random() * 20) + 5;
-
-      const newResponse: AutoResponse = {
-        id: Date.now().toString(),
-        text: `Starting to process ${totalComments} comments...`,
-        timestamp: new Date(),
-        type: 'info'
-      };
-
-      setResponseGeneration(prev => ({
-        ...prev,
-        responses: [newResponse, ...prev.responses],
-        stats: {
-          totalComments,
-          successfulReplies: 0,
-          failedReplies: 0,
-          remainingComments: totalComments
-        }
-      }));
-
-      // Start simulated comment replies for instant mode
-      simulateInstantReplies(totalComments);
-    }, 3000);
-  };
-
-  const simulateInstantReplies = (totalComments: number) => {
-    let repliedCount = 0;
-    const interval = setInterval(() => {
-      repliedCount++;
-      const success = Math.random() > 0.2; // 80% success rate
-
-      // Generate a random reply based on preferences
-      const generatedReply = success ? 
-        `Thanks for your support! ${responseGeneration.includeEmojis ? '🙏 ' : ''}Really appreciate your feedback. ${responseGeneration.includeEmojis ? '💫' : ''}` :
-        '';
-
-      const newLog: AutoResponse = {
-        id: Date.now().toString(),
-        text: success 
-          ? `Successfully replied to comment` 
-          : `Failed to reply to comment`,
-        timestamp: new Date(),
-        type: success ? 'success' : 'error',
-        userName: `user_${Math.floor(Math.random() * 1000)}`,
-        commentText: 'Great content! Keep it up! 🔥',
-        generatedReply: success ? generatedReply : undefined
-      };
-
-      setAutomationLogs(prev => [newLog, ...prev]);
-      
-      setResponseGeneration(prev => {
-        if (!prev.stats) return prev; // Guard against undefined stats
-        
-        return {
-          ...prev,
-          stats: {
-            ...prev.stats,
-            successfulReplies: prev.stats.successfulReplies + (success ? 1 : 0),
-            failedReplies: prev.stats.failedReplies + (success ? 0 : 1),
-            remainingComments: totalComments - repliedCount
-          }
-        };
-      });
-
-      if (repliedCount >= totalComments) {
-        clearInterval(interval);
-        
-        // Show completion toast
-        toast.success('All comments have been processed!');
-
-        // Add final report to responses
-        setResponseGeneration(prev => {
-          if (!prev.stats) return prev; // Guard against undefined stats
-          
-          const finalReport: AutoResponse = {
-            id: Date.now().toString(),
-            text: `Completed processing ${totalComments} comments:
-            ✅ Successfully replied: ${prev.stats.successfulReplies}
-            ❌ Failed replies: ${prev.stats.failedReplies}
-            📊 Success rate: ${Math.round((prev.stats.successfulReplies) / totalComments * 100)}%`,
-            timestamp: new Date(),
-            type: 'info'
-          };
-
-          return {
-            ...prev,
-            responses: [finalReport, ...prev.responses]
-          };
-        });
-
-        // Reset UI after delay
-        setTimeout(() => {
-          setResponseGeneration(prev => ({
-            ...prev,
-            stats: undefined
-          }));
-    setIsRunning(false);
-          setIsGenerating(false);
-          setAutomationLogs([]);
-        }, 5000);
-      }
-    }, 1000);
-
-    // Cleanup interval on component unmount
-    return () => clearInterval(interval);
   };
 
   const simulateLoading = () => {
@@ -384,20 +244,37 @@ export function InstagramCommentAutomationPage() {
     }, 750);
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success('Copied to clipboard!');
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString();
   };
 
-  const deleteResponse = (id: string) => {
-    setResponseGeneration(prev => ({
-      ...prev,
-      responses: prev.responses.filter(response => response.id !== id)
-    }));
-    toast.success('Response deleted');
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return 'text-green-500';
+      case 'failed':
+        return 'text-red-500';
+      case 'running':
+        return 'text-blue-500';
+      default:
+        return 'text-gray-500';
+    }
   };
 
-  if (showAuthSimulation) {
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return <CheckCircle2 className="h-5 w-5 text-green-500" />;
+      case 'failed':
+        return <XCircle className="h-5 w-5 text-red-500" />;
+      case 'running':
+        return <Clock className="h-5 w-5 text-blue-500" />;
+      default:
+        return null;
+    }
+  };
+
+  if (isAuthenticating) {
     return (
       <ToolLayout>
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
@@ -423,8 +300,48 @@ export function InstagramCommentAutomationPage() {
     );
   }
 
+  if (!isAuthenticated) {
+    return (
+      <ToolLayout>
+        <ToolTitle 
+          title="Instagram Comment Automation 📸" 
+          description="Automate responses to Instagram comments and mentions"
+        />
+        
+        <Card className="mt-8">
+          <CardHeader>
+            <CardTitle>Connect Your Instagram Account</CardTitle>
+            <CardDescription>
+              To use the comment automation features, please connect your Instagram account first.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center justify-center py-8">
+            <Instagram className="w-16 h-16 text-pink-500 mb-4" />
+            <p className="text-center text-muted-foreground mb-6">
+              Connect your Instagram account to enable automatic comment responses and engagement features.
+            </p>
+            <Button 
+              onClick={handleConnectInstagram} 
+              disabled={isLoading}
+              className="bg-gradient-to-r from-purple-500 to-pink-500"
+            >
+              {isLoading ? (
+                <div className="flex items-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                  Connecting...
+                </div>
+              ) : (
+                <>Connect Instagram Account</>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+      </ToolLayout>
+    );
+  }
+
   if ((isGenerating || isRunning) && responseGeneration.stats) {
-  return (
+    return (
       <ToolLayout>
         <ToolTitle 
           title="Automation in Progress 🤖" 
@@ -532,208 +449,221 @@ export function InstagramCommentAutomationPage() {
     );
   }
 
-  if (!isInstagramConnected) {
-    return (
-      <ToolLayout>
-        <ToolTitle 
-          title="Instagram Comment Automation 📸" 
-          description="Automate responses to Instagram comments and mentions"
-        />
-        
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle>Connect Your Instagram Account</CardTitle>
-            <CardDescription>
-              To use the comment automation features, please connect your Instagram account first.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center justify-center py-8">
-            <Instagram className="w-16 h-16 text-pink-500 mb-4" />
-            <p className="text-center text-muted-foreground mb-6">
-              Connect your Instagram account to enable automatic comment responses and engagement features.
-            </p>
-            <Button onClick={handleConnectInstagram} className="bg-gradient-to-r from-purple-500 to-pink-500">
-              Connect Instagram Account
-            </Button>
-          </CardContent>
-        </Card>
-      </ToolLayout>
-    );
-  }
-
   return (
     <ToolLayout>
-      <ToolTitle 
-        title="Instagram Comment Automation 📸" 
-        description="Reply to all pending comments on your Instagram posts instantly"
-      />
-      
-      <div className="space-y-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Comment Reply Settings</CardTitle>
-            <CardDescription>
-              Reply to all pending comments on a post instantly
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Post Selection */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium">Post Selection</label>
-                <div className="flex items-center space-x-2">
+      <div className="container mx-auto py-8">
+        <ToolTitle
+          title="Instagram Comment Automation"
+          description="Automatically respond to comments on your Instagram posts"
+        />
+
+        <div className="mt-8 space-y-8">
+          {/* Configuration Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Automation Settings</CardTitle>
+              <CardDescription>Configure how you want to handle comment responses</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Post Selection */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium">Post Selection</label>
                   <Switch
                     checked={responseGeneration.useLatestPost}
                     onCheckedChange={(checked) => 
-                      setResponseGeneration(prev => ({ ...prev, useLatestPost: checked, postUrl: '' }))}
+                      setResponseGeneration(prev => ({...prev, useLatestPost: checked}))
+                    }
                   />
-                  <span className="text-sm">Use Latest Post</span>
                 </div>
+                {!responseGeneration.useLatestPost && (
+                  <Input
+                    placeholder="Enter Instagram post URL"
+                    value={responseGeneration.postUrl}
+                    onChange={(e) => 
+                      setResponseGeneration(prev => ({...prev, postUrl: e.target.value}))
+                    }
+                  />
+                )}
               </div>
-              
-              {!responseGeneration.useLatestPost && (
-                <Input
-                  placeholder="Enter Instagram post URL..."
-                  value={responseGeneration.postUrl}
-                  onChange={(e) => setResponseGeneration(prev => ({ ...prev, postUrl: e.target.value }))}
-                />
-              )}
-            </div>
 
-            {/* Response Settings */}
-            <div className="space-y-4">
+              {/* Response Tone */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">Response Tone</label>
                 <Select
                   value={responseGeneration.responseTone}
-                  onValueChange={(value) => setResponseGeneration(prev => ({ ...prev, responseTone: value }))}
+                  onValueChange={(value) => 
+                    setResponseGeneration(prev => ({...prev, responseTone: value}))
+                  }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select response tone" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {RESPONSE_TONES.map((tone) => (
                       <SelectItem key={tone} value={tone}>
                         {tone}
-                    </SelectItem>
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                      </div>
+              </div>
 
+              {/* Response Length */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">Response Length</label>
                 <Select
                   value={responseGeneration.responseLength}
-                  onValueChange={(value) => setResponseGeneration(prev => ({ ...prev, responseLength: value }))}
+                  onValueChange={(value) => 
+                    setResponseGeneration(prev => ({...prev, responseLength: value}))
+                  }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select response length" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {RESPONSE_LENGTHS.map((length) => (
                       <SelectItem key={length} value={length}>
                         {length}
-                    </SelectItem>
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
-              <div className="flex items-center space-x-2">
+              {/* Custom Prompt */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Custom Instructions (Optional)</label>
+                <Textarea
+                  placeholder="Add any specific instructions for response generation..."
+                  value={responseGeneration.customPrompt}
+                  onChange={(e) => 
+                    setResponseGeneration(prev => ({...prev, customPrompt: e.target.value}))
+                  }
+                />
+              </div>
+
+              {/* Emoji Toggle */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">Include Emojis</p>
+                  <p className="text-sm text-muted-foreground">Add relevant emojis to responses</p>
+                </div>
                 <Switch
                   checked={responseGeneration.includeEmojis}
                   onCheckedChange={(checked) => 
-                    setResponseGeneration(prev => ({ ...prev, includeEmojis: checked }))}
+                    setResponseGeneration(prev => ({...prev, includeEmojis: checked}))
+                  }
                 />
-                <label className="text-sm font-medium">Include Emojis</label>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Custom Instructions (Optional)</label>
-              <Textarea
-                placeholder="Add any specific instructions for the AI..."
-                value={responseGeneration.customPrompt}
-                onChange={(e) => setResponseGeneration(prev => ({ ...prev, customPrompt: e.target.value }))}
-                className="min-h-[100px]"
-              />
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button
-              onClick={handleInstantReply}
-              disabled={isGenerating}
-              className="w-full"
-            >
-              Reply to All Comments
-            </Button>
-          </CardFooter>
-        </Card>
-
-        {(isGenerating || isRunning) && (
-          <Card className="mt-4">
-            <CardContent className="py-4">
-                <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span>{loadingMessage}</span>
-                  <span>{generationProgress}%</span>
-                </div>
-                <div className="w-full bg-secondary rounded-full h-2">
-                  <motion.div
-                    className="bg-primary h-2 rounded-full"
-                    style={{ width: `${generationProgress}%` }}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${generationProgress}%` }}
-                    transition={{ duration: 0.5 }}
-                  />
-                </div>
               </div>
             </CardContent>
+            <CardFooter>
+              <Button
+                onClick={handleStartAutomation}
+                disabled={isLoading}
+                className="w-full bg-gradient-to-r from-purple-500 to-pink-500"
+              >
+                {isLoading ? (
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                    Starting...
+                  </div>
+                ) : (
+                  <>
+                    <Instagram className="mr-2 h-5 w-5" />
+                    Start Automation
+                  </>
+                )}
+              </Button>
+            </CardFooter>
           </Card>
-      )}
 
-        {responseGeneration.responses.length > 0 && (
-          <Card className="mt-4">
+          {/* History Card */}
+          <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <History className="w-5 h-5" />
-                Response History
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {responseGeneration.responses.map((response) => (
-                <div
-                  key={response.id}
-                  className="p-4 rounded-lg border bg-card text-card-foreground"
-                >
-                  <div className="flex justify-between items-start gap-4">
-                    <p className="text-sm">{response.text}</p>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => copyToClipboard(response.text)}
-                      >
-                        <Copy className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => deleteResponse(response.id)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <History className="h-5 w-5" />
+                    Automation History
+                  </CardTitle>
+                  <CardDescription>
+                    View your past Instagram comment automation sessions
+                  </CardDescription>
                 </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Generated {response.timestamp.toLocaleString()}
-                  </p>
               </div>
-              ))}
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="flex justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : logs.length > 0 ? (
+                <div className="space-y-4">
+                  {logs.map((log) => (
+                    <Card key={log.id} className="p-4">
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            {getStatusIcon(log.status)}
+                            <p className={`text-sm font-medium ${getStatusColor(log.status)}`}>
+                              {log.status.charAt(0).toUpperCase() + log.status.slice(1)}
+                            </p>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            Started: {formatDate(log.created_at)}
+                          </p>
+                          {log.completed_at && (
+                            <p className="text-sm text-muted-foreground">
+                              Completed: {formatDate(log.completed_at)}
+                            </p>
+                          )}
+                          {log.post_url && (
+                            <a
+                              href={log.post_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm text-blue-500 hover:underline"
+                            >
+                              View Post
+                            </a>
+                          )}
+                          <div className="mt-2">
+                            <p className="text-sm">
+                              Tone: {log.settings.tone}, Style: {log.settings.style}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-3 gap-4 text-center">
+                          <div>
+                            <p className="text-2xl font-bold">{log.stats.comments_processed}</p>
+                            <p className="text-xs text-muted-foreground">Total Comments</p>
+                          </div>
+                          <div>
+                            <p className="text-2xl font-bold text-green-500">
+                              {log.stats.successful_responses}
+                            </p>
+                            <p className="text-xs text-muted-foreground">Successful</p>
+                          </div>
+                          <div>
+                            <p className="text-2xl font-bold text-red-500">
+                              {log.stats.failed_responses}
+                            </p>
+                            <p className="text-xs text-muted-foreground">Failed</p>
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  No automation history found
+                </div>
+              )}
             </CardContent>
           </Card>
-        )}
+        </div>
       </div>
     </ToolLayout>
   );
