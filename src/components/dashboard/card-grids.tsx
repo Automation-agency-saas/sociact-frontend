@@ -110,7 +110,7 @@ const CardGrids: React.FC = () => {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto py-8 grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-3">
+    <div className="max-w-7xl mx-auto py-4 sm:py-8 grid grid-cols-1 gap-8 md:grid-cols-2 xl:grid-cols-3">
       {categories.map((category) =>
         category.subcategories.map((subcategory) => (
           <div
