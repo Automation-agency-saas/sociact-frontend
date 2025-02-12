@@ -19,7 +19,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../../components/ui/select";
-
+import { ToolLayout } from '../../../components/tool-page/ToolLayout';
+import { ToolTitle } from '@/components/ui/tool-title';
 type Step = 'input' | 'generating' | 'results';
 type PostType = 'thought-leadership' | 'case-study' | 'industry-insights' | 'personal-story' | 'tips-tricks';
 
@@ -154,10 +155,15 @@ export function LinkedInPostGeneratorPage() {
   };
 
   return (
-    <ToolPageWrapper
-      title="LinkedIn Post Generator"
-      description="Create engaging LinkedIn posts that drive professional engagement"
-    >
+    // <ToolPageWrapper
+    //   title="LinkedIn Post Generator"
+    //   description="Create engaging LinkedIn posts that drive professional engagement"
+    // >
+    <ToolLayout>
+      <ToolTitle
+        title="LinkedIn Post Generator"
+        description="Create engaging LinkedIn posts that drive professional engagement"
+      />
       <div className="space-y-6">
         {currentStep === 'input' && (
           <div className="grid gap-6">
@@ -332,6 +338,7 @@ export function LinkedInPostGeneratorPage() {
           </div>
         )}
       </div>
-    </ToolPageWrapper>
+      </ToolLayout>
+    // </ToolPageWrapper> 
   );
 } 

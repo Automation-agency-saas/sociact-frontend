@@ -12,7 +12,8 @@ import {
   CardHeader,
   CardTitle,
 } from "../../../components/ui/card";
-
+import { ToolLayout } from '../../../components/tool-page/ToolLayout';
+import { ToolTitle } from '@/components/ui/tool-title';
 type Step = 'input' | 'generating' | 'results';
 
 const loadingMessages = [
@@ -135,10 +136,15 @@ export function InstagramCaptionGeneratorPage() {
   };
 
   return (
-    <ToolPageWrapper
-      title="Instagram Caption Generator"
-      description="Create engaging captions that drive interaction and growth"
-    >
+    // <ToolPageWrapper
+    //   title="Instagram Caption Generator"
+    //   description="Create engaging captions that drive interaction and growth"
+    // >
+    <ToolLayout>
+      <ToolTitle
+        title="Instagram Caption Generator"
+        description="Create engaging captions that drive interaction and growth"
+      />
       <div className="space-y-6">
         {currentStep === 'input' && (
           <div className="grid gap-6">
@@ -292,6 +298,7 @@ export function InstagramCaptionGeneratorPage() {
           </div>
         )}
       </div>
-    </ToolPageWrapper>
+      </ToolLayout>
+    // </ToolPageWrapper>
   );
 } 
