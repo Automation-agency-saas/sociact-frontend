@@ -82,7 +82,7 @@ const CardGrids: React.FC = () => {
       icon: Sparkles,
       subcategories: [
         {
-          title: "comment_pro_insta",
+          title: "comment_pro insta",
           desc: "Automate engaging responses to comments on your instagram posts",
           url: "/instagram/comment-automation",
           app: "instagram",
@@ -115,7 +115,7 @@ const CardGrids: React.FC = () => {
         category.subcategories.map((subcategory) => (
           <div
             key={subcategory.title}
-            className="border border-purple-500/30 flex flex-col items-center w-[400px] mx-auto p-3 relative rounded-xl"
+            className="border border-purple-500/30 flex flex-col items-center max-w-full mx-auto p-4 md:py-8 sm:py-24 relative rounded-xl"
           >
             <Icon className="absolute h-6 w-6 -top-3 -left-3 text-primary" />
             <Icon className="absolute h-6 w-6 -bottom-3 -left-3 text-primary" />
