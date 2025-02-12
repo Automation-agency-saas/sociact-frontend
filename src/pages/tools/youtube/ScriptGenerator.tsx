@@ -10,7 +10,8 @@ import { Input } from '../../../components/ui/input';
 import { Textarea } from '../../../components/ui/textarea';
 import { HistorySection } from '../../../components/shared/HistorySection';
 import { containerVariants, itemVariants, cardHoverVariants, ScriptHistoryItem } from '../../../lib/animations';
-
+import {ToolLayout} from "../../../components/tool-page/ToolLayout";
+import { ToolTitle } from '@/components/ui/tool-title';
 export function YouTubeScriptGeneratorPage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -80,11 +81,16 @@ Thanks for watching! See you in the next video.
   };
 
   return (
-    <ToolPageWrapper
-      title="YouTube Script Generator"
-      description="Generate professional video scripts based on your title and description"
-    >
-      <div className="grid gap-8 lg:grid-cols-2">
+    // <ToolPageWrapper
+    //   title="YouTube Script Generator"
+    //   description="Generate professional video scripts based on your title and description"
+    // >
+    <ToolLayout>
+        <ToolTitle 
+        title="YouTube Script Generator" 
+        description="Generate professional video scripts based on your title and description"
+      />
+        <div className="grid gap-8 lg:grid-cols-2">
         <motion.div
           variants={containerVariants}
           initial="hidden"
@@ -178,6 +184,8 @@ Thanks for watching! See you in the next video.
           )}
         />
       </div>
-    </ToolPageWrapper>
+      </ToolLayout>
+
+    // </ToolPageWrapper>
   );
 } 

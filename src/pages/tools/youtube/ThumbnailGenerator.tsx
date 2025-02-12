@@ -17,7 +17,8 @@ import {
 } from "../../../components/ui/select";
 import { HistorySection } from "../../../components/shared/HistorySection";
 import { containerVariants, itemVariants, cardHoverVariants, ThumbnailHistoryItem } from "../../../lib/animations";
-
+import { ToolLayout } from "../../../components/tool-page/ToolLayout";
+import { ToolTitle } from "@/components/ui/tool-title";
 const thumbnailStyles = [
   { value: "modern", label: "Modern & Clean" },
   { value: "bold", label: "Bold & Striking" },
@@ -87,10 +88,15 @@ export function YouTubeThumbnailGeneratorPage() {
   };
 
   return (
-    <ToolPageWrapper
+    // <ToolPageWrapper
+    //   title="YouTube Thumbnail Generator"
+    //   description="Create eye-catching thumbnails for your videos using AI"
+    // >
+    <ToolLayout>
+      <ToolTitle
       title="YouTube Thumbnail Generator"
       description="Create eye-catching thumbnails for your videos using AI"
-    >
+      />
       <div className="grid gap-8 lg:grid-cols-2">
         <motion.div
           variants={containerVariants}
@@ -195,6 +201,7 @@ export function YouTubeThumbnailGeneratorPage() {
           )}
         />
       </div>
-    </ToolPageWrapper>
+      </ToolLayout>
+    // </ToolPageWrapper>
   );
 } 

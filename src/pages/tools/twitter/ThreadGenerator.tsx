@@ -19,7 +19,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../../components/ui/select";
-
+import { ToolLayout } from '../../../components/tool-page/ToolLayout';
+import { ToolTitle } from "@/components/ui/tool-title";
 type Step = 'input' | 'generating' | 'results';
 
 const loadingMessages = [
@@ -155,10 +156,15 @@ export function TwitterThreadGeneratorPage() {
   };
 
   return (
-    <ToolPageWrapper
+    <ToolLayout>
+    {/* <ToolPageWrapper
       title="Twitter Thread Generator"
       description="Create engaging Twitter threads that captivate your audience"
-    >
+    > */}
+        <ToolTitle 
+        title="Twitter Thread Generator ✨" 
+        description="Create engaging Twitter threads that captivate your audience"
+      />
       <div className="space-y-6">
         {currentStep === 'input' && (
           <div className="grid gap-6">
@@ -328,6 +334,7 @@ export function TwitterThreadGeneratorPage() {
           </div>
         )}
       </div>
-    </ToolPageWrapper>
+    {/* </ToolPageWrapper> */}
+    </ToolLayout>
   );
 } 
