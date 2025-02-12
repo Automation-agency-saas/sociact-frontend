@@ -30,13 +30,13 @@ import { YouTubeCommentAutomationPage } from './pages/tools/youtube/CommentAutom
 import { InstagramIdeaGeneratorPage } from './pages/tools/instagram/IdeaGenerator';
 import { InstagramCaptionGeneratorPage } from './pages/tools/instagram/CaptionGenerator';
 import { InstagramCommentAutomationPage } from './pages/tools/instagram/CommentAutomation';
-import { TwitterIdeaGeneratorPage } from './pages/tools/twitter/IdeaGenerator';
 import { TwitterCommentAutomationPage } from './pages/tools/twitter/CommentAutomation';
 import { LinkedInIdeaGeneratorPage } from './pages/tools/linkedin/IdeaGenerator';
 import { LinkedInPostGeneratorPage } from './pages/tools/linkedin/PostGenerator';
 import { LinkedInCommentAutomationPage } from './pages/tools/linkedin/CommentAutomation';
 import { FacebookCommentAutomationPage } from './pages/tools/facebook/CommentAutomation';
-
+import { TwitterIdeaGeneratorPage } from './pages/tools/twitter/IdeaGenerator';
+import {TwitterThreadGeneratorPage} from './pages/tools/twitter/ThreadGenerator'
 
 
 
@@ -141,18 +141,23 @@ function AppRoutes() {
             <InstagramCommentAutomationPage />
           </ProtectedRoute>
         } />
-        
+        <Route path="/twitter/comment-automation" element={
+          <ProtectedRoute>
+            <TwitterCommentAutomationPage />
+          </ProtectedRoute>
+        } />
         {/* Twitter Tools */}
         <Route path="/twitter/idea-generator" element={
           <ProtectedRoute>
             <TwitterIdeaGeneratorPage />
           </ProtectedRoute>
         } />
-        <Route path="/twitter/comment-automation" element={
+        <Route path="/twitter/thread-generator" element={
           <ProtectedRoute>
-            <TwitterCommentAutomationPage />
+            <TwitterThreadGeneratorPage/>
           </ProtectedRoute>
         } />
+        
         
         {/* LinkedIn Tools */}
         <Route path="/linkedin/idea-generator" element={
