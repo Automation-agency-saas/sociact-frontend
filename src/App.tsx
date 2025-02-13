@@ -24,7 +24,8 @@ import { Profile } from "./pages/Profile";
 // Import tool pages
 import { YouTubeIdeaGeneratorPage } from "./pages/tools/youtube/IdeaGenerator";
 import { YouTubeScriptGeneratorPage } from "./pages/tools/youtube/ScriptGenerator";
-import { YouTubeThumbnailGeneratorPage } from "./pages/tools/youtube/ThumbnailGenerator";
+// import { YouTubeThumbnailGeneratorPage } from "./pages/tools/youtube/ThumbnailGenerator";
+import {ThumbnailGenPage} from "./pages/tools/youtube/ThumbnailGenModal"
 import { YouTubeSEOOptimizerPage } from "./pages/tools/youtube/SEOOptimizer";
 import { YouTubeCommentAutomationPage } from './pages/tools/youtube/CommentAutomation';
 import { InstagramIdeaGeneratorPage } from './pages/tools/instagram/IdeaGenerator';
@@ -111,7 +112,7 @@ function AppRoutes() {
         } />
         <Route path="/youtube/thumbnail-generator" element={
           <ProtectedRoute>
-            <YouTubeThumbnailGeneratorPage />
+            <ThumbnailGenPage />
           </ProtectedRoute>
         } />
         <Route path="/youtube/seo-optimizer" element={

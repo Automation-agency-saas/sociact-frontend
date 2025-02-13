@@ -12,6 +12,8 @@ import { HistorySection } from '../../../components/shared/HistorySection';
 import { containerVariants, itemVariants, cardHoverVariants, ScriptHistoryItem } from '../../../lib/animations';
 import {ToolLayout} from "../../../components/tool-page/ToolLayout";
 import { ToolTitle } from '@/components/ui/tool-title';
+import{contentGeneratorService } from "../../../lib/services/content-generator";
+
 export function YouTubeScriptGeneratorPage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -27,32 +29,7 @@ export function YouTubeScriptGeneratorPage() {
 
     setLoading(true);
     try {
-      // TODO: Replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      const generatedScript = `
-[INTRO]
-Hey everyone! Welcome back to the channel. Today we're diving deep into ${title}.
-
-[HOOK]
-Have you ever wondered how to master ${title} without spending years learning? Well, in this video, I'm going to show you exactly how to do that.
-
-[MAIN CONTENT]
-First, let's talk about why ${title} is so important...
-${description}
-
-[KEY POINTS]
-1. Understanding the basics
-2. Common misconceptions
-3. Advanced techniques
-4. Pro tips and tricks
-
-[CALL TO ACTION]
-If you found this video helpful, don't forget to hit that like button and subscribe for more content like this.
-
-[OUTRO]
-Thanks for watching! See you in the next video.
-      `.trim();
-
+      const generatedScript = await contentGeneratorService.generateYouTubeScript(title, description, '00:10:00');
       setScript(generatedScript);
       const historyItem: ScriptHistoryItem = {
         id: uuidv4(),

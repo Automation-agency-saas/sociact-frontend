@@ -15,7 +15,7 @@ import {
 import { ToolLayout } from '../../../components/tool-page/ToolLayout';
 import { ToolTitle } from '@/components/ui/tool-title';
 type Step = 'input' | 'generating' | 'results';
-
+import {contentGeneratorService } from "../../../lib/services/content-generator";
 const loadingMessages = [
   "Analyzing your content...",
   "Crafting engaging captions...",
@@ -25,7 +25,7 @@ const loadingMessages = [
 ];
 
 export function InstagramCaptionGeneratorPage() {
-  const [topic, setTopic] = useState('');
+  const [style, setStyle] = useState('');
   const [description, setDescription] = useState('');
   const [currentStep, setCurrentStep] = useState<Step>('input');
   const [loadingProgress, setLoadingProgress] = useState(0);
@@ -35,8 +35,8 @@ export function InstagramCaptionGeneratorPage() {
   const [error, setError] = useState<string | null>(null);
 
   const handleGenerate = async () => {
-    if (!topic || !description) {
-      toast.error('Please provide both topic and description');
+    if (!style || !description) {
+      toast.error('Please provide both style and description');
       return;
     }
     
@@ -86,7 +86,8 @@ export function InstagramCaptionGeneratorPage() {
 
     try {
       // TODO: Replace with actual API call
-      const caption = "✨ Embracing the journey and sharing the magic with you all! 🌟\n\nEvery step forward is a story worth telling, and today's chapter is all about growth and inspiration. Can't wait to hear your thoughts! 💭\n\nDouble tap if you're on this journey with me! 🙌";
+      // const caption = "✨ Embracing the journey and sharing the magic with you all! 🌟\n\nEvery step forward is a story worth telling, and today's chapter is all about growth and inspiration. Can't wait to hear your thoughts! 💭\n\nDouble tap if you're on this journey with me! 🙌";
+      const caption = await contentGeneratorService.generateInstagramCaption(description, style, 20);
       const hashtags = [
         "#InstagramCreator",
         "#ContentCreation",
@@ -118,7 +119,7 @@ export function InstagramCaptionGeneratorPage() {
   };
 
   const handleReset = () => {
-    setTopic('');
+    setStyle('');
     setDescription('');
     setCurrentStep('input');
     setGeneratedCaption('');
@@ -160,11 +161,11 @@ export function InstagramCaptionGeneratorPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Topic/Theme</label>
+                  <label className="text-sm font-medium">Style/Theme</label>
                   <Input
-                    placeholder="Enter the main topic or theme of your post..."
-                    value={topic}
-                    onChange={(e) => setTopic(e.target.value)}
+                    placeholder="Enter the main Style or theme of your post..."
+                    value={style}
+                    onChange={(e) => setStyle(e.target.value)}
                   />
                 </div>
 
@@ -180,7 +181,7 @@ export function InstagramCaptionGeneratorPage() {
 
                 <Button
                   onClick={handleGenerate}
-                  disabled={!topic || !description}
+                  disabled={!style || !description}
                   className="w-full bg-primary hover:bg-primary/90"
                 >
                   <Wand2 className="mr-2 h-4 w-4" />

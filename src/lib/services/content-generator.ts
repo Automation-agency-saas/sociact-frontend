@@ -57,7 +57,7 @@ class ContentGeneratorService {
     return response.content;
   }
 
-  async generateTwitterThread(description: string, tweetCount: number): Promise<string> {
+  async generateTwitterThread(description: string, tweetCount: number): Promise<ContentResponse> {
     const request: ContentRequest = {
       content_type: 'twitter_thread',
       twitter_thread: {
@@ -65,11 +65,10 @@ class ContentGeneratorService {
         tweet_count: tweetCount
       }
     };
-    const response = await this.generateContent(request);
-    return response.content;
+    return await this.generateContent(request);
   }
 
-  async generateLinkedInPost(description: string, tone: string): Promise<string> {
+  async generateLinkedInPost(description: string, tone: string): Promise<ContentResponse> {
     const request: ContentRequest = {
       content_type: 'linkedin_post',
       linkedin_post: {
@@ -77,8 +76,7 @@ class ContentGeneratorService {
         tone
       }
     };
-    const response = await this.generateContent(request);
-    return response.content;
+    return await this.generateContent(request);
   }
 
   async generateInstagramCaption(description: string, style: string, wordCount: number): Promise<string> {
