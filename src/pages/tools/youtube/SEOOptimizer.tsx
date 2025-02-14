@@ -171,7 +171,7 @@ export function YouTubeSEOOptimizerPage() {
         title="YouTube SEO Optimizer"
         description="Optimize your video content for better visibility and ranking"
       />
-      <div className="flex flex-col gap-8">
+      <div className=" max-w-6xl mx-auto pb-20 flex flex-col gap-8">
         <motion.div
           variants={containerVariants}
           initial="hidden"

@@ -31,6 +31,7 @@ import {
   Twitter,
   Youtube,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const NavSidebar: React.FC = () => {
   const [selectedApp, setSelectedApp] = React.useState<string | null>(null);
@@ -49,11 +50,6 @@ const NavSidebar: React.FC = () => {
           title: "Script Craft",
           desc: "Create engaging video scripts with AI",
           url: "/youtube/script-generator",
-        },
-        {
-          title: "Thumbnail Pro",
-          desc: "Generate AI powered thumbnails for your videos",
-          url: "/youtube/thumbnail-generator",
         },
         {
           title: "Thumbnail Gen",
@@ -195,7 +191,14 @@ const NavSidebar: React.FC = () => {
                           asChild
                         >
                           <Link to={feature.url}>
-                            <span className="text-muted-foreground">
+                            <span
+                              className={cn(
+                                "",
+                                location.pathname === feature.url
+                                  ? "text-purple-400"
+                                  : "text-gray-500"
+                              )}
+                            >
                               {feature.title}
                             </span>
                           </Link>
