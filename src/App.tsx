@@ -11,9 +11,7 @@ import { WelcomeBackModal } from './components/onboarding/WelcomeBackModal';
 import { useState, useEffect } from 'react';
 
 import LandingPage from './pages/LandingPage';
-// Landing page components
 import "./App.css";
-// Auth pages
 import { AuthLayout } from "./pages/auth/AuthLayout";
 
 // App pages
@@ -24,17 +22,20 @@ import { Profile } from "./pages/Profile";
 // Import tool pages
 import { YouTubeIdeaGeneratorPage } from "./pages/tools/youtube/IdeaGenerator";
 import { YouTubeScriptGeneratorPage } from "./pages/tools/youtube/ScriptGenerator";
-import { YouTubeThumbnailGeneratorPage } from "./pages/tools/youtube/ThumbnailGenerator";
+// import { YouTubeThumbnailGeneratorPage } from "./pages/tools/youtube/ThumbnailGenerator";
+import {ThumbnailGenPage} from "./pages/tools/youtube/ThumbnailGenModal"
 import { YouTubeSEOOptimizerPage } from "./pages/tools/youtube/SEOOptimizer";
+import { YouTubeCommentAutomationPage } from './pages/tools/youtube/CommentAutomation';
 import { InstagramIdeaGeneratorPage } from './pages/tools/instagram/IdeaGenerator';
 import { InstagramCaptionGeneratorPage } from './pages/tools/instagram/CaptionGenerator';
 import { InstagramCommentAutomationPage } from './pages/tools/instagram/CommentAutomation';
-// import { TwitterIdeaGeneratorPage } from './pages/tools/twitter/IdeaGenerator';
+import { TwitterCommentAutomationPage } from './pages/tools/twitter/CommentAutomation';
 import { LinkedInIdeaGeneratorPage } from './pages/tools/linkedin/IdeaGenerator';
 import { LinkedInPostGeneratorPage } from './pages/tools/linkedin/PostGenerator';
+import { LinkedInCommentAutomationPage } from './pages/tools/linkedin/CommentAutomation';
 import { FacebookCommentAutomationPage } from './pages/tools/facebook/CommentAutomation';
 import { TwitterIdeaGeneratorPage } from './pages/tools/twitter/IdeaGenerator';
-
+import {TwitterThreadGeneratorPage} from './pages/tools/twitter/ThreadGenerator'
 
 
 
@@ -109,12 +110,17 @@ function AppRoutes() {
         } />
         <Route path="/youtube/thumbnail-generator" element={
           <ProtectedRoute>
-            <YouTubeThumbnailGeneratorPage />
+            <ThumbnailGenPage />
           </ProtectedRoute>
         } />
         <Route path="/youtube/seo-optimizer" element={
           <ProtectedRoute>
             <YouTubeSEOOptimizerPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/youtube/comment-automation" element={
+          <ProtectedRoute>
+            <YouTubeCommentAutomationPage />
           </ProtectedRoute>
         } />
         
@@ -134,18 +140,23 @@ function AppRoutes() {
             <InstagramCommentAutomationPage />
           </ProtectedRoute>
         } />
-        
+        <Route path="/twitter/comment-automation" element={
+          <ProtectedRoute>
+            <TwitterCommentAutomationPage />
+          </ProtectedRoute>
+        } />
         {/* Twitter Tools */}
         <Route path="/twitter/idea-generator" element={
           <ProtectedRoute>
             <TwitterIdeaGeneratorPage />
           </ProtectedRoute>
         } />
-        {/* <Route path="/twitter/thread-generator" element={
+        <Route path="/twitter/thread-generator" element={
           <ProtectedRoute>
-            <TwitterThreadGeneratorPage />
+            <TwitterThreadGeneratorPage/>
           </ProtectedRoute>
-        } /> */}
+        } />
+        
         
         {/* LinkedIn Tools */}
         <Route path="/linkedin/idea-generator" element={
@@ -156,6 +167,11 @@ function AppRoutes() {
         <Route path="/linkedin/post-generator" element={
           <ProtectedRoute>
             <LinkedInPostGeneratorPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/linkedin/comment-automation" element={
+          <ProtectedRoute>
+            <LinkedInCommentAutomationPage />
           </ProtectedRoute>
         } />
         

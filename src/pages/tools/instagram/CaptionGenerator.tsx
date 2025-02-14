@@ -12,9 +12,10 @@ import {
   CardHeader,
   CardTitle,
 } from "../../../components/ui/card";
-
+import { ToolLayout } from '../../../components/tool-page/ToolLayout';
+import { ToolTitle } from '@/components/ui/tool-title';
 type Step = 'input' | 'generating' | 'results';
-
+import {contentGeneratorService } from "../../../lib/services/content-generator";
 const loadingMessages = [
   "Analyzing your content...",
   "Crafting engaging captions...",
@@ -24,7 +25,7 @@ const loadingMessages = [
 ];
 
 export function InstagramCaptionGeneratorPage() {
-  const [topic, setTopic] = useState('');
+  const [style, setStyle] = useState('');
   const [description, setDescription] = useState('');
   const [currentStep, setCurrentStep] = useState<Step>('input');
   const [loadingProgress, setLoadingProgress] = useState(0);
@@ -34,8 +35,8 @@ export function InstagramCaptionGeneratorPage() {
   const [error, setError] = useState<string | null>(null);
 
   const handleGenerate = async () => {
-    if (!topic || !description) {
-      toast.error('Please provide both topic and description');
+    if (!style || !description) {
+      toast.error('Please provide both style and description');
       return;
     }
     
@@ -85,18 +86,18 @@ export function InstagramCaptionGeneratorPage() {
 
     try {
       // TODO: Replace with actual API call
-      const caption = "✨ Embracing the journey and sharing the magic with you all! 🌟\n\nEvery step forward is a story worth telling, and today's chapter is all about growth and inspiration. Can't wait to hear your thoughts! 💭\n\nDouble tap if you're on this journey with me! 🙌";
-      const hashtags = [
-        "#InstagramCreator",
-        "#ContentCreation",
-        "#SocialMediaTips",
-        "#DigitalCreator",
-        "#InstagramGrowth",
-        "#CreativeContent",
-        "#InstagramCommunity",
-        "#CreatorLife",
-        "#SocialMediaStrategy",
-        "#EngagingContent"
+      // const caption = "✨ Embracing the journey and sharing the magic with you all! 🌟\n\nEvery step forward is a story worth telling, and today's chapter is all about growth and inspiration. Can't wait to hear your thoughts! 💭\n\nDouble tap if you're on this journey with me! 🙌";
+      const caption = await contentGeneratorService.generateInstagramCaption(description, style, 20);
+      
+      // Extract hashtags from the caption
+      const hashtagRegex = /#[\w\u0590-\u05ff]+/g;
+      const extractedHashtags = caption.match(hashtagRegex) || [];
+      
+      // Use extracted hashtags if found, otherwise use default ones
+      const hashtags = extractedHashtags.length > 0 ? extractedHashtags : [
+        "#Engagement",
+        "#Innovation",
+        "#JoinTheMovement"
       ];
 
       setLoadingProgress(100);
@@ -117,7 +118,7 @@ export function InstagramCaptionGeneratorPage() {
   };
 
   const handleReset = () => {
-    setTopic('');
+    setStyle('');
     setDescription('');
     setCurrentStep('input');
     setGeneratedCaption('');
@@ -135,11 +136,16 @@ export function InstagramCaptionGeneratorPage() {
   };
 
   return (
-    <ToolPageWrapper
-      title="Instagram Caption Generator"
-      description="Create engaging captions that drive interaction and growth"
-    >
-      <div className="space-y-6">
+    // <ToolPageWrapper
+    //   title="Instagram Caption Generator"
+    //   description="Create engaging captions that drive interaction and growth"
+    // >
+    <ToolLayout>
+      <ToolTitle
+        title="Instagram Caption Generator"
+        description="Create engaging captions that drive interaction and growth"
+      />
+      <div className="space-y-6 mx-auto max-w-2xl w-full">
         {currentStep === 'input' && (
           <div className="grid gap-6">
             <Card>
@@ -154,11 +160,11 @@ export function InstagramCaptionGeneratorPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Topic/Theme</label>
+                  <label className="text-sm font-medium">Style/Theme</label>
                   <Input
-                    placeholder="Enter the main topic or theme of your post..."
-                    value={topic}
-                    onChange={(e) => setTopic(e.target.value)}
+                    placeholder="Enter the main Style or theme of your post..."
+                    value={style}
+                    onChange={(e) => setStyle(e.target.value)}
                   />
                 </div>
 
@@ -174,7 +180,7 @@ export function InstagramCaptionGeneratorPage() {
 
                 <Button
                   onClick={handleGenerate}
-                  disabled={!topic || !description}
+                  disabled={!style || !description}
                   className="w-full bg-primary hover:bg-primary/90"
                 >
                   <Wand2 className="mr-2 h-4 w-4" />
@@ -270,21 +276,40 @@ export function InstagramCaptionGeneratorPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Hash className="h-5 w-5 text-primary" />
-                  Suggested Hashtags
-                </CardTitle>
+                <div className="flex justify-between items-center">
+                  <CardTitle className="flex items-center gap-2">
+                    <Hash className="h-5 w-5 text-primary" />
+                    Suggested Hashtags
+                  </CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2"
+                    onClick={() => copyToClipboard(generatedHashtags.join(' '))}
+                  >
+                    <Copy className="h-4 w-4" />
+                    Copy Hashtags
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   {generatedHashtags.map((hashtag, index) => (
-                    <span
+                    <div
                       key={index}
-                      className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium cursor-pointer hover:bg-primary/20"
-                      onClick={() => copyToClipboard(hashtag)}
+                      className="group relative inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20"
                     >
-                      {hashtag}
-                    </span>
+                      <span>{hashtag}</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => copyToClipboard(hashtag)}
+                      >
+                        <Copy className="h-3 w-3" />
+                        <span className="sr-only">Copy hashtag</span>
+                      </Button>
+                    </div>
                   ))}
                 </div>
               </CardContent>
@@ -292,6 +317,7 @@ export function InstagramCaptionGeneratorPage() {
           </div>
         )}
       </div>
-    </ToolPageWrapper>
+      </ToolLayout>
+    // </ToolPageWrapper>
   );
 } 

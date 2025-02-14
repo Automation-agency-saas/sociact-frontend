@@ -11,6 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Link, useLocation } from "react-router-dom";
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -33,6 +34,7 @@ import {
 
 const NavSidebar: React.FC = () => {
   const [selectedApp, setSelectedApp] = React.useState<string | null>(null);
+  const location = useLocation();
 
   const appContent = {
     Youtube: {

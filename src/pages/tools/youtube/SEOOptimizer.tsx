@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Loader2, Copy, ChartBar } from 'lucide-react';
+import { Loader2, Copy, ChartBar, Youtube, Search, KeyRound, Hash, Lightbulb, Sparkles } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { v4 as uuidv4 } from 'uuid';
 import { ToolPageWrapper } from '../../../components/tool-page/ToolPageWrapper';
@@ -10,56 +10,142 @@ import { Input } from '../../../components/ui/input';
 import { Textarea } from '../../../components/ui/textarea';
 import { Progress } from '../../../components/ui/progress';
 import { HistorySection } from '../../../components/shared/HistorySection';
-import { containerVariants, itemVariants, cardHoverVariants, SEOHistoryItem } from '../../../lib/animations';
+import { containerVariants, itemVariants, cardHoverVariants } from '../../../lib/animations';
+import { ToolLayout } from '@/components/tool-page/ToolLayout';
+import { ToolTitle } from '@/components/ui/tool-title';
+import { SEOOptimizerService } from '@/lib/services/seo-optimizer';
+
+interface OptimizedContent {
+  title?: string;
+  description?: string;
+  hashtags: string[];
+  keywords: string[];
+  suggestions: string[];
+  caption?: string;
+  seo_score: number;
+  original_score: number;
+}
+
+interface SEOHistoryItem {
+  id: string;
+  timestamp: Date;
+  content: string;
+  optimizedContent: OptimizedContent;
+}
+
+type Step = 'input' | 'optimizing' | 'results';
+
+const loadingMessages = [
+  "Analyzing content structure...",
+  "Identifying key topics...",
+  "Researching trending keywords...",
+  "Optimizing for engagement...",
+  "Generating SEO suggestions..."
+];
+
+const getScoreColor = (score: number): string => {
+  if (score >= 80) return "text-green-500";
+  if (score >= 50) return "text-yellow-500";
+  return "text-red-500";
+};
 
 export function YouTubeSEOOptimizerPage() {
+  const [url, setUrl] = useState('');
   const [content, setContent] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [optimizedContent, setOptimizedContent] = useState<{
-    title: string;
-    description: string;
-    keywords: string[];
-    score: number;
-  } | null>(null);
+  const [currentStep, setCurrentStep] = useState<Step>('input');
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
+  const [optimizedContent, setOptimizedContent] = useState<OptimizedContent | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<SEOHistoryItem[]>([]);
 
+  useEffect(() => {
+    console.log('Page state changed:', {
+      currentStep,
+      content: content ? 'has content' : 'no content',
+      error
+    });
+  }, [currentStep, content, error]);
+
   const optimizeContent = async () => {
-    if (!content) {
-      toast.error('Please enter your content');
+    if (!content && !url) {
+      toast.error('Please enter content or URL to optimize');
       return;
     }
+    
+    setCurrentStep('optimizing');
+    setLoadingProgress(0);
+    setLoadingMessageIndex(0);
+    setError(null);
 
-    setLoading(true);
+    const intervals = {
+      initial: { target: 85, speed: 50, increment: 1 },
+      slow: { target: 98, speed: 500, increment: 2 },
+    };
+
+    let loadingInterval: NodeJS.Timeout | null = null;
+    const startLoading = () => {
+      loadingInterval = setInterval(() => {
+        setLoadingProgress(prev => {
+          if (prev >= intervals.slow.target) {
+            if (loadingInterval) clearInterval(loadingInterval);
+            return prev;
+          }
+          if (prev >= intervals.initial.target) {
+            if (loadingInterval) clearInterval(loadingInterval);
+            startSlowProgress();
+            return prev;
+          }
+          return prev + intervals.initial.increment;
+        });
+        setLoadingMessageIndex(prev => (prev + 1) % loadingMessages.length);
+      }, intervals.initial.speed);
+    };
+
+    const startSlowProgress = () => {
+      loadingInterval = setInterval(() => {
+        setLoadingProgress(prev => {
+          if (prev >= intervals.slow.target) {
+            if (loadingInterval) clearInterval(loadingInterval);
+            return prev;
+          }
+          return prev + intervals.slow.increment;
+        });
+        setLoadingMessageIndex(prev => (prev + 1) % loadingMessages.length);
+      }, intervals.slow.speed);
+    };
+
+    startLoading();
+
     try {
-      // TODO: Replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      const result = {
-        title: 'How to Master YouTube SEO in 2024 - Complete Guide',
-        description: 'Learn the latest YouTube SEO strategies for 2024. This comprehensive guide covers keyword research, title optimization, description writing, and more. Perfect for creators looking to grow their channel.',
-        keywords: [
-          'youtube seo',
-          'youtube optimization',
-          'video ranking',
-          'channel growth',
-          'metadata optimization',
-          '2024 seo guide'
-        ],
-        score: 85
-      };
+      const optimizedResult = await SEOOptimizerService.optimizeContent({
+        platform: 'youtube',
+        content_url: url || undefined,
+        content: content || undefined
+      });
+
+      setLoadingProgress(100);
+      await new Promise(resolve => setTimeout(resolve, 500));
       
-      setOptimizedContent(result);
+      setOptimizedContent(optimizedResult);
+      setCurrentStep('results');
+
       const historyItem: SEOHistoryItem = {
         id: uuidv4(),
         timestamp: new Date(),
-        content,
-        optimizedContent: result
+        content: content,
+        optimizedContent: optimizedResult
       };
       setHistory(prev => [historyItem, ...prev]);
-      toast.success('Content optimized successfully!');
-    } catch (error) {
-      toast.error('Failed to optimize content. Please try again.');
+      
+      toast.success('Successfully optimized content!');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to optimize content';
+      setError(errorMessage);
+      toast.error(errorMessage);
+      setCurrentStep('input');
     } finally {
-      setLoading(false);
+      if (loadingInterval) clearInterval(loadingInterval);
     }
   };
 
@@ -80,11 +166,12 @@ export function YouTubeSEOOptimizerPage() {
   };
 
   return (
-    <ToolPageWrapper
-      title="YouTube SEO Optimizer"
-      description="Optimize your video content for better visibility and ranking"
-    >
-      <div className="grid gap-8 lg:grid-cols-2">
+    <ToolLayout>  
+      <ToolTitle 
+        title="YouTube SEO Optimizer"
+        description="Optimize your video content for better visibility and ranking"
+      />
+      <div className="flex flex-col gap-8">
         <motion.div
           variants={containerVariants}
           initial="hidden"
@@ -95,101 +182,268 @@ export function YouTubeSEOOptimizerPage() {
             <motion.div variants={containerVariants} className="space-y-4">
               <h2 className="text-2xl font-semibold tracking-tight">Optimize Content</h2>
               
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Your Content</label>
-                  <Textarea
-                    placeholder="Enter your video title, description, and tags..."
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    rows={6}
-                  />
-                </div>
-
-                <Button
-                  className="w-full"
-                  onClick={optimizeContent}
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Optimizing Content...
-                    </>
-                  ) : (
-                    'Optimize Content'
-                  )}
-                </Button>
-              </div>
-
-              {optimizedContent && (
-                <motion.div
-                  variants={containerVariants}
-                  className="space-y-4"
-                >
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-medium">SEO Score</h3>
-                    <span className={getScoreColor(optimizedContent.score)}>
-                      {optimizedContent.score}%
-                    </span>
+              {currentStep === 'input' && (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Youtube Video URL (Optional)</label>
+                    <Input
+                      placeholder="Put your youtube video url here"
+                      value={url}
+                      onChange={(e) => setUrl(e.target.value)}
+                    />
                   </div>
-                  <Progress value={optimizedContent.score} className="h-2" />
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Video Title and Description</label>
+                    <Textarea
+                      placeholder="Enter your video title, description, and tags..."
+                      value={content}
+                      onChange={(e) => setContent(e.target.value)}
+                      rows={6}
+                    />
+                  </div>
 
-                  <Card className="p-4 space-y-4">
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-start">
-                        <label className="text-sm font-medium">Optimized Title</label>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => copyToClipboard(optimizedContent.title)}
-                          className="h-8 w-8"
-                        >
-                          <Copy className="h-4 w-4" />
-                        </Button>
+                  {error && (
+                    <div className="mt-4 p-4 rounded-lg bg-destructive/10 text-destructive text-sm">
+                      {error}
+                    </div>
+                  )}
+
+                  <Button
+                    className="w-full"
+                    onClick={optimizeContent}
+                    disabled={!content && !url}
+                  >
+                    Optimize Content
+                  </Button>
+                </div>
+              )}
+
+              {currentStep === 'optimizing' && (
+                <div className="flex flex-col items-center justify-center py-8 space-y-6">
+                  <div className="relative w-24 h-24">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Search className="w-12 h-12 text-primary animate-pulse" />
+                    </div>
+                    <div className="absolute inset-0">
+                      <svg className="w-full h-full animate-spin-slow" viewBox="0 0 100 100">
+                        <circle
+                          className="text-primary/20"
+                          strokeWidth="8"
+                          stroke="currentColor"
+                          fill="transparent"
+                          r="42"
+                          cx="50"
+                          cy="50"
+                        />
+                        <circle
+                          className="text-primary"
+                          strokeWidth="8"
+                          strokeDasharray={264}
+                          strokeDashoffset={264 - (loadingProgress / 100) * 264}
+                          stroke="currentColor"
+                          fill="transparent"
+                          r="42"
+                          cx="50"
+                          cy="50"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+
+                  <div className="text-center space-y-2">
+                    <div className="text-lg font-medium">
+                      {loadingMessages[loadingMessageIndex]}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {loadingProgress}% complete
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {currentStep === 'results' && optimizedContent && (
+                <motion.div variants={containerVariants} className="space-y-6">
+                  <div className="flex items-center justify-center gap-8">
+                    {/* Original Score */}
+                    <div className="relative w-24 h-24">
+                      <svg className="w-full h-full transform -rotate-90">
+                        <circle
+                          cx="48"
+                          cy="48"
+                          r="44"
+                          stroke="currentColor"
+                          strokeWidth="8"
+                          fill="transparent"
+                          className="text-muted/20"
+                        />
+                        <circle
+                          cx="48"
+                          cy="48"
+                          r="44"
+                          stroke="currentColor"
+                          strokeWidth="8"
+                          fill="transparent"
+                          strokeDasharray={276}
+                          strokeDashoffset={276 - (276 * optimizedContent.original_score) / 100}
+                          className={getScoreColor(optimizedContent.original_score)}
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="text-2xl font-bold">{optimizedContent.original_score}</span>
+                        <span className="text-xs text-muted-foreground">Original</span>
                       </div>
-                      <p className="text-sm">{optimizedContent.title}</p>
                     </div>
 
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-start">
-                        <label className="text-sm font-medium">Optimized Description</label>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => copyToClipboard(optimizedContent.description)}
-                          className="h-8 w-8"
-                        >
-                          <Copy className="h-4 w-4" />
-                        </Button>
-                      </div>
-                      <p className="text-sm">{optimizedContent.description}</p>
+                    {/* Improvement Arrow */}
+                    <div className="flex flex-col items-center">
+                      <ChartBar className="h-8 w-8 text-primary animate-pulse" />
+                      <span className="text-xs text-muted-foreground mt-1">
+                        Improved by {optimizedContent.seo_score - optimizedContent.original_score} points
+                      </span>
                     </div>
 
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-start">
-                        <label className="text-sm font-medium">Suggested Keywords</label>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => copyToClipboard(optimizedContent.keywords.join(', '))}
-                          className="h-8 w-8"
-                        >
-                          <Copy className="h-4 w-4" />
-                        </Button>
+                    {/* Optimized Score */}
+                    <div className="relative w-32 h-32">
+                      <svg className="w-full h-full transform -rotate-90">
+                        <circle
+                          cx="64"
+                          cy="64"
+                          r="56"
+                          stroke="currentColor"
+                          strokeWidth="8"
+                          fill="transparent"
+                          className="text-muted/20"
+                        />
+                        <circle
+                          cx="64"
+                          cy="64"
+                          r="56"
+                          stroke="currentColor"
+                          strokeWidth="8"
+                          fill="transparent"
+                          strokeDasharray={352}
+                          strokeDashoffset={352 - (352 * optimizedContent.seo_score) / 100}
+                          className={getScoreColor(optimizedContent.seo_score)}
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="text-3xl font-bold">{optimizedContent.seo_score}</span>
+                        <span className="text-sm text-muted-foreground">Optimized</span>
                       </div>
-                      <div className="flex flex-wrap gap-2">
-                        {optimizedContent.keywords.map((keyword, index) => (
-                          <span
-                            key={index}
-                            className="px-2 py-1 text-xs rounded-full bg-primary/10 text-primary"
+                    </div>
+                  </div>
+
+                  <div className="grid gap-6">
+                    <Card>
+                      <div className="p-4 space-y-4">
+                        <div className="flex justify-between items-start">
+                          <h3 className="text-lg font-medium flex items-center gap-2">
+                            <Youtube className="h-5 w-5" />
+                            Optimized Title
+                          </h3>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => copyToClipboard(optimizedContent.title || '')}
+                            className="h-8 w-8"
                           >
-                            {keyword}
-                          </span>
-                        ))}
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <p className="text-base">{optimizedContent.title}</p>
                       </div>
+                    </Card>
+
+                    <Card>
+                      <div className="p-4 space-y-4">
+                        <div className="flex justify-between items-start">
+                          <h3 className="text-lg font-medium flex items-center gap-2">
+                            <Search className="h-5 w-5" />
+                            Description
+                          </h3>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => copyToClipboard(optimizedContent.description || '')}
+                            className="h-8 w-8"
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <p className="text-base whitespace-pre-wrap">{optimizedContent.description}</p>
+                      </div>
+                    </Card>
+
+                    <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
+                      <Card>
+                        <div className="p-4 space-y-4">
+                          <h3 className="text-lg font-medium flex items-center gap-2">
+                            <KeyRound className="h-5 w-5" />
+                            Target Keywords
+                          </h3>
+                          <div className="flex flex-wrap gap-2">
+                            {optimizedContent.keywords.map((keyword: string, index: number) => (
+                              <span
+                                key={index}
+                                className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium"
+                              >
+                                {keyword}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </Card>
+
+                      <Card>
+                        <div className="p-4 space-y-4">
+                          <h3 className="text-lg font-medium flex items-center gap-2">
+                            <Hash className="h-5 w-5" />
+                            Recommended Hashtags
+                          </h3>
+                          <div className="flex flex-wrap gap-2">
+                            {optimizedContent.hashtags.map((hashtag, index) => (
+                              <span
+                                key={index}
+                                className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium"
+                              >
+                                {hashtag}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </Card>
                     </div>
-                  </Card>
+
+                    <Card>
+                      <div className="p-4 space-y-4">
+                        <h3 className="text-lg font-medium flex items-center gap-2">
+                          <Lightbulb className="h-5 w-5" />
+                          Optimization Tips
+                        </h3>
+                        <ul className="space-y-3">
+                          {optimizedContent.suggestions.map((suggestion, index) => (
+                            <li key={index} className="flex items-start gap-2">
+                              <Sparkles className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                              <span>{suggestion}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </Card>
+
+                    <div className="flex gap-4">
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setCurrentStep('input');
+                          setOptimizedContent(null);
+                        }}
+                        className="flex-1"
+                      >
+                        Optimize Another
+                      </Button>
+                    </div>
+                  </div>
                 </motion.div>
               )}
             </motion.div>
@@ -206,8 +460,8 @@ export function YouTubeSEOOptimizerPage() {
                 <div className="font-medium truncate flex-1">
                   {item.optimizedContent.title}
                 </div>
-                <span className={`ml-2 ${getScoreColor(item.optimizedContent.score)}`}>
-                  {item.optimizedContent.score}%
+                <span className={`ml-2 ${getScoreColor(item.optimizedContent.seo_score)}`}>
+                  {item.optimizedContent.seo_score}%
                 </span>
               </div>
               <div className="text-sm text-muted-foreground line-clamp-2">
@@ -232,6 +486,6 @@ export function YouTubeSEOOptimizerPage() {
           )}
         />
       </div>
-    </ToolPageWrapper>
+    </ToolLayout>
   );
 } 

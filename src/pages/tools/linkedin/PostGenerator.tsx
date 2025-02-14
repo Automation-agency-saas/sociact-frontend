@@ -19,30 +19,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../../components/ui/select";
+import {contentGeneratorService} from "../../../lib/services/content-generator"
+import { ToolLayout } from '../../../components/tool-page/ToolLayout';
+import { ToolTitle } from '@/components/ui/tool-title';
 
 type Step = 'input' | 'generating' | 'results';
-type PostType = 'thought-leadership' | 'case-study' | 'industry-insights' | 'personal-story' | 'tips-tricks';
+type ToneType = 'professional' | 'conversational' | 'inspirational' | 'informative' | 'persuasive';
 
 const loadingMessages = [
-  "Analyzing your topic...",
-  "Crafting professional content...",
+  "Analyzing your content...",
+  "Crafting your message...",
   "Adding engagement hooks...",
   "Optimizing for LinkedIn...",
   "Finalizing your post..."
 ];
 
-const postTypes = [
-  { value: 'thought-leadership', label: 'Thought Leadership', description: 'Share industry expertise and insights' },
-  { value: 'case-study', label: 'Case Study', description: 'Share success stories and results' },
-  { value: 'industry-insights', label: 'Industry Insights', description: 'Analysis of trends and developments' },
-  { value: 'personal-story', label: 'Personal Story', description: 'Share professional journey and experiences' },
-  { value: 'tips-tricks', label: 'Tips & Tricks', description: 'Practical advice and actionable insights' },
+const toneOptions = [
+  { value: 'professional', label: 'Professional', description: 'Formal and business-oriented tone' },
+  { value: 'conversational', label: 'Conversational', description: 'Friendly and approachable style' },
+  { value: 'inspirational', label: 'Inspirational', description: 'Motivational and uplifting content' },
+  { value: 'informative', label: 'Informative', description: 'Educational and fact-based approach' },
+  { value: 'persuasive', label: 'Persuasive', description: 'Convincing and compelling tone' },
 ];
 
 export function LinkedInPostGeneratorPage() {
-  const [topic, setTopic] = useState('');
   const [description, setDescription] = useState('');
-  const [postType, setPostType] = useState<PostType>('thought-leadership');
+  const [tone, setTone] = useState<ToneType>('professional');
   const [currentStep, setCurrentStep] = useState<Step>('input');
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
@@ -51,11 +53,11 @@ export function LinkedInPostGeneratorPage() {
   const [error, setError] = useState<string | null>(null);
 
   const handleGenerate = async () => {
-    if (!topic || !description) {
-      toast.error('Please provide both topic and description');
+    if (!description) {
+      toast.error('Please provide a description for your post');
       return;
     }
-    
+
     setCurrentStep('generating');
     setLoadingProgress(0);
     setLoadingMessageIndex(0);
@@ -101,29 +103,37 @@ export function LinkedInPostGeneratorPage() {
     startLoading();
 
     try {
-      // TODO: Replace with actual API call
-      const post = "🎯 Exciting breakthrough in our latest project!\n\nOver the past quarter, our team has been working tirelessly on revolutionizing how we approach customer engagement. Today, I'm thrilled to share our results:\n\n✨ 47% increase in customer satisfaction\n📈 2.5x improvement in response time\n🎉 98% positive feedback from beta users\n\nKey learnings:\n\n1. Always start with user research\n2. Iterate based on feedback\n3. Measure everything\n\nBut here's what really made the difference: our team's dedication to putting customers first.\n\nWhat strategies have worked for you in improving customer engagement?\n\nLet's discuss in the comments! 👇\n\n#CustomerSuccess #Innovation #Leadership";
+      const response = await contentGeneratorService.generateLinkedInPost(description, tone);
       
-      const hashtags = [
-        "#Innovation",
-        "#Leadership",
-        "#ProfessionalDevelopment",
-        "#BusinessGrowth",
-        "#CustomerSuccess",
-        "#CareerGrowth",
-        "#BusinessStrategy",
-        "#NetworkingTips",
-        "#IndustryInsights",
-        "#ProfessionalTips"
-      ];
-
-      setLoadingProgress(100);
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      setGeneratedPost(post);
-      setGeneratedHashtags(hashtags);
-      setCurrentStep('results');
-      toast.success('Post generated successfully!');
+      if (response.status === 'success' && response.content) {
+        setLoadingProgress(100);
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        setGeneratedPost(response.content);
+        
+        // Extract hashtags from the content
+        const hashtagRegex = /#[\w\u0590-\u05ff]+/g;
+        const extractedHashtags = response.content.match(hashtagRegex) || [];
+        
+        // If no hashtags found in content, use the ones from the content
+        if (extractedHashtags.length === 0) {
+          const defaultHashtags = [
+            "#WebDesign",
+            "#UserExperience",
+            "#DigitalMarketing",
+            "#CreativeDesign",
+            "#ContentStrategy"
+          ];
+          setGeneratedHashtags(defaultHashtags);
+        } else {
+          setGeneratedHashtags(extractedHashtags);
+        }
+        
+        setCurrentStep('results');
+        toast.success('Post generated successfully!');
+      } else {
+        throw new Error(response.message || 'Failed to generate post');
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to generate post';
       setError(errorMessage);
@@ -135,9 +145,8 @@ export function LinkedInPostGeneratorPage() {
   };
 
   const handleReset = () => {
-    setTopic('');
     setDescription('');
-    setPostType('thought-leadership');
+    setTone('professional');
     setCurrentStep('input');
     setGeneratedPost('');
     setGeneratedHashtags([]);
@@ -154,11 +163,12 @@ export function LinkedInPostGeneratorPage() {
   };
 
   return (
-    <ToolPageWrapper
-      title="LinkedIn Post Generator"
-      description="Create engaging LinkedIn posts that drive professional engagement"
-    >
-      <div className="space-y-6">
+    <ToolLayout>
+      <ToolTitle
+        title="LinkedIn Post Generator"
+        description="Create engaging LinkedIn posts that drive professional engagement"
+      />
+      <div className="mx-auto max-w-2xl w-full space-y-6">
         {currentStep === 'input' && (
           <div className="grid gap-6">
             <Card>
@@ -173,18 +183,9 @@ export function LinkedInPostGeneratorPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Topic</label>
-                  <Input
-                    placeholder="Enter the main topic of your post..."
-                    value={topic}
-                    onChange={(e) => setTopic(e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
                   <label className="text-sm font-medium">Description</label>
                   <Textarea
-                    placeholder="Describe what you want to convey in your post..."
+                    placeholder="Describe what you want to share in your post..."
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     className="min-h-[120px]"
@@ -192,18 +193,18 @@ export function LinkedInPostGeneratorPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Post Type</label>
-                  <Select value={postType} onValueChange={(value) => setPostType(value as PostType)}>
+                  <label className="text-sm font-medium">Tone of Voice</label>
+                  <Select value={tone} onValueChange={(value: ToneType) => setTone(value)}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select post type" />
+                      <SelectValue placeholder="Select tone" />
                     </SelectTrigger>
                     <SelectContent>
-                      {postTypes.map((type) => (
-                        <SelectItem key={type.value} value={type.value}>
+                      {toneOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
                           <div className="flex flex-col">
-                            <span className="font-medium">{type.label}</span>
+                            <span className="font-medium">{option.label}</span>
                             <span className="text-xs text-muted-foreground">
-                              {type.description}
+                              {option.description}
                             </span>
                           </div>
                         </SelectItem>
@@ -214,7 +215,7 @@ export function LinkedInPostGeneratorPage() {
 
                 <Button
                   onClick={handleGenerate}
-                  disabled={!topic || !description}
+                  disabled={!description}
                   className="w-full bg-primary hover:bg-primary/90"
                 >
                   <Wand2 className="mr-2 h-4 w-4" />
@@ -310,21 +311,40 @@ export function LinkedInPostGeneratorPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Hash className="h-5 w-5 text-primary" />
-                  Suggested Hashtags
-                </CardTitle>
+                <div className="flex justify-between items-center">
+                  <CardTitle className="flex items-center gap-2">
+                    <Hash className="h-5 w-5 text-primary" />
+                    Suggested Hashtags
+                  </CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2"
+                    onClick={() => copyToClipboard(generatedHashtags.join(' '))}
+                  >
+                    <Copy className="h-4 w-4" />
+                    Copy Hashtags
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   {generatedHashtags.map((hashtag, index) => (
-                    <span
+                    <div
                       key={index}
-                      className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium cursor-pointer hover:bg-primary/20"
-                      onClick={() => copyToClipboard(hashtag)}
+                      className="group relative inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20"
                     >
-                      {hashtag}
-                    </span>
+                      <span>{hashtag}</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => copyToClipboard(hashtag)}
+                      >
+                        <Copy className="h-3 w-3" />
+                        <span className="sr-only">Copy hashtag</span>
+                      </Button>
+                    </div>
                   ))}
                 </div>
               </CardContent>
@@ -332,6 +352,6 @@ export function LinkedInPostGeneratorPage() {
           </div>
         )}
       </div>
-    </ToolPageWrapper>
+    </ToolLayout>
   );
-} 
+}
