@@ -11,9 +11,7 @@ import { WelcomeBackModal } from './components/onboarding/WelcomeBackModal';
 import { useState, useEffect } from 'react';
 
 import LandingPage from './pages/LandingPage';
-// Landing page components
 import "./App.css";
-// Auth pages
 import { AuthLayout } from "./pages/auth/AuthLayout";
 
 // App pages
