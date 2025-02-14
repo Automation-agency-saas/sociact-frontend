@@ -1,6 +1,5 @@
-import {  FileTextIcon } from "@radix-ui/react-icons";
-import {  Share2Icon } from "lucide-react";
-
+import { FileTextIcon } from "@radix-ui/react-icons";
+import { Share2Icon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import AnimatedBeamMultipleOutputDemo from "@/components/ui/animated-beam-multiple-output";
@@ -48,14 +47,14 @@ const features = [
             key={idx}
             className={cn(
               "relative w-32 cursor-pointer overflow-hidden rounded-xl border p-4",
-              "border-gray-950/[.1] bg-gray-950/[.01] hover:bg-gray-950/[.05]",
-              "dark:border-gray-50/[.1] dark:bg-gray-50/[.10] dark:hover:bg-gray-50/[.15]",
-              "transform-gpu blur-[1px] transition-all duration-300 ease-out hover:blur-none",
+              // "border-gray-950/[.1] bg-gray-950/[.01] hover:bg-gray-950/[.05]",
+              "border-gray-50/[.1] bg-gray-50/[.10] hover:bg-gray-50/[.15]",
+              "transform-gpu blur-[1px] transition-all duration-300 ease-out hover:blur-none"
             )}
           >
             <div className="flex flex-row items-center gap-2">
               <div className="flex flex-col">
-                <figcaption className="text-sm font-medium dark:text-white ">
+                <figcaption className="text-sm font-medium text-white ">
                   {f.name}
                 </figcaption>
               </div>
@@ -70,7 +69,8 @@ const features = [
   {
     Icon: Share2Icon,
     name: "Integrations",
-    description: "Providing 10+ Automation Tools for 5 Major Social Media Platforms",
+    description:
+      "Providing 10+ Automation Tools for 5 Major Social Media Platforms",
     href: "#features",
     cta: "Learn more",
     className: "col-span-3 lg:col-span-2",
@@ -78,17 +78,16 @@ const features = [
       <AnimatedBeamMultipleOutputDemo className="absolute right-2 top-4 h-[300px] border-none transition-all duration-300 ease-out [mask-image:linear-gradient(to_top,transparent_10%,#000_100%)] group-hover:scale-105" />
     ),
   },
-
 ];
 
 export function BentoDemo() {
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-8">
-        <BentoGrid>
-    {features.map((feature, idx) => (
-      <BentoCard key={idx} {...feature} />
-    ))}
-  </BentoGrid>
-</div>
+      <BentoGrid>
+        {features.map((feature, idx) => (
+          <BentoCard key={idx} {...feature} />
+        ))}
+      </BentoGrid>
+    </div>
   );
 }

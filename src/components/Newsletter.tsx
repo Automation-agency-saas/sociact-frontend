@@ -22,7 +22,7 @@ export const Newsletter = () => {
               autoComplete="name"
               required
               placeholder="Your Name"
-              className="min-w-0 flex-auto bg-white dark:bg-white/10 border-gray-200 dark:border-white/20 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-white/70 focus:border-primary shadow-sm"
+              className="min-w-0 flex-auto bg-white/10 border-white/20 text-white placeholder:text-white/70  shadow-sm"
             />
             <Input
               id="email"
@@ -31,7 +31,7 @@ export const Newsletter = () => {
               autoComplete="email"
               required
               placeholder="Your Email"
-              className="min-w-0 flex-auto bg-white dark:bg-white/10 border-gray-200 dark:border-white/20 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-white/70 focus:border-primary shadow-sm"
+              className="min-w-0 flex-auto bg-white/10 border-white/20 text-white placeholder:text-white/70  shadow-sm"
             />
           </div>
           <Textarea
@@ -39,7 +39,7 @@ export const Newsletter = () => {
             name="message"
             required
             placeholder="Your Message"
-            className="min-h-[150px] bg-white dark:bg-white/10 border-gray-200 dark:border-white/20 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-white/70 focus:border-primary shadow-sm"
+            className="min-h-[150px] bg-white/10 border-white/20 text-white placeholder:text-white/70  shadow-sm"
           />
           <Button 
             type="submit" 

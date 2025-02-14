@@ -41,7 +41,7 @@ const faqs = [
 export const FAQ = () => {
   return (
     <section id="faq" className="container py-24 sm:py-32">
-      <div className="relative flex flex-col overflow-hidden">
+      <div className="relative  rounded-3xl flex flex-col overflow-hidden">
         <div className="text-center ">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
             Frequently Asked Questions
@@ -63,7 +63,7 @@ export const FAQ = () => {
           ))}
         </div>
 
-        <h3 className="font-medium mt-4 py-4">
+        <h3 className="font-medium text-center mt-4 py-4">
           Still have questions?{" "}
           <a
             rel="noreferrer noopener"
