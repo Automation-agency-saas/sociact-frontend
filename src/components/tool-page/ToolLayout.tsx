@@ -48,7 +48,7 @@ export function ToolLayout({ children, className }: ToolLayoutProps) {
             </div>
           </header>
           {/* Main Content */}
-          <main className="px-4">{children}</main>
+          <main className="px-4 w-full mx-auto">{children}</main>
         </SidebarInset>
       </SidebarProvider>
     </div>

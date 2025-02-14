@@ -3,7 +3,7 @@ import React from "react";
 const DashboardHero: React.FC = () => {
   return (
     <div className="w-full flex flex-col items-center justify-center overflow-hidden rounded-md px-4">
-      <h1 className="md:text-6xl text-3xl lg:text-7xl font-bold text-center dark:text-white text-black relative z-20 mb-4">
+      <h1 className="md:text-6xl text-3xl lg:text-7xl font-bold text-center text-white text-black relative z-20 mb-4">
         Social Media Automation Tools
       </h1>
       <div className="w-full max-w-[65rem] h-8 relative">

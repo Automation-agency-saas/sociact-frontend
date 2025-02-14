@@ -63,7 +63,7 @@ const NavSidebar: React.FC = () => {
         {
           title: "Seo Pro",
           desc: "Optimize your content for better visibility",
-          url: "/seo_pro",
+          url: "/youtube/seo-optimizer",
         },
       ],
     },
@@ -194,11 +194,11 @@ const NavSidebar: React.FC = () => {
                           className="hover:bg-purple-400/20"
                           asChild
                         >
-                          <a href={feature.url}>
+                          <Link to={feature.url}>
                             <span className="text-muted-foreground">
                               {feature.title}
                             </span>
-                          </a>
+                          </Link>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
                     )

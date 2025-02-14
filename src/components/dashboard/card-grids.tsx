@@ -70,12 +70,6 @@ const CardGrids: React.FC = () => {
           app: "linkedin",
         },
         {
-          title: "Thumbnail Pro",
-          desc: "Generate AI powered thumbnails for your videos",
-          url: "/youtube/thumbnail-generator",
-          app: "youtube",
-        },
-        {
           title: "Thumbnail Gen",
           desc: "Create stunning thumbnails from text description",
           url: "/youtube/thumbnail-generator",
@@ -95,9 +89,9 @@ const CardGrids: React.FC = () => {
         },
         {
           title: "Comment Pro",
-          desc: "Automate engaging responses to comments on your posts",
-          url: "/facebook/comment-automation",
-          app: "facebook",
+          desc: "Automate engaging responses to comments on your videos",
+          url: "/youtube/comment-automation",
+          app: "youtube",
         },
       ],
     },
@@ -108,7 +102,7 @@ const CardGrids: React.FC = () => {
         {
           title: "Seo Pro",
           desc: "Optimize your content for better visibility",
-          url: "/seo_pro",
+          url: "/youtube/seo-optimizer",
           app: "youtube",
         },
       ],
@@ -116,38 +110,40 @@ const CardGrids: React.FC = () => {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto py-4 sm:py-8 gap-8 grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 p-4 sm:p-6 lg:p-8 mx-auto max-w-7xl">
       {categories.map((category) =>
         category.subcategories.map((subcategory) => (
           <div
             key={subcategory.title}
-            className="border bg-transparent backdrop-blur-sm group/card flex flex-row gap-3 w-[400px] h-[200px] mx-auto p-2 relative rounded-xl"
+            className="border bg-transparent backdrop-blur-sm group/card flex flex-row gap-2 sm:gap-3 
+                      w-full min-h-[120px] sm:min-h-[160px] lg:min-h-[200px]
+                      p-3 sm:p-4 relative rounded-xl
+                      transition-all duration-300 hover:shadow-lg"
           >
-            <Icon className="absolute h-6 w-6 -top-3 -left-3 text-primary" />
-            <Icon className="absolute h-6 w-6 -bottom-3 -left-3 text-primary" />
-            <Icon className="absolute h-6 w-6 -top-3 -right-3 text-primary" />
-            <Icon className="absolute h-6 w-6 -bottom-3 -right-3 text-primary" />
+            <Icon className="absolute h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 -top-2 -left-2 text-primary" />
+            <Icon className="absolute h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 -bottom-2 -left-2 text-primary" />
+            <Icon className="absolute h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 -top-2 -right-2 text-primary" />
+            <Icon className="absolute h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 -bottom-2 -right-2 text-primary" />
 
             <EvervaultCard
               icon={category.icon}
               app={subcategory.app}
-              className="group-hover/card:scale-90 transition-all ease-in-out duration-300"
+              className="group-hover/card:scale-60   transition-all ease-in-out duration-300"
             />
-            <div className="w-full mt-3 flex flex-col gap-3">
-              <h1 className="text-2xl font-semibold text-white">
+            <div className="flex-1 flex flex-col gap-2 sm:gap-3">
+              <h1 className="text-lg sm:text-xl lg:text-2xl font-semibold text-white line-clamp-2">
                 {subcategory.title}
               </h1>
               <a href={subcategory.url}>
                 <Button
                   size={"sm"}
-                  className="w-max pr-6 flex items-center gap-2 justify-start text-white"
-                  // onClick={() => (window.location.href = subcategory.url)}
+                  className="w-max pr-4 sm:pr-6 flex items-center gap-2 justify-start text-white text-sm sm:text-base"
                 >
                   <span>Launch</span>
-                  <ChevronRight className="w-4 h-4 group-hover/card:translate-x-3 transition-all ease-in-out duration-300" />
+                  <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 group-hover/card:translate-x-3 transition-all ease-in-out duration-300" />
                 </Button>
               </a>
-              <p className="w-full mt-2 text-sm text-muted-foreground">
+              <p className="w-full text-xs sm:text-sm text-muted-foreground line-clamp-2">
                 {subcategory.desc}
               </p>
             </div>

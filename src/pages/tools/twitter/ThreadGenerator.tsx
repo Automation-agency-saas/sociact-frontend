@@ -34,7 +34,7 @@ const loadingMessages = [
   "Finalizing your thread...",
 ];
 
-const tweetCountOptions = [3, 5, 7, 9, 11, 13, 15];
+const tweetCountOptions = [ 5, 7, 9, 11, 13, 15];
 
 export function TwitterThreadGeneratorPage() {
   const [topic, setTopic] = useState("");
