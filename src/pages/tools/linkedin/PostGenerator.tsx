@@ -168,13 +168,13 @@ export function LinkedInPostGeneratorPage() {
         title="LinkedIn Post Generator"
         description="Create engaging LinkedIn posts that drive professional engagement"
       />
-      <div className="mx-auto max-w-2xl w-full space-y-6">
+      <div className="mx-auto max-w-6xl pb-20 w-full space-y-6">
         {currentStep === 'input' && (
           <div className="grid gap-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MessageSquare className="h-5 w-5 text-primary" />
+                <CardTitle className="flex items-center gap-2 mb-3">
+                  <MessageSquare className="h-6 w-6 text-primary " />
                   Post Details
                 </CardTitle>
                 <CardDescription>
@@ -201,8 +201,9 @@ export function LinkedInPostGeneratorPage() {
                     <SelectContent>
                       {toneOptions.map((option) => (
                         <SelectItem key={option.value} value={option.value}>
-                          <div className="flex flex-col">
-                            <span className="font-medium">{option.label}</span>
+                          <div className="w-full min-w-full flex flex-row items-center justify-between">
+                            <span className="font-medium">{option.label} </span>
+                            <span className='mx-2 md:mx-5'></span>
                             <span className="text-xs text-muted-foreground">
                               {option.description}
                             </span>

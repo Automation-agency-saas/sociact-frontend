@@ -145,15 +145,15 @@ export function YouTubeScriptGeneratorPage() {
         title="YouTube Script Generator" 
         description="Generate professional video scripts based on your title and description"
       />
-      <div className="mx-auto max-w-2xl w-full space-y-6">
+      <div className="mx-auto max-w-6xl pb-20 w-full space-y-6">
         {currentStep === 'input' && (
           <Card className="p-6 bg-background/60 backdrop-blur-lg">
             <CardHeader className="p-0 mb-6">
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5 text-primary" />
+              <CardTitle className="flex items-center gap-2 mb-3">
+                <MessageSquare className="h-6 w-6 text-primary" />
                 Script Details
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-sm text-muted-foreground">
                 Provide information about your video
               </CardDescription>
             </CardHeader>
@@ -243,7 +243,7 @@ export function YouTubeScriptGeneratorPage() {
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="space-y-6"
+            className="space-y-6 "
           >
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold">Generated Script</h3>

@@ -13,8 +13,8 @@ export function ToolTitle({ title, description, className }: ToolTitleProps) {
   return (
     <div className={cn("relative w-full overflow-hidden py-12", className)}>
       {/* Title Content */}
-      <div className="relative z-20 text-center space-y-4">
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 via-primary to-neutral-200">
+      <div className="relative z-20 text-center space-y-2">
+        <h1 className="text-4xl md:text-5xl lg:text-6xl pb-3 font-bold bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 via-primary to-neutral-200">
           {title}
         </h1>
         {description && (
@@ -43,4 +43,4 @@ export function ToolTitle({ title, description, className }: ToolTitleProps) {
       </div> */}
     </div>
   );
-} 
+}

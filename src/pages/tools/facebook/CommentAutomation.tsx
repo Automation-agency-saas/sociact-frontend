@@ -1,10 +1,17 @@
-import { useState } from 'react';
-import { ToolPageWrapper } from '../../../components/tool-page/ToolPageWrapper';
-import { Button } from '../../../components/ui/button';
-import { Input } from '../../../components/ui/input';
-import { Textarea } from '../../../components/ui/textarea';
-import { MessageCircle, Play, Pause, Settings2, RefreshCw, Clock } from 'lucide-react';
-import { toast } from 'react-hot-toast';
+import { useState } from "react";
+import { ToolPageWrapper } from "../../../components/tool-page/ToolPageWrapper";
+import { Button } from "../../../components/ui/button";
+import { Input } from "../../../components/ui/input";
+import { Textarea } from "../../../components/ui/textarea";
+import {
+  MessageCircle,
+  Play,
+  Pause,
+  Settings2,
+  RefreshCw,
+  Clock,
+} from "lucide-react";
+import { toast } from "react-hot-toast";
 import {
   Card,
   CardContent,
@@ -19,29 +26,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../../components/ui/select";
+import { ToolLayout } from "@/components/tool-page/ToolLayout";
+import { ToolTitle } from "@/components/ui/tool-title";
 
-type CommentMode = 'scheduled' | 'instant';
+type CommentMode = "scheduled" | "instant";
 
 export function FacebookCommentAutomationPage() {
-  const [postUrl, setPostUrl] = useState('');
-  const [commentText, setCommentText] = useState('');
-  const [mode, setMode] = useState<CommentMode>('instant');
-  const [schedule, setSchedule] = useState('');
+  const [postUrl, setPostUrl] = useState("");
+  const [commentText, setCommentText] = useState("");
+  const [mode, setMode] = useState<CommentMode>("instant");
+  const [schedule, setSchedule] = useState("");
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleStart = async () => {
     if (!postUrl || !commentText) {
-      toast.error('Please provide both post URL and comment text');
+      toast.error("Please provide both post URL and comment text");
       return;
     }
 
     try {
       setIsRunning(true);
       // TODO: Replace with actual API call
-      toast.success('Comment automation started successfully!');
+      toast.success("Comment automation started successfully!");
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to start automation';
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to start automation";
       setError(errorMessage);
       toast.error(errorMessage);
       setIsRunning(false);
@@ -50,25 +60,26 @@ export function FacebookCommentAutomationPage() {
 
   const handleStop = () => {
     setIsRunning(false);
-    toast.success('Comment automation stopped');
+    toast.success("Comment automation stopped");
   };
 
   const handleReset = () => {
-    setPostUrl('');
-    setCommentText('');
-    setMode('instant');
-    setSchedule('');
+    setPostUrl("");
+    setCommentText("");
+    setMode("instant");
+    setSchedule("");
     setIsRunning(false);
     setError(null);
   };
 
   return (
-    <ToolPageWrapper
-      title="Facebook Comment Automation"
-      description="Automate your Facebook engagement with smart commenting"
-    >
-      <div className="space-y-6">
-        <div className="grid gap-6 md:grid-cols-2">
+    <ToolLayout>
+      <ToolTitle
+        title="Facebook Comment Automation"
+        description="Automate your Facebook engagement with smart commenting"
+      />
+      <div className="space-y-6 max-w-6xl mx-auto pb-20">
+        <div className="grid gap-6 md:grid-cols-1">
           {/* Comment Settings Card */}
           <Card>
             <CardHeader>
@@ -128,16 +139,18 @@ export function FacebookCommentAutomationPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="instant">
-                      <div className="flex flex-col">
+                      <div className="flex flex-row items-center">
                         <span className="font-medium">Instant</span>
+                        <span className="mx-2 md:mx-5"></span>
                         <span className="text-xs text-muted-foreground">
                           Comment immediately
                         </span>
                       </div>
                     </SelectItem>
                     <SelectItem value="scheduled">
-                      <div className="flex flex-col">
+                      <div className="flex flex-row items-center">
                         <span className="font-medium">Scheduled</span>
+                        <span className="mx-2 md:mx-5"></span>
                         <span className="text-xs text-muted-foreground">
                           Comment at specific times
                         </span>
@@ -147,7 +160,7 @@ export function FacebookCommentAutomationPage() {
                 </Select>
               </div>
 
-              {mode === 'scheduled' && (
+              {mode === "scheduled" && (
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Schedule</label>
                   <Input
@@ -210,9 +223,9 @@ export function FacebookCommentAutomationPage() {
                   <span className="text-sm font-medium">Active</span>
                 </div>
                 <span className="text-sm text-muted-foreground">
-                  {mode === 'scheduled'
+                  {mode === "scheduled"
                     ? `Scheduled for ${new Date(schedule).toLocaleString()}`
-                    : 'Running in instant mode'}
+                    : "Running in instant mode"}
                 </span>
               </div>
             </CardContent>
@@ -225,6 +238,6 @@ export function FacebookCommentAutomationPage() {
           </div>
         )}
       </div>
-    </ToolPageWrapper>
+    </ToolLayout>
   );
-} 
+}

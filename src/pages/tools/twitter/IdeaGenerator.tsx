@@ -279,19 +279,19 @@ export function TwitterIdeaGeneratorPage() {
         description="Generate viral thread ideas that grow your audience"
       />
       
-      <div className="space-y-8">
+      <div className="space-y-8 pb-20 max-w-7xl mx-auto">
         <Tabs defaultValue="preferences" className="space-y-8">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-3 max-w-lg mx-auto">
             <TabsTrigger value="preferences" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
+              <Settings className="h-4 w-4 text-purple-400" />
               Preferences
             </TabsTrigger>
             <TabsTrigger value="custom" className="flex items-center gap-2">
-              <PenLine className="h-4 w-4" />
+              <PenLine className="h-4 w-4 text-purple-400" />
               Custom
             </TabsTrigger>
             <TabsTrigger value="surprise" className="flex items-center gap-2">
-              <Lightbulb className="h-4 w-4" />
+              <Lightbulb className="h-4 w-4 text-purple-400" />
               Surprise Me
             </TabsTrigger>
           </TabsList>

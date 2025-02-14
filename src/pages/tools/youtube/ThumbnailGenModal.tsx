@@ -174,19 +174,19 @@ export function ThumbnailGenPage() {
                     description="Create stunning YouTube thumbnails from your descriptions"
                 />
 
-                <div className="grid gap-6">
+                <div className="grid gap-6 pb-20">
                     {currentStep === 'input' && (
-                        <Card className="mx-auto max-w-2xl w-full">
+                        <Card className="mx-auto max-w-6xl pb-6 w-full">
                             <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <ImageIcon className="h-5 w-5 text-primary" />
+                                <CardTitle className="flex items-center gap-2 mb-3">
+                                    <ImageIcon className="h-6 w-6 text-primary" />
                                     Thumbnail Content
                                 </CardTitle>
                                 <CardDescription>
                                     Describe your desired thumbnail elements
                                 </CardDescription>
                             </CardHeader>
-                            <CardContent className="space-y-4">
+                            <CardContent className="space-y-5">
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Background Description</label>
                                     <Textarea
@@ -218,8 +218,9 @@ export function ThumbnailGenPage() {
                                         <SelectContent>
                                             {STYLE_OPTIONS.map((option) => (
                                                 <SelectItem key={option.value} value={option.value}>
-                                                    <div className="flex flex-col">
+                                                    <div className="flex flex-row items-center">
                                                         <span className="font-medium">{option.label}</span>
+                                                        <span className='mx-2 md:mx-5'></span>
                                                         <span className="text-xs text-muted-foreground">
                                                             {option.description}
                                                         </span>
@@ -235,7 +236,7 @@ export function ThumbnailGenPage() {
                                     disabled={!backgroundPrompt || !textPrompt}
                                     className="w-full bg-primary hover:bg-primary/90"
                                 >
-                                    <Wand2 className="mr-2 h-4 w-4" />
+                                    <Wand2 className="mr-2  h-4 w-4" />
                                     Generate Thumbnail
                                 </Button>
 
@@ -292,7 +293,7 @@ export function ThumbnailGenPage() {
                     )}
 
                     {currentStep === 'results' && generatedUrl && (
-                        <Card className="mx-auto max-w-2xl w-full">
+                        <Card className="mx-auto max-w-6xl w-full">
                             <CardContent className="p-6">
                                 <div className="flex justify-between items-center mb-4">
                                     <h3 className="text-lg font-semibold">Generated Thumbnail</h3>
