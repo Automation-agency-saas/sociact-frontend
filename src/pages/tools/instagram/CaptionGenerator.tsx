@@ -145,13 +145,13 @@ export function InstagramCaptionGeneratorPage() {
         title="Instagram Caption Generator"
         description="Create engaging captions that drive interaction and growth"
       />
-      <div className="space-y-6 mx-auto max-w-2xl w-full">
+      <div className="space-y-6 pb-20 mx-auto max-w-6xl w-full">
         {currentStep === 'input' && (
           <div className="grid gap-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MessageSquare className="h-5 w-5 text-primary" />
+                <CardTitle className="flex items-center gap-2 mb-3">
+                  <MessageSquare className="h-6 w-6 text-primary" />
                   Caption Details
                 </CardTitle>
                 <CardDescription>

@@ -292,19 +292,19 @@ export function InstagramIdeaGeneratorPage() {
         description="Generate engaging content ideas for your Instagram"
       />
       
-      <div className="space-y-8">
-        <Tabs defaultValue="preferences" className="space-y-8">
-          <TabsList className="grid w-full grid-cols-3">
+      <div className="space-y-8 pb-20 max-w-7xl mx-auto">
+        <Tabs defaultValue="preferences" className="space-y-8 ">
+          <TabsList className="grid w-full grid-cols-3 max-w-lg mx-auto">
             <TabsTrigger value="preferences" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
+              <Settings className="h-4 w-4 text-primary " />
               Preferences
             </TabsTrigger>
             <TabsTrigger value="custom" className="flex items-center gap-2">
-              <PenLine className="h-4 w-4" />
+              <PenLine className="h-4 w-4 text-primary " />
               Custom
             </TabsTrigger>
             <TabsTrigger value="surprise" className="flex items-center gap-2">
-              <Lightbulb className="h-4 w-4" />
+              <Lightbulb className="h-4 w-4 text-primary " />
               Surprise Me
             </TabsTrigger>
           </TabsList>
