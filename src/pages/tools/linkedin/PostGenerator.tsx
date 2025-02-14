@@ -110,16 +110,25 @@ export function LinkedInPostGeneratorPage() {
         await new Promise(resolve => setTimeout(resolve, 500));
         
         setGeneratedPost(response.content);
-        // Extract hashtags from the content or use default ones
-        const extractedHashtags = response.content.match(/#\w+/g) || [
-          "#Innovation",
-          "#Leadership",
-          "#ProfessionalDevelopment",
-          "#BusinessGrowth",
-          "#CareerGrowth"
-        ];
         
-        setGeneratedHashtags(extractedHashtags);
+        // Extract hashtags from the content
+        const hashtagRegex = /#[\w\u0590-\u05ff]+/g;
+        const extractedHashtags = response.content.match(hashtagRegex) || [];
+        
+        // If no hashtags found in content, use the ones from the content
+        if (extractedHashtags.length === 0) {
+          const defaultHashtags = [
+            "#WebDesign",
+            "#UserExperience",
+            "#DigitalMarketing",
+            "#CreativeDesign",
+            "#ContentStrategy"
+          ];
+          setGeneratedHashtags(defaultHashtags);
+        } else {
+          setGeneratedHashtags(extractedHashtags);
+        }
+        
         setCurrentStep('results');
         toast.success('Post generated successfully!');
       } else {
@@ -159,7 +168,7 @@ export function LinkedInPostGeneratorPage() {
         title="LinkedIn Post Generator"
         description="Create engaging LinkedIn posts that drive professional engagement"
       />
-      <div className="space-y-6">
+      <div className="mx-auto max-w-2xl w-full space-y-6">
         {currentStep === 'input' && (
           <div className="grid gap-6">
             <Card>
@@ -302,21 +311,40 @@ export function LinkedInPostGeneratorPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Hash className="h-5 w-5 text-primary" />
-                  Suggested Hashtags
-                </CardTitle>
+                <div className="flex justify-between items-center">
+                  <CardTitle className="flex items-center gap-2">
+                    <Hash className="h-5 w-5 text-primary" />
+                    Suggested Hashtags
+                  </CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2"
+                    onClick={() => copyToClipboard(generatedHashtags.join(' '))}
+                  >
+                    <Copy className="h-4 w-4" />
+                    Copy Hashtags
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   {generatedHashtags.map((hashtag, index) => (
-                    <span
+                    <div
                       key={index}
-                      className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium cursor-pointer hover:bg-primary/20"
-                      onClick={() => copyToClipboard(hashtag)}
+                      className="group relative inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20"
                     >
-                      {hashtag}
-                    </span>
+                      <span>{hashtag}</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => copyToClipboard(hashtag)}
+                      >
+                        <Copy className="h-3 w-3" />
+                        <span className="sr-only">Copy hashtag</span>
+                      </Button>
+                    </div>
                   ))}
                 </div>
               </CardContent>

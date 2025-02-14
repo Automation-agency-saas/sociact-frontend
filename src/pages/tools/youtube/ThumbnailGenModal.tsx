@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '../../../components/ui/button';
 import { Textarea } from '../../../components/ui/textarea';
-import { Wand2, Loader2, Download, Image as ImageIcon, Palette } from 'lucide-react';
+import { Wand2, Loader2, Download, Image as ImageIcon, Palette, RefreshCw } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { thumbnailGenService } from '../../../lib/services/thumbnail-gen';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
@@ -40,12 +40,26 @@ const STYLE_OPTIONS: { value: ThumbnailStyle; label: string; description: string
     }
 ];
 
+type Step = 'input' | 'generating' | 'results';
+
+const loadingMessages = [
+    "Analyzing your thumbnail requirements...",
+    "Crafting the background scene...",
+    "Designing text layout and style...",
+    "Optimizing visual elements...",
+    "Adding finishing touches...",
+    "Finalizing your thumbnail..."
+];
+
 export function ThumbnailGenPage() {
     const [backgroundPrompt, setBackgroundPrompt] = useState('');
     const [textPrompt, setTextPrompt] = useState('');
     const [style, setStyle] = useState<ThumbnailStyle>('modern');
-    const [isLoading, setIsLoading] = useState(false);
+    const [currentStep, setCurrentStep] = useState<Step>('input');
+    const [loadingProgress, setLoadingProgress] = useState(0);
+    const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
     const [generatedUrl, setGeneratedUrl] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
     const handleGenerate = async () => {
         if (!backgroundPrompt || !textPrompt) {
@@ -53,7 +67,49 @@ export function ThumbnailGenPage() {
             return;
         }
 
-        setIsLoading(true);
+        setCurrentStep('generating');
+        setLoadingProgress(0);
+        setLoadingMessageIndex(0);
+        setError(null);
+
+        const intervals = {
+            initial: { target: 85, speed: 50, increment: 1 },
+            slow: { target: 98, speed: 500, increment: 2 },
+        };
+
+        let loadingInterval: NodeJS.Timeout | null = null;
+        const startLoading = () => {
+            loadingInterval = setInterval(() => {
+                setLoadingProgress(prev => {
+                    if (prev >= intervals.slow.target) {
+                        if (loadingInterval) clearInterval(loadingInterval);
+                        return prev;
+                    }
+                    if (prev >= intervals.initial.target) {
+                        if (loadingInterval) clearInterval(loadingInterval);
+                        startSlowProgress();
+                        return prev;
+                    }
+                    return prev + intervals.initial.increment;
+                });
+                setLoadingMessageIndex(prev => (prev + 1) % loadingMessages.length);
+            }, intervals.initial.speed);
+        };
+
+        const startSlowProgress = () => {
+            loadingInterval = setInterval(() => {
+                setLoadingProgress(prev => {
+                    if (prev >= intervals.slow.target) {
+                        if (loadingInterval) clearInterval(loadingInterval);
+                        return prev;
+                    }
+                    return prev + intervals.slow.increment;
+                });
+                setLoadingMessageIndex(prev => (prev + 1) % loadingMessages.length);
+            }, intervals.slow.speed);
+        };
+
+        startLoading();
 
         try {
             const result = await thumbnailGenService.generateThumbnail({
@@ -63,16 +119,21 @@ export function ThumbnailGenPage() {
             });
 
             if (result.status === 'success' && result.url) {
+                setLoadingProgress(100);
+                await new Promise(resolve => setTimeout(resolve, 500));
                 setGeneratedUrl(result.url);
+                setCurrentStep('results');
                 toast.success('Thumbnail generated successfully!');
             } else {
                 throw new Error(result.message || 'Failed to generate thumbnail');
             }
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Failed to generate thumbnail';
+            setError(errorMessage);
             toast.error(errorMessage);
+            setCurrentStep('input');
         } finally {
-            setIsLoading(false);
+            if (loadingInterval) clearInterval(loadingInterval);
         }
     };
 
@@ -100,7 +161,9 @@ export function ThumbnailGenPage() {
         setBackgroundPrompt('');
         setTextPrompt('');
         setStyle('modern');
+        setCurrentStep('input');
         setGeneratedUrl(null);
+        setError(null);
     };
 
     return (
@@ -112,9 +175,8 @@ export function ThumbnailGenPage() {
                 />
 
                 <div className="grid gap-6">
-                    <div className="grid gap-4 md:grid-cols-2">
-                        {/* Content Input Card */}
-                        <Card>
+                    {currentStep === 'input' && (
+                        <Card className="mx-auto max-w-2xl w-full">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
                                     <ImageIcon className="h-5 w-5 text-primary" />
@@ -146,21 +208,7 @@ export function ThumbnailGenPage() {
                                         className="resize-none"
                                     />
                                 </div>
-                            </CardContent>
-                        </Card>
 
-                        {/* Style Settings Card */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
-                                    <Palette className="h-5 w-5 text-primary" />
-                                    Style Settings
-                                </CardTitle>
-                                <CardDescription>
-                                    Choose the visual style for your thumbnail
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium">Visual Style</label>
                                     <Select value={style} onValueChange={(value: ThumbnailStyle) => setStyle(value)}>
@@ -182,54 +230,100 @@ export function ThumbnailGenPage() {
                                     </Select>
                                 </div>
 
-                                <div className="space-y-4">
-                                    <Button
-                                        onClick={handleGenerate}
-                                        disabled={isLoading || !backgroundPrompt || !textPrompt}
-                                        className="w-full bg-primary hover:bg-primary/90"
-                                    >
-                                        {isLoading ? (
-                                            <>
-                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                                Generating...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Wand2 className="mr-2 h-4 w-4" />
-                                                Generate Thumbnail
-                                            </>
-                                        )}
-                                    </Button>
+                                <Button
+                                    onClick={handleGenerate}
+                                    disabled={!backgroundPrompt || !textPrompt}
+                                    className="w-full bg-primary hover:bg-primary/90"
+                                >
+                                    <Wand2 className="mr-2 h-4 w-4" />
+                                    Generate Thumbnail
+                                </Button>
 
-                                    {generatedUrl && (
+                                {error && (
+                                    <div className="p-4 rounded-lg bg-destructive/10 text-destructive text-sm">
+                                        {error}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {currentStep === 'generating' && (
+                        <div className="flex flex-col items-center justify-center py-8 space-y-6">
+                            <div className="relative w-24 h-24">
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <ImageIcon className="w-12 h-12 text-primary animate-pulse" />
+                                </div>
+                                <div className="absolute inset-0">
+                                    <svg className="w-full h-full animate-spin-slow" viewBox="0 0 100 100">
+                                        <circle
+                                            className="text-primary/20"
+                                            strokeWidth="8"
+                                            stroke="currentColor"
+                                            fill="transparent"
+                                            r="42"
+                                            cx="50"
+                                            cy="50"
+                                        />
+                                        <circle
+                                            className="text-primary"
+                                            strokeWidth="8"
+                                            strokeDasharray={264}
+                                            strokeDashoffset={264 - (loadingProgress / 100) * 264}
+                                            strokeLinecap="round"
+                                            stroke="currentColor"
+                                            fill="transparent"
+                                            r="42"
+                                            cx="50"
+                                            cy="50"
+                                        />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div className="text-center space-y-2">
+                                <p className="text-lg font-medium text-primary">
+                                    {loadingMessages[loadingMessageIndex]}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                    {loadingProgress}% complete
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    {currentStep === 'results' && generatedUrl && (
+                        <Card className="mx-auto max-w-2xl w-full">
+                            <CardContent className="p-6">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h3 className="text-lg font-semibold">Generated Thumbnail</h3>
+                                    <div className="flex gap-2">
                                         <Button
                                             onClick={handleDownload}
                                             variant="outline"
-                                            className="w-full"
+                                            size="sm"
                                         >
                                             <Download className="mr-2 h-4 w-4" />
-                                            Download Thumbnail
+                                            Download
                                         </Button>
-                                    )}
+                                        <Button
+                                            onClick={handleReset}
+                                            variant="outline"
+                                            size="sm"
+                                        >
+                                            <RefreshCw className="mr-2 h-4 w-4" />
+                                            Generate New
+                                        </Button>
+                                    </div>
                                 </div>
-                            </CardContent>
-                        </Card>
-                    </div>
-
-                    {/* Generated Thumbnail Preview */}
-                    {generatedUrl && (
-                        <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
-                            <div className="p-6">
-                                <h3 className="text-lg font-semibold">Generated Thumbnail</h3>
-                                <div className="mt-4 aspect-video overflow-hidden rounded-lg">
+                                <div className="aspect-video overflow-hidden rounded-lg">
                                     <img
                                         src={generatedUrl}
                                         alt="Generated thumbnail"
                                         className="h-full w-full object-cover"
                                     />
                                 </div>
-                            </div>
-                        </div>
+                            </CardContent>
+                        </Card>
                     )}
                 </div>
             </div>

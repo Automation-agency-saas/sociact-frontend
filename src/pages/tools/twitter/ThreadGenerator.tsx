@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ToolPageWrapper } from '../../../components/tool-page/ToolPageWrapper';
+import { motion } from 'framer-motion';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Textarea } from '../../../components/ui/textarea';
@@ -21,7 +21,9 @@ import {
 } from "../../../components/ui/select";
 import { ToolLayout } from '../../../components/tool-page/ToolLayout';
 import { ToolTitle } from "@/components/ui/tool-title";
-import {contentGeneratorService} from "../../../lib/services/content-generator"
+import { contentGeneratorService } from "../../../lib/services/content-generator";
+import { containerVariants, cardHoverVariants } from '../../../lib/animations';
+
 type Step = 'input' | 'generating' | 'results';
 
 const loadingMessages = [
@@ -55,11 +57,51 @@ export function TwitterThreadGeneratorPage() {
       return;
     }
 
-    try {
-      setCurrentStep('generating');
-      setLoadingProgress(0);
-      setLoadingMessageIndex(0);
+    setCurrentStep('generating');
+    setLoadingProgress(0);
+    setLoadingMessageIndex(0);
+    setError(null);
 
+    const intervals = {
+      initial: { target: 85, speed: 50, increment: 1 },
+      slow: { target: 98, speed: 500, increment: 2 },
+    };
+
+    let loadingInterval: NodeJS.Timeout | null = null;
+    const startLoading = () => {
+      loadingInterval = setInterval(() => {
+        setLoadingProgress(prev => {
+          if (prev >= intervals.slow.target) {
+            if (loadingInterval) clearInterval(loadingInterval);
+            return prev;
+          }
+          if (prev >= intervals.initial.target) {
+            if (loadingInterval) clearInterval(loadingInterval);
+            startSlowProgress();
+            return prev;
+          }
+          return prev + intervals.initial.increment;
+        });
+        setLoadingMessageIndex(prev => (prev + 1) % loadingMessages.length);
+      }, intervals.initial.speed);
+    };
+
+    const startSlowProgress = () => {
+      loadingInterval = setInterval(() => {
+        setLoadingProgress(prev => {
+          if (prev >= intervals.slow.target) {
+            if (loadingInterval) clearInterval(loadingInterval);
+            return prev;
+          }
+          return prev + intervals.slow.increment;
+        });
+        setLoadingMessageIndex(prev => (prev + 1) % loadingMessages.length);
+      }, intervals.slow.speed);
+    };
+
+    startLoading();
+
+    try {
       const response = await contentGeneratorService.generateTwitterThread(description, Number(tweetCount));
       
       if (response.status === 'success' && response.content) {
@@ -80,8 +122,10 @@ export function TwitterThreadGeneratorPage() {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to generate thread';
       setError(errorMessage);
-      toast.error('Failed to generate thread. Please try again.');
+      toast.error(errorMessage);
       setCurrentStep('input');
+    } finally {
+      if (loadingInterval) clearInterval(loadingInterval);
     }
   };
 
@@ -94,12 +138,13 @@ export function TwitterThreadGeneratorPage() {
     setError(null);
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text).then(() => {
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
       toast.success('Copied to clipboard!');
-    }).catch(() => {
+    } catch (err) {
       toast.error('Failed to copy to clipboard');
-    });
+    }
   };
 
   const copyEntireThread = async () => {
@@ -114,19 +159,20 @@ export function TwitterThreadGeneratorPage() {
 
   return (
     <ToolLayout>
-    {/* <ToolPageWrapper
-      title="Twitter Thread Generator"
-      description="Create engaging Twitter threads that captivate your audience"
-    > */}
-        <ToolTitle 
+      <ToolTitle 
         title="Twitter Thread Generator ✨" 
         description="Create engaging Twitter threads that captivate your audience"
       />
-      <div className="space-y-6">
+      <div className="mx-auto max-w-2xl w-full space-y-6">
         {currentStep === 'input' && (
-          <div className="grid gap-6">
-            <Card>
-              <CardHeader>
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="space-y-6"
+          >
+            <Card className="p-6 bg-background/60 backdrop-blur-lg">
+              <CardHeader className="p-0 mb-6">
                 <CardTitle className="flex items-center gap-2">
                   <MessageSquare className="h-5 w-5 text-primary" />
                   Thread Details
@@ -135,16 +181,7 @@ export function TwitterThreadGeneratorPage() {
                   Provide information about your thread
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {/* <div className="space-y-2">
-                  <label className="text-sm font-medium">Topic</label>
-                  <Input
-                    placeholder="Enter the main topic of your thread..."
-                    value={topic}
-                    onChange={(e) => setTopic(e.target.value)}
-                  />
-                </div> */}
-
+              <CardContent className="p-0 space-y-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Description</label>
                   <Textarea
@@ -190,7 +227,7 @@ export function TwitterThreadGeneratorPage() {
                 )}
               </CardContent>
             </Card>
-          </div>
+          </motion.div>
         )}
 
         {currentStep === 'generating' && (
@@ -237,7 +274,12 @@ export function TwitterThreadGeneratorPage() {
         )}
 
         {currentStep === 'results' && (
-          <div className="space-y-6">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="space-y-6"
+          >
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-semibold">Generated Thread</h3>
               <div className="flex gap-2">
@@ -262,34 +304,36 @@ export function TwitterThreadGeneratorPage() {
 
             <div className="grid gap-4">
               {generatedThread.map((tweet, index) => (
-                <Card key={index} className="relative">
+                <Card 
+                  key={index} 
+                  className="relative p-4 cursor-pointer group"
+                  onClick={() => copyToClipboard(tweet)}
+                >
                   {index < generatedThread.length - 1 && (
                     <div className="absolute -bottom-4 left-7 z-10">
                       <ArrowDown className="h-4 w-4 text-primary" />
                     </div>
                   )}
-                  <CardContent className="p-4">
+                  <motion.div variants={cardHoverVariants}>
                     <div className="flex items-start gap-3">
+                      <div className="flex-1">
+                        <p className="text-sm whitespace-pre-wrap">{tweet}</p>
+                      </div>
                       <Button
                         variant="ghost"
-                        size="sm"
-                        className="mt-1"
-                        onClick={() => copyToClipboard(tweet)}
+                        size="icon"
+                        className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <Copy className="h-4 w-4" />
                       </Button>
-                      <div>
-                        <p className="text-sm whitespace-pre-wrap">{tweet}</p>
-                      </div>
                     </div>
-                  </CardContent>
+                  </motion.div>
                 </Card>
               ))}
             </div>
-          </div>
+          </motion.div>
         )}
       </div>
-    {/* </ToolPageWrapper> */}
     </ToolLayout>
   );
-} 
+}

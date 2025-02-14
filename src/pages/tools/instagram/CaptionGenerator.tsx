@@ -88,17 +88,16 @@ export function InstagramCaptionGeneratorPage() {
       // TODO: Replace with actual API call
       // const caption = "✨ Embracing the journey and sharing the magic with you all! 🌟\n\nEvery step forward is a story worth telling, and today's chapter is all about growth and inspiration. Can't wait to hear your thoughts! 💭\n\nDouble tap if you're on this journey with me! 🙌";
       const caption = await contentGeneratorService.generateInstagramCaption(description, style, 20);
-      const hashtags = [
-        "#InstagramCreator",
-        "#ContentCreation",
-        "#SocialMediaTips",
-        "#DigitalCreator",
-        "#InstagramGrowth",
-        "#CreativeContent",
-        "#InstagramCommunity",
-        "#CreatorLife",
-        "#SocialMediaStrategy",
-        "#EngagingContent"
+      
+      // Extract hashtags from the caption
+      const hashtagRegex = /#[\w\u0590-\u05ff]+/g;
+      const extractedHashtags = caption.match(hashtagRegex) || [];
+      
+      // Use extracted hashtags if found, otherwise use default ones
+      const hashtags = extractedHashtags.length > 0 ? extractedHashtags : [
+        "#Engagement",
+        "#Innovation",
+        "#JoinTheMovement"
       ];
 
       setLoadingProgress(100);
@@ -146,7 +145,7 @@ export function InstagramCaptionGeneratorPage() {
         title="Instagram Caption Generator"
         description="Create engaging captions that drive interaction and growth"
       />
-      <div className="space-y-6">
+      <div className="space-y-6 mx-auto max-w-2xl w-full">
         {currentStep === 'input' && (
           <div className="grid gap-6">
             <Card>
@@ -277,21 +276,40 @@ export function InstagramCaptionGeneratorPage() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Hash className="h-5 w-5 text-primary" />
-                  Suggested Hashtags
-                </CardTitle>
+                <div className="flex justify-between items-center">
+                  <CardTitle className="flex items-center gap-2">
+                    <Hash className="h-5 w-5 text-primary" />
+                    Suggested Hashtags
+                  </CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2"
+                    onClick={() => copyToClipboard(generatedHashtags.join(' '))}
+                  >
+                    <Copy className="h-4 w-4" />
+                    Copy Hashtags
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
                   {generatedHashtags.map((hashtag, index) => (
-                    <span
+                    <div
                       key={index}
-                      className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium cursor-pointer hover:bg-primary/20"
-                      onClick={() => copyToClipboard(hashtag)}
+                      className="group relative inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20"
                     >
-                      {hashtag}
-                    </span>
+                      <span>{hashtag}</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => copyToClipboard(hashtag)}
+                      >
+                        <Copy className="h-3 w-3" />
+                        <span className="sr-only">Copy hashtag</span>
+                      </Button>
+                    </div>
                   ))}
                 </div>
               </CardContent>
