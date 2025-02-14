@@ -69,7 +69,7 @@ export const HeroParallax = ({
           translateY,
           opacity,
         }}
-        className="mt-60"
+        className="mt-60 z-0"
       >
         <motion.div className="flex flex-row-reverse space-x-reverse space-x-20 ">
           {firstRow.map((product) => (
@@ -106,7 +106,7 @@ export const Header = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="text-4xl sm:text-5xl md:text-7xl font-bold dark:text-white tracking-tight"
+              className="text-4xl sm:text-5xl md:text-7xl font-bold text-white tracking-tight"
             >
               Transform Your <br className="hidden sm:block" />
               <span className="text-primary">
@@ -117,7 +117,7 @@ export const Header = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
-              className="max-w-2xl text-base sm:text-lg md:text-xl dark:text-neutral-200 mx-auto"
+              className="max-w-2xl text-base sm:text-lg md:text-xl text-neutral-200 mx-auto"
             >
               Schedule posts, generate engaging content, and grow your audience
               across all platforms with our AI-powered automation tools.

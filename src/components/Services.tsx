@@ -6,7 +6,7 @@ export function Services() {
       title: "AI Video Idea Generation",
       content: (
         <div>
-          <p className="text-neutral-800 dark:text-neutral-200 text-xs md:text-sm font-normal mb-8">
+          <p className="text-neutral-200 text-xs md:text-sm font-normal mb-8">
           Never run out of content ideas. Our AI analyzes trending topics and your audience preferences to generate viral-worthy video concepts tailored to your niche.
           </p>
           <div className="grid grid-cols-2 gap-4">
@@ -33,7 +33,7 @@ export function Services() {
       title: "Thumbnail Generator",
       content: (
         <div>
-          <p className="text-neutral-800 dark:text-neutral-200 text-xs md:text-sm font-normal mb-8">
+          <p className="text-neutral-200 text-xs md:text-sm font-normal mb-8">
           Create eye-catching thumbnails that drive clicks. Our AI analyzes top-performing thumbnails in your niche to generate high-converting designs
           </p>
          
@@ -61,7 +61,7 @@ export function Services() {
       title: "Comments Automation",
       content: (
         <div>
-          <p className="text-neutral-800 dark:text-neutral-200 text-xs md:text-sm font-normal mb-4">
+          <p className="text-neutral-200 text-xs md:text-sm font-normal mb-4">
           Engage with your audience automatically. Smart responses to comments and DMs, while maintaining authentic conversations and building community.
           </p>
         

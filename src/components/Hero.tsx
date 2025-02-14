@@ -1,22 +1,8 @@
 
 import { Section } from "./ui/section";
-import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
 import { HeroParallax } from "./ui/hero-parallax";
 export const Hero = () => {
-  const { resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  const [imageSrc, setImageSrc] = useState("/app-light.png");
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (mounted) {
-      setImageSrc(resolvedTheme === "dark" ? "/app-dark.png" : "/app-light.png");
-    }
-  }, [resolvedTheme, mounted]);
 
   const products = [
     {

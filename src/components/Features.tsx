@@ -67,14 +67,13 @@ export function Features() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {features.map((feature, index) => (
           <CardContainer className="inter-var" key={feature.title}>
-            <CardBody className="relative group/card dark:hover:shadow-2xl dark:hover:shadow-primary/[0.1] 
-                              dark:bg-black dark:border-white/[0.2] border-black/[0.1] 
+            <CardBody className="relative group/card hover:shadow-2xl hover:shadow-primary/[0.1] 
+                              bg-black border-white/[0.2] 
                               w-full h-auto rounded-xl p-6 border
-                              bg-gradient-to-b from-white to-gray-50/50
-                              dark:bg-gradient-to-b dark:from-gray-900 dark:to-black">
+                              bg-gradient-to-b from-gray-900 to-black">
               <CardItem
                 translateZ="50"
-                className="text-lg font-bold text-neutral-600 dark:text-white mb-4"
+                className="text-lg font-bold text-white mb-4"
               >
                 {feature.title}
               </CardItem>
@@ -82,7 +81,7 @@ export function Features() {
               <CardItem
                 as="p"
                 translateZ="60"
-                className="text-neutral-500 text-sm mt-4 dark:text-neutral-300 min-h-[80px]"
+                className=" text-sm mt-4 text-neutral-300 min-h-[80px]"
               >
                 {feature.description}
               </CardItem>
