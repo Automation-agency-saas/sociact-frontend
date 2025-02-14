@@ -14,7 +14,7 @@ export function ToolLayout({ children, className }: ToolLayoutProps) {
   return (
     <div className="relative w-full ">
       {/* Background Effects */}
-      <div className="fixed inset-0 overflow-hidden">
+      {/* <div className="fixed inset-0 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <StarsBackground
             starDensity={0.003}
@@ -34,7 +34,7 @@ export function ToolLayout({ children, className }: ToolLayoutProps) {
             starHeight={2}
           />
         </div>
-      </div>
+      </div> */}
 
       {/* Layout Structure */}
 

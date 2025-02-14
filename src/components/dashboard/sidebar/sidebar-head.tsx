@@ -16,7 +16,7 @@ const SidebarHead:React.FC = () => {
               <h2 className="text-xl font-bold">Sociact</h2>
               <p className="text-xs">Dashboard</p>
             </div>
-            <ModeToggle />{" "}
+            {/* <ModeToggle />{" "} */}
           </div>
         </div>
       </SidebarMenuItem>

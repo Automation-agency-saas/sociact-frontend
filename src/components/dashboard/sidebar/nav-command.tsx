@@ -43,33 +43,43 @@ const NavCommand: React.FC = () => {
     {
       heading: "Instagram",
       icon: Instagram,
-      commands: ["Reelspark", "CaptionCraft", "CommentPro"],
+      commands: [
+        { title: "Reelspark", url: "/instagram/idea-generator" },
+        { title: "CaptionCraft", url: "/instagram/caption-generator" },
+        { title: "CommentPro", url: "/instagram/comment-automation" },
+      ],
     },
     {
       heading: "Youtube",
       icon: Youtube,
       commands: [
-        "IdeaForge",
-        "ScriptCraft",
-        "ThumbnailPro",
-        "ThumbnailGen",
-        "SEOPro",
+        { title: "IdeaForge", url: "/youtube/idea-generator" },
+        { title: "ScriptCraft", url: "/youtube/script-generator" },
+        { title: "ThumbnailPro", url: "/youtube/thumbnail-generator" },
+        { title: "ThumbnailGen", url: "/youtube/thumbnail-generator" },
+        { title: "SEOPro", url: "/seo_pro" },
       ],
     },
     {
       heading: "Twitter",
       icon: Twitter,
-      commands: ["ThreadMind", "ThreadCraft"],
+      commands: [
+        { title: "ThreadMind", url: "/twitter/idea-generator" },
+        { title: "ThreadCraft", url: "/twitter/thread-generator" },
+      ],
     },
     {
       heading: "Linkedin",
       icon: Linkedin,
-      commands: ["ProMind", "ProCraft"],
+      commands: [
+        { title: "ProMind", url: "/linkedin/idea-generator" },
+        { title: "ProCraft", url: "/linkedin/post-generator" },
+      ],
     },
     {
       heading: "Facebook",
       icon: Facebook,
-      commands: ["CommentPro"],
+      commands: [{ title: "CommentPro", url: "/facebook/comment-automation" }],
     },
   ];
 
@@ -103,8 +113,10 @@ const NavCommand: React.FC = () => {
               }
             >
               {item.commands.map((command) => (
-                <CommandItem className="text-sm" key={command}>
-                  {command}
+                <CommandItem className="text-sm" key={command.title}>
+                  <a href={command.url} className="flex items-center gap-2">
+                    {command.title}
+                  </a>
                 </CommandItem>
               ))}
             </CommandGroup>

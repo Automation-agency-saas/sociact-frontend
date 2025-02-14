@@ -1,3 +1,4 @@
+import React from "react";
 import { Button } from "@/components/ui/button";
 import {
   Collapsible,
@@ -25,222 +26,183 @@ import {
   ArrowDownAZ,
   ChevronRight,
   Facebook,
-  FileText,
   Instagram,
   Linkedin,
-  LucideChartColumn,
-  MessageSquare,
-  Sparkles,
   Twitter,
   Youtube,
 } from "lucide-react";
-import React from "react";
-import { cn } from "@/lib/utils";
 
 const NavSidebar: React.FC = () => {
   const [selectedApp, setSelectedApp] = React.useState<string | null>(null);
   const location = useLocation();
 
-  const categories = [
-    {
-      title: "Ideation",
-      icon: Sparkles,
-      subcategories: [
+  const appContent = {
+    Youtube: {
+      icon: Youtube,
+      features: [
         {
           title: "Idea Forge",
           desc: "Generate viral video ideas tailored to your niche",
           url: "/youtube/idea-generator",
-          app: "youtube",
         },
-        {
-          title: "Reel Spark",
-          desc: "Create engaging reel concepts that capture attention",
-          url: "/instagram/idea-generator",
-          app: "instagram",
-        },
-        {
-          title: "Thread Mind",
-          desc: "Generate viral ideas for twitter",
-          url: "/twitter/idea-generator",
-          app: "twitter",
-        },
-        {
-          title: "Pro Mind",
-          desc: "Generate professional posts for linkedin",
-          url: "/linkedin/idea-generator",
-          app: "linkedin",
-        },
-      ],
-    },
-    {
-      title: "Content",
-      icon: MessageSquare,
-      subcategories: [
         {
           title: "Script Craft",
           desc: "Create engaging video scripts with AI",
           url: "/youtube/script-generator",
-          app: "youtube",
+        },
+        {
+          title: "Thumbnail Pro",
+          desc: "Generate AI powered thumbnails for your videos",
+          url: "/youtube/thumbnail-generator",
+        },
+        {
+          title: "Thumbnail Gen",
+          desc: "Create stunning thumbnails from text description",
+          url: "/youtube/thumbnail-generator",
+        },
+        {
+          title: "Seo Pro",
+          desc: "Optimize your content for better visibility",
+          url: "/seo_pro",
+        },
+      ],
+    },
+    Instagram: {
+      icon: Instagram,
+      features: [
+        {
+          title: "Reel Spark",
+          desc: "Create engaging reel concepts that capture attention",
+          url: "/instagram/idea-generator",
         },
         {
           title: "Caption Craft",
           desc: "Generate engaging captions for your posts",
           url: "/instagram/caption-generator",
-          app: "instagram",
+        },
+        {
+          title: "Comment Pro",
+          desc: "Automate engaging responses to comments on your posts",
+          url: "/instagram/comment-automation",
+        },
+      ],
+    },
+    Twitter: {
+      icon: Twitter,
+      features: [
+        {
+          title: "Thread Mind",
+          desc: "Generate viral ideas for twitter",
+          url: "/twitter/idea-generator",
         },
         {
           title: "Thread Craft",
           desc: "Create viral thread ideas for twitter with AI",
           url: "/twitter/thread-generator",
-          app: "twitter",
+        },
+      ],
+    },
+    Linkedin: {
+      icon: Linkedin,
+      features: [
+        {
+          title: "Pro Mind",
+          desc: "Generate professional posts for linkedin",
+          url: "/linkedin/idea-generator",
         },
         {
           title: "Pro Craft",
           desc: "Create professional post ideas for linkedin",
           url: "/linkedin/post-generator",
-          app: "linkedin",
-        },
-        // {
-        //   title: "thumbnail_pro",
-        //   desc: "Generate AI powered thumbnails for your videos",
-        //   url: "/youtube/thumbnail-generator",
-        //   app: "youtube",
-        // },
-        {
-          title: "Thumbnail Gen",
-          desc: "Create stunning thumbnails from text description",
-          url: "/youtube/thumbnail-generator",
-          app: "youtube",
         },
       ],
     },
-    {
-      title: "Engagement",
-      icon: Sparkles,
-      subcategories: [
+    Facebook: {
+      icon: Facebook,
+      features: [
         {
-          title: "Comment Pro Insta",
-          desc: "Automate engaging responses to comments on your instagram posts",
-          url: "/instagram/comment-automation",
-          app: "instagram",
-        },
-        {
-          title: "Comment Pro Fb",
-          desc: "Automate engaging responses to comments on your facebook posts",
+          title: "Comment Pro",
+          desc: "Automate engaging responses to comments on your posts",
           url: "/facebook/comment-automation",
-          app: "facebook",
-        },
-        {
-          title: "Comment Pro Youtube",
-          desc: "Automate responses to YouTube comments and mentions",
-          url: "/youtube/comment-automation",
-          app: "youtube",
         },
       ],
     },
-    {
-      title: "Analytics",
-      icon: LucideChartColumn,
-      subcategories: [
-        {
-          title: "SEO Pro",
-          desc: "Optimize your content for better visibility",
-          url: "/seo_pro",
-          app: "youtube",
-        },
-      ],
-    },
-  ];
-
-  const apps = [
-    "All",
-    "youtube",
-    "instagram",
-    "twitter",
-    "linkedin",
-    "facebook",
-  ];
-  const renderAppIcon = (app: string | null) => {
-    switch (app) {
-      case "youtube":
-        return <Youtube className=" w-4 h-4" />;
-      case "instagram":
-        return <Instagram className=" w-4 h-4" />;
-      case "facebook":
-        return <Facebook className=" w-4 h-4" />;
-      case "twitter":
-        return <Twitter className=" w-4 h-4" />;
-      case "linkedin":
-        return <Linkedin className=" w-4 h-4" />;
-      default:
-        return <ArrowDownAZ className="w-4 h-4" />;
-    }
   };
+
+  const apps = ["All", ...Object.keys(appContent)];
+
+  const renderAppIcon = (app: string | null) => {
+    if (!app || app === "All") return <ArrowDownAZ className="w-4 h-4" />;
+    const AppIcon = appContent[app as keyof typeof appContent].icon;
+    return <AppIcon className="w-4 h-4" />;
+  };
+
+  const filteredApps = selectedApp ? [selectedApp] : Object.keys(appContent);
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Categories</SidebarGroupLabel>
+      <SidebarGroupLabel>Apps</SidebarGroupLabel>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             variant="outline"
-            className="flex items-center justify-start gap-2 px-2 my-4"
+            className="flex items-center justify-start gap-2 px-2 my-2"
           >
             <span>{renderAppIcon(selectedApp)}</span>
             <span className="group-data-[collapsible=icon]:hidden">
-              {selectedApp ? `Filter by ${selectedApp}` : "Filter by App"}
+              {selectedApp ? `Filter : ${selectedApp}` : "Filter : All"}
             </span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent side="right">
+        <DropdownMenuContent
+          side="right"
+          className="min-w-max grid grid-cols-2"
+        >
           {apps.map((app) => (
             <DropdownMenuItem
               key={app}
               onSelect={() => setSelectedApp(app === "All" ? null : app)}
+              className="w-max"
             >
-              {app}
+              <Button size="icon">{renderAppIcon(app)}</Button>
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
       <SidebarMenu>
-        {categories.map((category) => (
+        {filteredApps.map((app) => (
           <Collapsible
             defaultOpen={true}
-            key={category.title}
+            key={app}
             asChild
             className="group/collapsible"
           >
             <SidebarMenuItem>
               <CollapsibleTrigger asChild>
-                <SidebarMenuButton tooltip={category.title}>
-                  {category.icon && <category.icon />}
-                  <span>{category.title}</span>
-                  <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                <SidebarMenuButton tooltip={app}>
+                  <span className="text-purple-400">{renderAppIcon(app)}</span>
+                  <span className="font-semibold">{app}</span>
+                  <ChevronRight className="ml-auto text-purple-400 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                 </SidebarMenuButton>
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <SidebarMenuSub>
-                  {category.subcategories
-                    ?.filter(
-                      (subcategory) =>
-                        !selectedApp || subcategory.app === selectedApp
-                    )
-                    .map((subcategory) => (
-                      <SidebarMenuSubItem key={subcategory.title}>
+                  {appContent[app as keyof typeof appContent].features.map(
+                    (feature) => (
+                      <SidebarMenuSubItem key={feature.title}>
                         <SidebarMenuSubButton
+                          className="hover:bg-purple-400/20"
                           asChild
-                          className={cn(
-                            location.pathname === subcategory.url &&
-                              "bg-purple-500 hover:bg-purple-600 text-white"
-                          )}
                         >
-                          <Link to={subcategory.url}>
-                            <span>{subcategory.title}</span>
-                          </Link>
+                          <a href={feature.url}>
+                            <span className="text-muted-foreground">
+                              {feature.title}
+                            </span>
+                          </a>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
-                    ))}
+                    )
+                  )}
                 </SidebarMenuSub>
               </CollapsibleContent>
             </SidebarMenuItem>
