@@ -134,7 +134,7 @@ const CardGrids: React.FC = () => {
               className="group-hover/card:scale-90 transition-all ease-in-out duration-300"
             />
             <div className="w-full mt-3 flex flex-col gap-3">
-              <h1 className="text-2xl font-semibold text-black dark:text-white">
+              <h1 className="text-2xl font-semibold text-white">
                 {subcategory.title}
               </h1>
               <a href={subcategory.url}>

@@ -69,7 +69,7 @@
 
 /* *=========== Dark pink theme =========== */
 @layer base {
-  :root {
+  /* :root {
     --background: 240 20% 97%;
     --foreground: 240 10% 3.9%;
     
@@ -100,7 +100,7 @@
     --radius: 0.75rem;
 
     /* Platform Colors */
-    --platform-youtube: #ff0000;
+    /* --platform-youtube: #ff0000;
     --platform-youtube-bg: rgba(255, 0, 0, 0.1);
     --platform-instagram: #e4405f;
     --platform-instagram-bg: rgba(228, 64, 95, 0.1);
@@ -113,10 +113,10 @@
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
+    --sidebar-ring: 217.2 91.2% 59.8%; */
+  /* } */ 
 
-  .dark {
+  :root {
     --background: 240 10% 4%;
     --foreground: 0 0% 98%;
     
@@ -144,6 +144,7 @@
     --border: 240 6% 12%;
     --input: 240 6% 12%;
     --ring: 266 100% 60%;
+    --radius: 0.75rem;
 
     /* Platform Colors - Dark Mode */
     --platform-youtube: #ff4444;

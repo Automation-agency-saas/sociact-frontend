@@ -53,15 +53,15 @@ export const EvervaultCard = ({
         className
       )}
     >
-      <div className="rounded-3xl w-full relative overflow-hidden bg-purple-200 dark:bg-black/80 flex items-center justify-center h-full border border-purple-500">
+      <div className="rounded-3xl w-full relative overflow-hidden bg-black/80 flex items-center justify-center h-full border border-purple-500">
         <CardPattern randomString={randomString} />
-        <Button className="absolute top-2 left-2 p-2 bg-white dark:bg-gray-200">
+        <Button className="absolute top-2 left-2 p-2 bg-gray-200">
           {renderAppIcon(app)}
         </Button>
         <div className="relative z-10 flex items-center justify-center">
           <div className="relative h-32 w-32 rounded-full flex items-center justify-center text-white font-bold text-4xl">
-            <div className="absolute w-full h-full bg-gray-100 dark:bg-primary/30 blur-lg rounded-full" />
-            <Icon className="z-20 w-16 h-16 text-purple-900 dark:text-purple-300" />
+            <div className="absolute w-full h-full bg-primary/30 blur-lg rounded-full" />
+            <Icon className="z-20 w-16 h-16 text-purple-300" />
           </div>
         </div>
       </div>
@@ -81,7 +81,7 @@ export function CardPattern({ randomString }: { randomString: string }) {
           duration: 20,
           ease: "linear",
         }}
-        className="absolute inset-0 text-xs break-words whitespace-pre-wrap text-gray-500 font-mono"
+        className="absolute inset-0 text-xs break-words whitespace-pre-wrap text-gray-700/80 font-mono"
       >
         {randomString.repeat(2)}
       </motion.div>

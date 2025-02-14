@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import { Button } from "@/components/ui/button";
 import {
   Collapsible,
@@ -154,16 +154,17 @@ const NavSidebar: React.FC = () => {
             </span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent side="right" className="min-w-max grid grid-cols-2">
+        <DropdownMenuContent
+          side="right"
+          className="min-w-max grid grid-cols-2"
+        >
           {apps.map((app) => (
             <DropdownMenuItem
               key={app}
               onSelect={() => setSelectedApp(app === "All" ? null : app)}
               className="w-max"
             >
-              <Button size="icon">
-                {renderAppIcon(app)}
-              </Button>
+              <Button size="icon">{renderAppIcon(app)}</Button>
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>
@@ -179,22 +180,29 @@ const NavSidebar: React.FC = () => {
             <SidebarMenuItem>
               <CollapsibleTrigger asChild>
                 <SidebarMenuButton tooltip={app}>
-                  <span className='text-purple-400'>{renderAppIcon(app)}</span>
+                  <span className="text-purple-400">{renderAppIcon(app)}</span>
                   <span className="font-semibold">{app}</span>
                   <ChevronRight className="ml-auto text-purple-400 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                 </SidebarMenuButton>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <SidebarMenuSub >
-                  {appContent[app as keyof typeof appContent].features.map((feature) => (
-                    <SidebarMenuSubItem key={feature.title} >
-                      <SidebarMenuSubButton className='hover:bg-purple-400/20' asChild>
-                        <a href={feature.url}>
-                          <span className="text-muted-foreground">{feature.title}</span>
-                        </a>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  ))}
+                <SidebarMenuSub>
+                  {appContent[app as keyof typeof appContent].features.map(
+                    (feature) => (
+                      <SidebarMenuSubItem key={feature.title}>
+                        <SidebarMenuSubButton
+                          className="hover:bg-purple-400/20"
+                          asChild
+                        >
+                          <a href={feature.url}>
+                            <span className="text-muted-foreground">
+                              {feature.title}
+                            </span>
+                          </a>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    )
+                  )}
                 </SidebarMenuSub>
               </CollapsibleContent>
             </SidebarMenuItem>
