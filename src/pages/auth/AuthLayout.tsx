@@ -21,12 +21,8 @@ export function AuthLayout() {
 
   return (
     <div className="min-h-screen bg-background relative">
-      {/* Theme toggle at bottom right */}
-      <div className="fixed bottom-4 right-4 z-50">
-        <ModeToggle />
-      </div>
-      
-      <div className="flex min-h-screen">
+     
+     <div className="flex min-h-screen">
         {/* Left side - Auth Forms */}
         <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:px-20 xl:px-24">
           <div className="mx-auto w-full max-w-sm lg:w-96">
