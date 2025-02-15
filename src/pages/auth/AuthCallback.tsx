@@ -5,6 +5,7 @@ import { instagramService } from '../../lib/services/instagram.service';
 import { facebookService } from '../../lib/services/facebook.service';
 import { youtubeService } from '../../lib/services/youtube.service';
 import { toast } from 'react-hot-toast';
+import { twitterService } from '../../lib/services/twitter.service';
 
 export function AuthCallback() {
   
@@ -88,6 +89,40 @@ export function AuthCallback() {
             }
           } catch (err: any) {
             setError(err.message || 'Failed to connect Instagram account');
+          }
+        } else if (code && state === 'twitter') {
+          try {
+            processedCode.current = code;
+            const authResponse = await twitterService.handleAuthCallback(code);
+            
+            if (authResponse.success) {
+              const savedState = localStorage.getItem('twitter_auth_return_state');
+              
+              if (savedState) {
+                try {
+                  const parsedState = JSON.parse(savedState);
+                  localStorage.removeItem('twitter_auth_return_state');
+                  
+                  toast.success('Successfully connected Twitter account');
+                  navigate('/home', { 
+                    replace: true,
+                    state: { 
+                      twitterConnected: true,
+                      modalState: parsedState
+                    }
+                  });
+                } catch (parseError) {
+                  setError('Error restoring previous state. Please try connecting again.');
+                }
+              } else {
+                toast.success('Successfully connected Twitter account');
+                navigate('/home', { replace: true });
+              }
+            } else {
+              setError(authResponse.message || 'Failed to connect Twitter account');
+            }
+          } catch (err: any) {
+            setError(err.message || 'Failed to connect Twitter account');
           }
         } else if (code && state === 'youtube') {
           try {

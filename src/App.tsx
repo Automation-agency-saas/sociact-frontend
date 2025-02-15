@@ -91,6 +91,7 @@ function AppRoutes() {
         {/* Instagram Auth Callback - Separate from regular auth flow */}
         <Route path="/auth/instagram/callback" element={<AuthCallback />} />
         <Route path="/auth/youtube/callback" element={<AuthCallback />} />
+        <Route path="/auth/twitter/callback" element={<AuthCallback />} />
 
         {/* Protected Routes */}
         <Route
