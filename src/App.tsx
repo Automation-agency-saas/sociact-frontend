@@ -37,7 +37,7 @@ import { InstagramCommentAutomationPage } from "./pages/tools/instagram/CommentA
 import { TwitterCommentAutomationPage } from "./pages/tools/twitter/CommentAutomation";
 import { LinkedInIdeaGeneratorPage } from "./pages/tools/linkedin/IdeaGenerator";
 import { LinkedInPostGeneratorPage } from "./pages/tools/linkedin/PostGenerator";
-import { LinkedInCommentAutomationPage } from "./pages/tools/linkedin/CommentAutomation";
+import { LinkedInPostCreator } from "./pages/tools/linkedin/CommentAutomation";
 import { FacebookCommentAutomationPage } from "./pages/tools/facebook/CommentAutomation";
 import { TwitterIdeaGeneratorPage } from "./pages/tools/twitter/IdeaGenerator";
 import { TwitterThreadGeneratorPage } from "./pages/tools/twitter/ThreadGenerator";
@@ -92,6 +92,7 @@ function AppRoutes() {
         <Route path="/auth/instagram/callback" element={<AuthCallback />} />
         <Route path="/auth/youtube/callback" element={<AuthCallback />} />
         <Route path="/auth/twitter/callback" element={<AuthCallback />} />
+        <Route path="/auth/linkedin/callback" element={<AuthCallback />} />
 
         {/* Protected Routes */}
         <Route
@@ -225,7 +226,7 @@ function AppRoutes() {
           path="/linkedin/comment-automation"
           element={
             <ProtectedRoute>
-              <LinkedInCommentAutomationPage />
+              <LinkedInPostCreator />
             </ProtectedRoute>
           }
         />

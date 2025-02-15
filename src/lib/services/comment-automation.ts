@@ -1,6 +1,6 @@
 import { API_URL } from '../config';
 
-export type CommentPlatform = 'instagram' | 'youtube' | 'twitter' | 'facebook';
+export type CommentPlatform = 'instagram' | 'youtube' | 'twitter' | 'facebook' | 'linkedin';
 
 interface AutomationRequest {
   tone: string;

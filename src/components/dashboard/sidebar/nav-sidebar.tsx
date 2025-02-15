@@ -61,6 +61,11 @@ const NavSidebar: React.FC = () => {
           desc: "Optimize your content for better visibility",
           url: "/youtube/seo-optimizer",
         },
+        {
+          title: "Comment Pro",
+          desc: "Automate engaging responses to comments on your videos",
+          url: "/youtube/comment-automation",
+        },
       ],
     },
     Instagram: {
@@ -96,6 +101,11 @@ const NavSidebar: React.FC = () => {
           desc: "Create viral thread ideas for twitter with AI",
           url: "/twitter/thread-generator",
         },
+        {
+          title: "Comment Pro",
+          desc: "Automate engaging responses to comments on your tweets",
+          url: "/twitter/comment-automation",
+        },
       ],
     },
     Linkedin: {
@@ -110,6 +120,11 @@ const NavSidebar: React.FC = () => {
           title: "Pro Craft",
           desc: "Create professional post ideas for linkedin",
           url: "/linkedin/post-generator",
+        },
+        {
+          title: "Comment Pro",
+          desc: "Automate engaging responses to comments on your LinkedIn posts",
+          url: "/linkedin/comment-automation",
         },
       ],
     },

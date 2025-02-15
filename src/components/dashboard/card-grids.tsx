@@ -93,6 +93,18 @@ const CardGrids: React.FC = () => {
           url: "/youtube/comment-automation",
           app: "youtube",
         },
+        {
+          title: "Comment Pro",
+          desc: "Automate engaging responses to comments on your tweets",
+          url: "/twitter/comment-automation",
+          app: "twitter",
+        },
+        {
+          title: "Comment Pro",
+          desc: "Automate engaging responses to comments on your LinkedIn posts",
+          url: "/linkedin/comment-automation",
+          app: "linkedin",
+        },
       ],
     },
     {

@@ -6,6 +6,7 @@ import { facebookService } from '../../lib/services/facebook.service';
 import { youtubeService } from '../../lib/services/youtube.service';
 import { toast } from 'react-hot-toast';
 import { twitterService } from '../../lib/services/twitter.service';
+import { linkedinService } from '../../lib/services/linkedin.service';
 
 export function AuthCallback() {
   
@@ -27,6 +28,14 @@ export function AuthCallback() {
         const credential = searchParams.get('credential');
         const state = searchParams.get('state');
         const hash = window.location.hash;
+        const error = searchParams.get('error');
+        const errorDescription = searchParams.get('error_description');
+
+        // If there's an OAuth error, show it
+        if (error) {
+          setError(errorDescription || error);
+          return;
+        }
 
         // Clean the code by removing any hash or extra parameters
         const code = rawCode ? rawCode.split('#')[0] : null;
@@ -37,6 +46,7 @@ export function AuthCallback() {
         }
 
         setIsProcessing(true);
+        processedCode.current = code;
 
         if (!code && !credential && !hash) {
           setError('No authentication code found');
@@ -92,7 +102,6 @@ export function AuthCallback() {
           }
         } else if (code && state === 'twitter') {
           try {
-            processedCode.current = code;
             const authResponse = await twitterService.handleAuthCallback(code);
             
             if (authResponse.success) {
@@ -126,7 +135,6 @@ export function AuthCallback() {
           }
         } else if (code && state === 'youtube') {
           try {
-            processedCode.current = code;  // Mark this code as being processed
             const authResponse = await youtubeService.handleAuth(code);
             
             if (authResponse.status === 'success') {
@@ -160,6 +168,53 @@ export function AuthCallback() {
           } catch (err: any) {
             // console.error('YouTube auth error:', err);
             setError(err.message || 'Failed to connect YouTube account');
+          }
+        } else if (code && state) {
+          try {
+            // Get the stored state from localStorage
+            const savedState = localStorage.getItem('linkedin_auth_state');
+            
+            if (!savedState || savedState !== state) {
+              setError('Invalid state parameter. Please try connecting again.');
+              return;
+            }
+
+            console.log('Handling LinkedIn callback with code:', code);
+            const authResponse = await linkedinService.handleAuthCallback(code);
+            
+            if (authResponse.success) {
+              const savedReturnState = localStorage.getItem('linkedin_auth_return_state');
+              
+              // Clean up stored state
+              localStorage.removeItem('linkedin_auth_state');
+              
+              if (savedReturnState) {
+                try {
+                  const parsedState = JSON.parse(savedReturnState);
+                  localStorage.removeItem('linkedin_auth_return_state');
+                  
+                  toast.success('Successfully connected LinkedIn account');
+                  navigate('/home', { 
+                    replace: true,
+                    state: { 
+                      linkedinConnected: true,
+                      modalState: parsedState
+                    }
+                  });
+                } catch (parseError) {
+                  setError('Error restoring previous state. Please try connecting again.');
+                }
+              } else {
+                toast.success('Successfully connected LinkedIn account');
+                navigate('/home', { replace: true });
+              }
+            } else {
+              setError(authResponse.message || 'Failed to connect LinkedIn account');
+            }
+          } catch (err: any) {
+            console.error('LinkedIn auth error:', err);
+            setError(err.message || 'Failed to connect LinkedIn account');
+            toast.error(err.message || 'Failed to connect LinkedIn account');
           }
         } else if (hash) {
           try {
@@ -216,7 +271,7 @@ export function AuthCallback() {
           setError('Invalid callback parameters');
         }
       } catch (err) {
-        // console.error('Auth callback error:', err);
+        console.error('Auth callback error:', err);
         setError(err instanceof Error ? err.message : 'An error occurred during authentication');
       } finally {
         setIsProcessing(false);
