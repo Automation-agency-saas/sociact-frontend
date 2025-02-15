@@ -92,8 +92,6 @@ export function SignUp() {
         throw new Error('No Google credential received');
       }
       
-      // console.log('Google credential received:', credentialResponse.credential);
-      // console.log('Current origin:', window.location.origin);
       
       await signInWithGoogle(credentialResponse.credential);
       toast.success('Successfully signed up with Google!', { id: toastId });

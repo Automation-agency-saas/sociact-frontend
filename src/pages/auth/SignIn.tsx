@@ -71,14 +71,10 @@ export function SignIn() {
         throw new Error('No Google credential received');
       }
       
-      console.log('Google credential received:', credentialResponse.credential);
       // Try to decode the credential to see its contents
       try {
         const decoded = JSON.parse(atob(credentialResponse.credential.split('.')[1]));
-        // console.log('Decoded credential:', decoded);
-        // console.log('Token audience:', decoded.aud);
       } catch (e) {
-        // console.error('Error decoding credential:', e);
       }
       
       await signInWithGoogle(credentialResponse.credential);

@@ -22,19 +22,13 @@ export interface SEOOptimizerResponse {
 export class SEOOptimizerService {
   static async optimizeContent(request: SEOOptimizerRequest): Promise<SEOOptimizerResponse> {
     try {
-      console.log('Sending optimization request:', request);
       const response = await axiosInstance.post<SEOOptimizerResponse>(
         '/api/v1/seo/optimize',
         request
       );
 
-      console.log('Raw API response:', response);
-      console.log('Response data:', response.data);
-      
-      // Extract scores directly from response data
       const { seo_score, original_score } = response.data;
       
-      console.log('Extracted scores:', { seo_score, original_score });
 
       // Create the optimized response with proper type casting
       const optimizedResponse: SEOOptimizerResponse = {
@@ -48,7 +42,6 @@ export class SEOOptimizerService {
         original_score: Number(original_score)
       };
 
-      console.log('Final processed response:', optimizedResponse);
       return optimizedResponse;
     } catch (error) {
       console.error('Error in SEO optimization:', error);

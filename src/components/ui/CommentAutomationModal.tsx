@@ -110,7 +110,6 @@ export function CommentAutomationModal({ isOpen, onClose, platform }: CommentAut
 
     const state = location.state as { instagramConnected?: boolean; modalState?: any };
     if (state?.instagramConnected && state?.modalState) {
-      console.log('Restoring modal state after Instagram auth:', state.modalState);
       setTone(state.modalState.tone || 'professional');
       setStyle(state.modalState.style || 'concise');
       setCurrentStep('input');
@@ -128,11 +127,9 @@ export function CommentAutomationModal({ isOpen, onClose, platform }: CommentAut
 
       try {
         setIsLoading(true);
-        console.log(`Checking ${platform} auth status...`);
-        
         const service = platform === 'facebook' ? facebookService : instagramService;
         const response = await service.checkAuthStatus();
-        console.log(`${platform} auth status response:`, response);
+
         
         setIsAuthenticated(response.auth_status);
         if (response.auth_status) {
@@ -180,7 +177,6 @@ export function CommentAutomationModal({ isOpen, onClose, platform }: CommentAut
       };
       
       localStorage.setItem(`${platform}_auth_return_state`, JSON.stringify(stateToSave));
-      console.log('Saved modal state before auth:', stateToSave);
 
       const service = platform === 'facebook' ? facebookService : instagramService;
       const authUrl = await service.getAuthUrl();

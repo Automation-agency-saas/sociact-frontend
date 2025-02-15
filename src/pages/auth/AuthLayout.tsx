@@ -8,7 +8,6 @@ import { LogoIcon } from '../../components/Icons';
 export function AuthLayout() {
   const { isAuthenticated, loading } = useAuth();
   const location = useLocation();
-  // console.log('AuthLayout - Current path:', location.pathname);
 
   // Wait for authentication check to complete
   if (loading) {

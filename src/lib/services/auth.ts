@@ -143,8 +143,6 @@ class AuthApi {
         name: userData.name
       });
 
-      // Log the response for debugging
-      console.log('Register response:', response.data);
 
       const normalizedResponse: AuthResponse = {
         token: response.data.token || response.data.access_token,
@@ -278,23 +276,7 @@ class AuthApi {
         picture: data.profilePicture
       };
 
-      // Log the data being sent
-      console.log('Sending onboarding data:', {
-        ...requestData,
-        picture: requestData.picture ? 'URL present' : 'No picture'
-      });
-
       const response = await api.post<any>(`${this.baseUrl}/onboarding`, requestData);
-      
-      // Log the response
-      console.log('Onboarding response:', {
-        ...response.data,
-        user: response.data.user ? {
-          ...response.data.user,
-          picture: response.data.user.picture ? 'URL present' : 'No picture'
-        } : null
-      });
-
       const normalizedResponse: AuthResponse = {
         token: response.data.token || response.data.access_token,
         user: this.normalizeUser(response.data.user),

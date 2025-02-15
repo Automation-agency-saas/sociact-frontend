@@ -59,14 +59,6 @@ export function YouTubeSEOOptimizerPage() {
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<SEOHistoryItem[]>([]);
 
-  useEffect(() => {
-    console.log('Page state changed:', {
-      currentStep,
-      content: content ? 'has content' : 'no content',
-      error
-    });
-  }, [currentStep, content, error]);
-
   const optimizeContent = async () => {
     if (!content && !url) {
       toast.error('Please enter content or URL to optimize');

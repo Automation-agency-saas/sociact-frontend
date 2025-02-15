@@ -39,7 +39,6 @@ class FacebookService {
   }
 
   async getAuthUrl(): Promise<string> {
-    console.log('Generating Facebook auth URL...');
     
     // Define required scopes for Facebook Business Login
     const scope = [
@@ -60,7 +59,6 @@ class FacebookService {
       `&response_type=token` +
       `&scope=${encodeURIComponent(scope)}`;
     
-    console.log('Generated auth URL:', authUrl);
     return authUrl;
   }
 
@@ -69,12 +67,10 @@ class FacebookService {
     const timeSinceLastAttempt = now - FacebookService.lastAuthAttempt;
 
     if (timeSinceLastAttempt < FacebookService.MIN_AUTH_INTERVAL) {
-      console.log('Auth attempt too soon after last attempt, waiting...');
       await new Promise(resolve => setTimeout(resolve, FacebookService.MIN_AUTH_INTERVAL - timeSinceLastAttempt));
     }
 
     if (FacebookService.isAuthenticating) {
-      console.log('Authentication already in progress, waiting...');
       await new Promise(resolve => setTimeout(resolve, FacebookService.MIN_AUTH_INTERVAL));
       
       if (FacebookService.isAuthenticating) {
@@ -86,9 +82,7 @@ class FacebookService {
     try {
       FacebookService.isAuthenticating = true;
       FacebookService.lastAuthAttempt = Date.now();
-      
-      console.log('Handling Facebook auth callback with token');
-      
+            
       const response = await fetch(`${this.baseUrl}/comment-automation/facebook/auth`, {
         method: 'POST',
         headers: {
@@ -106,7 +100,6 @@ class FacebookService {
         throw new Error(data.detail || 'Failed to authenticate with Facebook');
       }
 
-      console.log('Facebook auth success:', data);
       return data;
     } catch (error) {
       console.error('Facebook auth error:', error);
@@ -120,7 +113,6 @@ class FacebookService {
 
   async checkAuthStatus(): Promise<FacebookAuthResponse> {
     try {
-      console.log('Checking Facebook auth status...');
       const response = await fetch(`${this.baseUrl}/comment-automation/facebook/auth/check`, {
         method: 'GET',
         headers: this.getAuthHeaders(),
@@ -134,7 +126,6 @@ class FacebookService {
       }
 
       const data = await response.json();
-      console.log('Auth status response:', data);
       return data;
     } catch (error) {
       console.error('Auth status check error:', error);

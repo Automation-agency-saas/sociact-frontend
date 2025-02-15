@@ -7,7 +7,6 @@ import { youtubeService } from '../../lib/services/youtube.service';
 import { toast } from 'react-hot-toast';
 
 export function AuthCallback() {
-  console.log('AuthCallback component mounted');
   
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -19,7 +18,6 @@ export function AuthCallback() {
   useEffect(() => {
     const handleCallback = async () => {
       if (isProcessing) {
-        console.log('Already processing callback, skipping...');
         return;
       }
 
@@ -34,7 +32,6 @@ export function AuthCallback() {
 
         // Prevent reprocessing the same code
         if (code && processedCode.current === code) {
-          console.log('Code already processed, skipping...');
           return;
         }
 
@@ -46,7 +43,6 @@ export function AuthCallback() {
         }
 
         if (credential) {
-          // console.log('Processing Google auth...');
           try {
             await signInWithGoogle(credential);
             toast.success('Successfully signed in with Google!');
@@ -54,28 +50,23 @@ export function AuthCallback() {
             localStorage.removeItem('redirectPath');
             navigate(redirectPath, { replace: true });
           } catch (err: any) {
-            // console.error('Google auth error:', err);
             toast.error(err.message || 'Failed to authenticate with Google');
             setError(err.message || 'Failed to authenticate with Google');
-            // Redirect to sign in page after error
             navigate('/auth/sign-in', { replace: true });
           }
         } else if (code && state === 'instagram') {
-          // console.log('Processing Instagram auth callback...');
           try {
             const authResponse = await instagramService.handleAuthCallback(code);
-            // console.log('Instagram auth response:', authResponse);
             
             if (authResponse.success) {
               const savedState = localStorage.getItem('instagram_auth_return_state');
-              // console.log('Saved Instagram state:', savedState);
               
               if (savedState) {
                 try {
                   const parsedState = JSON.parse(savedState);
                   localStorage.removeItem('instagram_auth_return_state');
                   
-                  // console.log('Instagram auth successful, navigating to home');
+
                   toast.success('Successfully connected Instagram account');
                   navigate('/home', { 
                     replace: true,
@@ -89,16 +80,13 @@ export function AuthCallback() {
                   setError('Error restoring previous state. Please try connecting again.');
                 }
               } else {
-                // console.log('No saved state found, navigating to home');
                 toast.success('Successfully connected Instagram account');
                 navigate('/home', { replace: true });
               }
             } else {
-              // console.error('Instagram auth failed:', authResponse);
               setError(authResponse.message || 'Failed to connect Instagram account');
             }
           } catch (err: any) {
-            // console.error('Instagram auth error:', err);
             setError(err.message || 'Failed to connect Instagram account');
           }
         } else if (code && state === 'youtube') {
@@ -108,14 +96,13 @@ export function AuthCallback() {
             
             if (authResponse.status === 'success') {
               const savedState = localStorage.getItem('youtube_auth_return_state');
-              // console.log('Saved YouTube state:', savedState);
               
               if (savedState) {
                 try {
                   const parsedState = JSON.parse(savedState);
                   localStorage.removeItem('youtube_auth_return_state');
                   
-                  // console.log('YouTube auth successful, navigating to home');
+        
                   toast.success('Successfully connected YouTube account');
                   navigate('/home', { 
                     replace: true,
@@ -129,12 +116,10 @@ export function AuthCallback() {
                   setError('Error restoring previous state. Please try connecting again.');
                 }
               } else {
-                // console.log('No saved state found, navigating to home');
                 toast.success('Successfully connected YouTube account');
                 navigate('/home', { replace: true });
               }
             } else {
-              // console.error('YouTube auth failed:', authResponse);
               setError(authResponse.error || 'Failed to connect YouTube account');
             }
           } catch (err: any) {
@@ -142,7 +127,6 @@ export function AuthCallback() {
             setError(err.message || 'Failed to connect YouTube account');
           }
         } else if (hash) {
-          // console.log('Processing Facebook auth callback...');
           try {
             // Parse the hash fragment
             const params = new URLSearchParams(hash.replace('#', ''));
@@ -159,18 +143,15 @@ export function AuthCallback() {
             }
 
             const authResponse = await facebookService.handleAuthCallback(token);
-            // console.log('Facebook auth response:', authResponse);
             
             if (authResponse.success) {
               const savedState = localStorage.getItem('facebook_auth_return_state');
-              // console.log('Saved Facebook state:', savedState);
               
               if (savedState) {
                 try {
                   const parsedState = JSON.parse(savedState);
                   localStorage.removeItem('facebook_auth_return_state');
                   
-                  // console.log('Facebook auth successful, navigating to home');
                   toast.success('Successfully connected Facebook account');
                   navigate('/home', { 
                     replace: true,
@@ -184,7 +165,6 @@ export function AuthCallback() {
                   setError('Error restoring previous state. Please try connecting again.');
                 }
               } else {
-                // console.log('No saved state found, navigating to home');
                 toast.success('Successfully connected Facebook account');
                 navigate('/home', { replace: true });
               }
@@ -211,7 +191,6 @@ export function AuthCallback() {
     handleCallback();
   }, [navigate, searchParams, signInWithGoogle]);
 
-  console.log('AuthCallback rendering, error state:', error, 'isProcessing:', isProcessing);
 
   if (error) {
     return (

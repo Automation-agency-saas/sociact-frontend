@@ -261,18 +261,12 @@ function AppRoutes() {
 }
 
 function App() {
-  // console.log('App mounting...');
-  // console.log('Using Google Client ID:', import.meta.env.VITE_GOOGLE_CLIENT_ID);
-
   return (
     <GoogleOAuthProvider
       clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}
       onScriptLoadSuccess={() => {
-        // console.log('Google OAuth script loaded successfully');
-        // console.log('Current origin:', window.location.origin);
       }}
       onScriptLoadError={() => {
-        // console.error('Failed to load Google OAuth script');
       }}
     >
       <Router>

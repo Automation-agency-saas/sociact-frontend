@@ -100,12 +100,6 @@ export function SEOOptimizerModal({ isOpen, onClose, platform }: SEOOptimizerMod
   const config = platformConfig[platform];
 
   useEffect(() => {
-    console.log('Modal state changed:', {
-      isOpen,
-      currentStep,
-      content: content ? 'has content' : 'no content',
-      error
-    });
   }, [isOpen, currentStep, content, error]);
 
   const handleOptimize = async () => {
@@ -204,30 +198,18 @@ export function SEOOptimizerModal({ isOpen, onClose, platform }: SEOOptimizerMod
 
   const renderResults = () => {
     if (!optimizedContent) return null;
-
-    console.log('Rendering results with content:', optimizedContent);
     
     // Ensure we have valid numbers and log the values
     const originalScore = Number(optimizedContent.original_score);
     const optimizedScore = Number(optimizedContent.seo_score);
-    
-    console.log('Score values:', {
-      rawOriginal: optimizedContent.original_score,
-      rawOptimized: optimizedContent.seo_score,
-      parsedOriginal: originalScore,
-      parsedOptimized: optimizedScore
-    });
 
     // Calculate improvement
     const improvement = optimizedScore - originalScore;
     
-    console.log('Calculated improvement:', improvement);
 
     // Get colors based on scores
     const originalScoreColor = getScoreColor(originalScore);
     const optimizedScoreColor = getScoreColor(optimizedScore);
-    
-    console.log('Score colors:', { originalScoreColor, optimizedScoreColor });
 
     return (
       <div className="space-y-6">

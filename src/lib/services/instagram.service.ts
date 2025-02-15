@@ -40,7 +40,6 @@ class InstagramService {
   }
 
   async getAuthUrl(): Promise<string> {
-    console.log('Generating Instagram auth URL...');
     
     // Define required scopes exactly as per Instagram docs
     const scope = [
@@ -58,10 +57,6 @@ class InstagramService {
       `&scope=${encodeURIComponent(scope)}` +
       `&state=instagram`;  // Add state parameter back for our callback handling
     
-    console.log('Generated auth URL:', authUrl);
-    console.log('Redirect URI:', INSTAGRAM_REDIRECT_URI);
-    console.log('Scopes:', scope);
-    
     return authUrl;
   }
 
@@ -71,13 +66,11 @@ class InstagramService {
 
     // Check if we're trying to authenticate too quickly
     if (timeSinceLastAttempt < InstagramService.MIN_AUTH_INTERVAL) {
-      console.log('Auth attempt too soon after last attempt, waiting...');
       await new Promise(resolve => setTimeout(resolve, InstagramService.MIN_AUTH_INTERVAL - timeSinceLastAttempt));
     }
 
     // Check if authentication is already in progress
     if (InstagramService.isAuthenticating) {
-      console.log('Authentication already in progress, waiting...');
       await new Promise(resolve => setTimeout(resolve, InstagramService.MIN_AUTH_INTERVAL));
       
       if (InstagramService.isAuthenticating) {
@@ -89,12 +82,9 @@ class InstagramService {
     try {
       InstagramService.isAuthenticating = true;
       InstagramService.lastAuthAttempt = Date.now();
-      
-      console.log('Handling Instagram auth callback with code:', code);
-      
+            
       // Clean the code by removing any hash fragments as per Instagram docs
       const cleanCode = code.split('#')[0];
-      console.log('Cleaned auth code:', cleanCode);
       
       // Exchange the code for tokens via backend
       const response = await fetch(`${this.baseUrl}/comment-automation/instagram/auth`, {
@@ -114,7 +104,6 @@ class InstagramService {
         throw new Error(data.detail || 'Failed to authenticate with Instagram');
       }
 
-      console.log('Instagram auth success:', data);
       return data;
     } catch (error) {
       console.error('Instagram auth error:', error);
@@ -129,7 +118,6 @@ class InstagramService {
 
   async checkAuthStatus(): Promise<InstagramAuthResponse> {
     try {
-      console.log('Checking Instagram auth status...');
       const response = await fetch(`${this.baseUrl}/comment-automation/instagram/auth/check`, {
         method: 'GET',
         headers: this.getAuthHeaders(),
@@ -143,7 +131,6 @@ class InstagramService {
       }
 
       const data = await response.json();
-      console.log('Auth status response:', data);
       return data;
     } catch (error) {
       console.error('Auth status check error:', error);
