@@ -1,4 +1,4 @@
-import { Youtube, Instagram, Twitter, Linkedin, Sparkles, MessageSquare, BarChart3, Palette, Facebook } from 'lucide-react';
+import { Youtube, Instagram, Twitter, Linkedin, Sparkles, MessageSquare, BarChart3, Palette, Facebook, Globe } from 'lucide-react';
 import { Platform, Category } from '../types';
 
 export interface Tool {
@@ -177,12 +177,14 @@ export const categories = [
   },
 ];
 
-export const platformConfig = {
-  all: {
-    icon: Sparkles,
-    name: 'All Platforms',
-    color: 'text-primary',
-  },
+interface PlatformConfig {
+  icon: any;
+  name: string;
+  color: string;
+  bgColor?: string;
+}
+
+export const platformConfig: Record<string, PlatformConfig> = {
   youtube: {
     icon: Youtube,
     name: 'YouTube',
@@ -207,10 +209,9 @@ export const platformConfig = {
     color: 'text-blue-600',
     bgColor: 'bg-blue-600/10'
   },
-  facebook: {
-    icon: Facebook,
-    name: 'Facebook',
-    color: 'text-blue-700',
-    bgColor: 'bg-blue-700/10'
-  },
+  all: {
+    icon: Globe,
+    name: 'All Platforms',
+    color: 'text-primary'
+  }
 }; 

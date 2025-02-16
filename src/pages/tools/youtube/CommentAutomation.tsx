@@ -17,6 +17,7 @@ import { youtubeService } from '@/lib/services/youtube.service';
 import type { AutomationConfig } from '@/lib/types/youtube';
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
+import { activityTracker } from '@/lib/services/activity-tracker';
 
 // Constants for dropdown options
 const RESPONSE_TONES = [
@@ -369,6 +370,15 @@ export function YouTubeCommentAutomationPage() {
         setAutomationLogs([]);
       }, 10000); // Keep the report visible for 10 seconds
 
+      activityTracker.trackActivity({
+        type: 'comment',
+        details: {
+          title: 'Comment Automation',
+          status: 'Completed',
+          description: `Processed ${responseGeneration.stats?.totalComments} comments`
+        }
+      });
+
     } catch (error) {
       if (error instanceof Error) {
         console.error('Failed to process comments:', error);
@@ -509,6 +519,15 @@ export function YouTubeCommentAutomationPage() {
           toast.error('Failed to get status updates');
         }
       }, 2000);
+
+      activityTracker.trackActivity({
+        type: 'comment',
+        details: {
+          title: 'Comment Automation',
+          status: 'Completed',
+          description: `Processed ${responseGeneration.stats?.totalComments} comments`
+        }
+      });
 
     } catch (error) {
       console.error('Failed to start automation:', error);

@@ -14,6 +14,7 @@ import { containerVariants, itemVariants, cardHoverVariants } from '../../../lib
 import { ToolLayout } from '@/components/tool-page/ToolLayout';
 import { ToolTitle } from '@/components/ui/tool-title';
 import { SEOOptimizerService } from '@/lib/services/seo-optimizer';
+import { activityTracker } from '@/lib/services/activity-tracker';
 
 interface OptimizedContent {
   title?: string;
@@ -131,6 +132,15 @@ export function YouTubeSEOOptimizerPage() {
       setHistory(prev => [historyItem, ...prev]);
       
       toast.success('Successfully optimized content!');
+
+      activityTracker.trackActivity({
+        type: 'seo',
+        details: {
+          title: optimizedResult.title || 'SEO Optimization',
+          score: optimizedResult.seo_score,
+          description: `Improved SEO score by ${optimizedResult.seo_score - optimizedResult.original_score} points`
+        }
+      });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to optimize content';
       setError(errorMessage);

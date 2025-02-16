@@ -62,6 +62,8 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { ToolLayout } from "@/components/tool-page/ToolLayout";
+import { activityTracker } from '@/lib/services/activity-tracker';
+import { cn, formatTimeAgo } from "@/lib/utils";
 
 // Add this new component for the animated stats
 const StatCard = ({
@@ -107,6 +109,9 @@ export function Profile() {
     },
   });
 
+  const [stats, setStats] = useState(activityTracker.getStats());
+  const [activities, setActivities] = useState(activityTracker.getActivities());
+
   useEffect(() => {
     if (user) {
       setEditedUser({
@@ -122,6 +127,11 @@ export function Profile() {
           website: "",
         },
       });
+      const savedSocials = activityTracker.getSocials();
+      setEditedUser(prev => ({
+        ...prev,
+        socials: savedSocials
+      }));
     }
   }, [user]);
 
@@ -171,6 +181,8 @@ export function Profile() {
         bio: editedUser.bio,
         picture: editedUser.picture,
       });
+
+      activityTracker.saveSocials(editedUser.socials);
 
       setUser(response.user);
       setIsEditing(false);
@@ -527,14 +539,10 @@ export function Profile() {
           transition={{ delay: 0.4 }}
           className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
         >
-          <StatCard icon={Image} label="Thumbnails Generated" value="24" />
-          <StatCard icon={FileText} label="Scripts Created" value="18" />
-          <StatCard
-            icon={MessageSquare}
-            label="Comments Automated"
-            value="342"
-          />
-          <StatCard icon={Search} label="SEO Optimizations" value="56" />
+          <StatCard icon={Image} label="Thumbnails Generated" value={stats.thumbnails.toString()} />
+          <StatCard icon={FileText} label="Scripts Created" value={stats.scripts.toString()} />
+          <StatCard icon={MessageSquare} label="Comments Automated" value={stats.comments.toString()} />
+          <StatCard icon={Search} label="SEO Optimizations" value={stats.seo.toString()} />
         </motion.div>
 
         {/* Tabs Section */}
@@ -552,12 +560,7 @@ export function Profile() {
             >
               Social
             </TabsTrigger>
-            <TabsTrigger
-              value="connected"
-              className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow"
-            >
-              Connected
-            </TabsTrigger>
+  
           </TabsList>
 
           <TabsContent value="about" className="mt-6 space-y-6">
@@ -588,50 +591,29 @@ export function Profile() {
                 Activity Overview
               </h2>
               <div className="space-y-4">
-                <div className="flex items-center justify-between py-2 border-b">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-md bg-purple-500/10">
-                      <Image className="w-4 h-4 text-purple-500" />
+                {activities.slice(0, 4).map((activity) => (
+                  <div key={activity.id} className="flex items-center justify-between py-2 border-b">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-md ${
+                        activity.type === 'thumbnail' ? 'bg-purple-500/10' :
+                        activity.type === 'script' ? 'bg-blue-500/10' :
+                        activity.type === 'comment' ? 'bg-green-500/10' :
+                        'bg-orange-500/10'
+                      }`}>
+                        {activity.type === 'thumbnail' && <Image className="w-4 h-4 text-purple-500" />}
+                        {activity.type === 'script' && <FileText className="w-4 h-4 text-blue-500" />}
+                        {activity.type === 'comment' && <MessageSquare className="w-4 h-4 text-green-500" />}
+                        {activity.type === 'seo' && <Search className="w-4 h-4 text-orange-500" />}
+                      </div>
+                      <span className="text-sm">
+                        {activity.details.title || `Latest ${activity.type.charAt(0).toUpperCase() + activity.type.slice(1)}`}
+                      </span>
                     </div>
-                    <span className="text-sm">Latest Thumbnail</span>
+                    <span className="text-sm text-muted-foreground">
+                      {formatTimeAgo(new Date(activity.timestamp))}
+                    </span>
                   </div>
-                  <span className="text-sm text-muted-foreground">
-                    2 hours ago
-                  </span>
-                </div>
-                <div className="flex items-center justify-between py-2 border-b">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-md bg-blue-500/10">
-                      <FileText className="w-4 h-4 text-blue-500" />
-                    </div>
-                    <span className="text-sm">Latest Script</span>
-                  </div>
-                  <span className="text-sm text-muted-foreground">
-                    5 hours ago
-                  </span>
-                </div>
-                <div className="flex items-center justify-between py-2 border-b">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-md bg-green-500/10">
-                      <MessageSquare className="w-4 h-4 text-green-500" />
-                    </div>
-                    <span className="text-sm">Latest Comment</span>
-                  </div>
-                  <span className="text-sm text-muted-foreground">
-                    1 day ago
-                  </span>
-                </div>
-                <div className="flex items-center justify-between py-2">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-md bg-orange-500/10">
-                      <Search className="w-4 h-4 text-orange-500" />
-                    </div>
-                    <span className="text-sm">Latest SEO</span>
-                  </div>
-                  <span className="text-sm text-muted-foreground">
-                    2 days ago
-                  </span>
-                </div>
+                ))}
               </div>
             </Card>
           </TabsContent>
@@ -757,70 +739,6 @@ export function Profile() {
                     </HoverCard>
                   </motion.div>
                 ))}
-              </motion.div>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="connected" className="mt-6">
-            <Card className="p-6">
-              <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
-                <Link2 className="w-5 h-5" />
-                Connected Accounts
-              </h2>
-              <motion.div layout className="grid gap-4">
-                {Object.entries(platformConfig).map(([platform, config]) => {
-                  if (platform === "all") return null;
-                  const isConnected =
-                    connections[platform as keyof typeof connections];
-
-                  return (
-                    <motion.div
-                      key={platform}
-                      layout
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent/5 transition-all"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div
-                          className={`p-2 rounded-md ${
-                            config.bgColor || "bg-accent/10"
-                          }`}
-                        >
-                          <config.icon className={`w-5 h-5 ${config.color}`} />
-                        </div>
-                        <div>
-                          <p className="font-medium">{config.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {isConnected ? (
-                              <Badge variant="success" className="mt-1">
-                                Connected
-                              </Badge>
-                            ) : (
-                              <Badge variant="secondary" className="mt-1">
-                                Not connected
-                              </Badge>
-                            )}
-                          </p>
-                        </div>
-                      </div>
-                      {isConnected ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
-                        >
-                          Disconnect
-                        </Button>
-                      ) : (
-                        <Button variant="default" size="sm">
-                          Connect
-                        </Button>
-                      )}
-                    </motion.div>
-                  );
-                })}
               </motion.div>
             </Card>
           </TabsContent>

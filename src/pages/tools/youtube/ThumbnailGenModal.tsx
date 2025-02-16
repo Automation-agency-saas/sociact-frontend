@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../..
 import { cn } from '../../../lib/utils';
 import { ToolLayout } from "../../../components/tool-page/ToolLayout";
 import { ToolTitle } from "@/components/ui/tool-title";
+import { activityTracker } from '@/lib/services/activity-tracker';
 
 type ThumbnailStyle = 'modern' | 'classic' | 'vibrant' | 'minimal' | 'dramatic';
 
@@ -124,6 +125,13 @@ export function ThumbnailGenPage() {
                 setGeneratedUrl(result.url);
                 setCurrentStep('results');
                 toast.success('Thumbnail generated successfully!');
+                activityTracker.trackActivity({
+                    type: 'thumbnail',
+                    details: {
+                        title: 'Generated Thumbnail',
+                        description: backgroundPrompt
+                    }
+                });
             } else {
                 throw new Error(result.message || 'Failed to generate thumbnail');
             }

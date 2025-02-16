@@ -12,6 +12,7 @@ import { containerVariants, itemVariants, cardHoverVariants } from '../../../lib
 import { ToolLayout } from "../../../components/tool-page/ToolLayout";
 import { ToolTitle } from '@/components/ui/tool-title';
 import { contentGeneratorService } from "../../../lib/services/content-generator";
+import { activityTracker } from '@/lib/services/activity-tracker';
 
 type Step = 'input' | 'generating' | 'results';
 
@@ -107,6 +108,13 @@ export function YouTubeScriptGeneratorPage() {
       setHistory(prev => [historyItem, ...prev]);
       setCurrentStep('results');
       toast.success('Script generated successfully!');
+      activityTracker.trackActivity({
+        type: 'script',
+        details: {
+          title: title,
+          description: description
+        }
+      });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to generate script';
       setError(errorMessage);
