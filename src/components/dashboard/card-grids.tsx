@@ -216,9 +216,8 @@ const CardGrids: React.FC = () => {
                         "flex items-center justify-center",
                         "text-white font-medium",
                         "relative overflow-hidden",
-                        "hover:scale-[1.02] transition-transform duration-200",
-                        "cursor-pointer",
-                        
+                        // "hover:scale-[1.02] transition-transform duration-200",
+                        "cursor-pointer",         
                       )}
                     >
                       <span className="flex items-center gap-2 relative z-10">
