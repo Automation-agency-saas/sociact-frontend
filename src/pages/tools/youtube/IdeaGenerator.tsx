@@ -81,13 +81,11 @@ interface YouTubeIdea {
   title: string;
   description: string;
   estimated_duration: string;
-  key_talking_points?: string;
-  engagement_potential?: string;
+  key_talking_points: string;
+  engagement_potential: string;
   thumbnail_suggestion: string;
-  additional_content?: string;
-  difficulty?: string;
-  engagement?: string;
-  tags?: string[];
+  difficulty: string;
+  tags: string[];
 }
 
 interface YouTubeIdeaGeneration extends IdeaGeneration {
@@ -197,10 +195,13 @@ export function YouTubeIdeaGeneratorPage() {
         }
       );
 
+      console.log('Generated ideas response:', response);
+
       setCurrentIdeas(response as YouTubeIdeaGeneration);
       setHistory((prev) => [response as YouTubeIdeaGeneration, ...prev]);
       toast.success("Ideas generated successfully!");
     } catch (error: any) {
+      console.error('Error generating ideas:', error);
       toast.error(error.message);
     } finally {
       setLoading(false);
@@ -267,78 +268,112 @@ export function YouTubeIdeaGeneratorPage() {
     });
   };
 
-  const renderIdea = (idea: YouTubeIdea) => (
-    <Card className="p-6 hover:shadow-lg transition-all duration-300 bg-card/50 backdrop-blur-sm">
-      <div className="space-y-4">
-        {/* Title Section */}
-        <div className="flex justify-between items-start gap-4">
-          <h3 className="text-xl font-semibold">{idea.title}</h3>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => copyToClipboard(idea.title)}
-            className="shrink-0"
-          >
-            <Copy className="h-4 w-4" />
-          </Button>
-        </div>
-
-        {/* Description */}
-        {idea.description && (
-          <p className="text-muted-foreground text-base">{idea.description}</p>
-        )}
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">⏱️ Duration</p>
-            <p className="font-medium">
-              {idea.estimated_duration || "10-15 minutes"}
-            </p>
+  const renderIdea = (idea: YouTubeIdea) => {
+    console.log('Rendering idea:', idea);
+    
+    return (
+      <Card className="p-6 hover:shadow-lg transition-all duration-300 bg-card/50 backdrop-blur-sm">
+        <div className="space-y-6">
+          {/* Title Section */}
+          <div className="flex justify-between items-start gap-4">
+            <h3 className="text-xl font-semibold text-primary">{idea.title}</h3>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => copyToClipboard(idea.title)}
+              className="shrink-0"
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
           </div>
+
+          {/* Description */}
+          {idea.description && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-muted-foreground">Description</p>
+              <p className="text-base">{idea.description}</p>
+            </div>
+          )}
+
+          {/* Key Info Grid */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-muted-foreground">Duration</p>
+              <p className="flex items-center gap-2">
+                <Clock className="h-4 w-4 text-primary" />
+                {idea.estimated_duration}
+              </p>
+            </div>
+            {idea.difficulty && (
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">Difficulty</p>
+                <p className="flex items-center gap-2">
+                  <Settings className="h-4 w-4 text-primary" />
+                  {idea.difficulty}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Key Talking Points */}
+          {idea.key_talking_points && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-muted-foreground">Key Talking Points</p>
+              <div className="space-y-2">
+                {idea.key_talking_points.split(',').map((point, index) => (
+                  <div key={index} className="flex items-start gap-2">
+                    <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                      <span className="text-sm text-primary">{index + 1}</span>
+                    </div>
+                    <p className="text-sm">{point.trim()}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Thumbnail Suggestion */}
+          {idea.thumbnail_suggestion && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-muted-foreground">Thumbnail Suggestion</p>
+              <div className="p-4 rounded-lg bg-secondary/50 border border-border">
+                <p className="text-sm">{idea.thumbnail_suggestion}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Engagement Potential */}
           {idea.engagement_potential && (
             <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">📈 Engagement</p>
-              <p className="font-medium">{idea.engagement_potential}</p>
+              <p className="text-sm font-medium text-muted-foreground">Engagement Potential</p>
+              <p className="text-sm flex items-center gap-2">
+                <MessageSquare className="h-4 w-4 text-primary" />
+                {idea.engagement_potential}
+              </p>
+            </div>
+          )}
+
+          {/* Tags */}
+          {idea.tags && idea.tags.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-muted-foreground">Tags</p>
+              <div className="flex flex-wrap gap-2">
+                {idea.tags.map((tag, i) => (
+                  <span
+                    key={i}
+                    className="px-3 py-1 text-sm rounded-full bg-primary/10 text-primary hover:bg-primary/20 cursor-pointer transition-colors"
+                    onClick={() => copyToClipboard(tag)}
+                  >
+                    #{tag}
+                  </span>
+                ))}
+              </div>
             </div>
           )}
         </div>
-
-        {/* Key Points */}
-        {idea.key_talking_points && (
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">🎯 Key Points</p>
-            <p className="text-sm">{idea.key_talking_points}</p>
-          </div>
-        )}
-
-        {/* Thumbnail */}
-        {idea.thumbnail_suggestion && (
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">
-              🎨 Thumbnail Suggestion
-            </p>
-            <p className="text-sm">{idea.thumbnail_suggestion}</p>
-          </div>
-        )}
-
-        {/* Tags */}
-        {idea.tags && idea.tags.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {idea.tags.map((tag, i) => (
-              <span
-                key={i}
-                className="px-3 py-1 text-sm rounded-full bg-primary/10 text-primary hover:bg-primary/20 cursor-pointer transition-colors"
-                onClick={() => copyToClipboard(tag)}
-              >
-                #{tag}
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
-    </Card>
-  );
+      </Card>
+    );
+  };
 
   return (
     <ToolLayout>
@@ -615,16 +650,19 @@ export function YouTubeIdeaGeneratorPage() {
               )}
             </div>
             <div className="grid gap-6">
-              {currentIdeas.ideas.map((idea, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  {renderIdea(idea)}
-                </motion.div>
-              ))}
+              {currentIdeas.ideas.map((idea, index) => {
+                console.log('Rendering idea:', idea);
+                return (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    {renderIdea(idea)}
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
         )}

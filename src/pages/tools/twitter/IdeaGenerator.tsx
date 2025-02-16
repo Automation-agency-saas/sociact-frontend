@@ -13,6 +13,7 @@ import { containerVariants, itemVariants, cardHoverVariants } from '../../../lib
 import { LoadingModal } from "@/components/ui/loading-modal";
 import { ToolTitle } from "@/components/ui/tool-title";
 import { ideaGeneratorService, type IdeaGeneration } from '../../../lib/services/idea-generator';
+import { cn } from '@/lib/utils';
 
 // Constants for dropdowns
 const THREAD_TYPES = [
@@ -50,22 +51,18 @@ const loadingMessages = [
 ];
 
 interface TwitterIdea {
-  hook: string;
-  outline: string[];
-  engagement_hooks?: string;
-  hashtags?: string[];
+  content: string;
+  platform: string;
+  type: string;
 }
 
 interface TwitterIdeaGeneration extends IdeaGeneration {
   ideas: TwitterIdea[];
   preferences: {
-    thread_type: string;
-    topic: string;
-    tone_of_voice: string;
+    thread_type?: string;
+    topic?: string;
+    tone_of_voice?: string;
   };
-  thread_type?: string;
-  topic?: string;
-  tone_of_voice?: string;
 }
 
 export function TwitterIdeaGeneratorPage() {
@@ -218,56 +215,33 @@ export function TwitterIdeaGeneratorPage() {
 
   const renderIdea = (idea: TwitterIdea) => (
     <Card className="p-6 hover:shadow-lg transition-all duration-300 bg-card/50 backdrop-blur-sm">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-start gap-3 flex-1">
-          <div className="mt-1">
-            <Sparkles className="h-5 w-5 text-primary" />
+      <div className="space-y-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 whitespace-pre-wrap font-mono text-sm">
+            {idea.content.split('\n').map((line, index) => (
+              <div key={index} className={cn(
+                "py-1",
+                line.startsWith('Idea') && "text-lg font-semibold text-primary pt-4",
+                line.startsWith('"') && "text-primary font-medium",
+                line.startsWith('Thread Outline:') && "font-medium text-muted-foreground pt-2",
+                line.startsWith('Engagement Hooks:') && "text-muted-foreground pt-2",
+                line.startsWith('Hashtags:') && "text-primary pt-2",
+                line.startsWith('Call to Action:') && "text-muted-foreground pt-2",
+                line.startsWith('---') && "border-t border-border my-4"
+              )}>
+                {line}
+              </div>
+            ))}
           </div>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <p className="text-lg font-medium">{idea.hook}</p>
-              <div className="space-y-2">
-                {idea.outline.map((point: string, i: number) => (
-                  <div key={i} className="flex items-start gap-2">
-                    <span className="text-primary font-medium">{i + 1}.</span>
-                    <p className="text-muted-foreground">{point}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Engagement Hooks */}
-            {idea.engagement_hooks && (
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">🎯 Engagement Hooks</p>
-                <p className="text-sm">{idea.engagement_hooks}</p>
-              </div>
-            )}
-
-            {/* Hashtags */}
-            {idea.hashtags && idea.hashtags.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {idea.hashtags.map((tag, i) => (
-                  <span
-                    key={i}
-                    className="px-3 py-1 text-sm rounded-full bg-primary/10 text-primary hover:bg-primary/20 cursor-pointer transition-colors"
-                    onClick={() => copyToClipboard(tag)}
-                  >
-                    #{tag}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => copyToClipboard(idea.content)}
+            className="shrink-0"
+          >
+            <Copy className="h-4 w-4" />
+          </Button>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => copyToClipboard(`${idea.hook}\n\n${idea.outline.map((point: string, i: number) => `${i + 1}. ${point}`).join('\n')}`)}
-          className="shrink-0"
-        >
-          <Copy className="h-4 w-4" />
-        </Button>
       </div>
     </Card>
   );
@@ -558,17 +532,19 @@ export function TwitterIdeaGeneratorPage() {
 
                     {/* Preview */}
                     <div className="space-y-4">
-                      {item.ideas && item.ideas.length > 0 && item.ideas.slice(0, 1).map((idea, index) => (
+                      {item.ideas.slice(0, 1).map((idea, index) => (
                         <div key={index} className="space-y-2">
-                          <p className="text-lg font-medium">{idea.hook}</p>
-                          {idea.outline && idea.outline.length > 0 && (
-                            <div className="space-y-1">
-                              {idea.outline.slice(0, 2).map((point, i) => (
-                                <p key={i} className="text-sm text-muted-foreground">
-                                  {i + 1}. {point}
-                                </p>
-                              ))}
+                          {idea.content.split('\n').slice(0, 4).map((line, lineIndex) => (
+                            <div key={lineIndex} className={cn(
+                              "line-clamp-2",
+                              line.startsWith('Idea') && "text-lg font-semibold text-primary",
+                              line.startsWith('"') && "text-primary font-medium"
+                            )}>
+                              {line}
                             </div>
+                          ))}
+                          {idea.content.split('\n').length > 4 && (
+                            <p className="text-sm text-muted-foreground">...</p>
                           )}
                         </div>
                       ))}

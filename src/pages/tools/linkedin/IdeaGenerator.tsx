@@ -13,6 +13,7 @@ import { containerVariants, itemVariants, cardHoverVariants } from '../../../lib
 import { LoadingModal } from "@/components/ui/loading-modal";
 import { ToolTitle } from "@/components/ui/tool-title";
 import { ideaGeneratorService, type IdeaGeneration } from '../../../lib/services/idea-generator';
+import { cn } from '@/lib/utils';
 
 // Constants for dropdowns
 const POST_TYPES = [
@@ -57,19 +58,18 @@ const loadingMessages = [
 ];
 
 interface LinkedInIdea {
-  title: string;
   content: string;
-  key_points?: string[];
-  hashtags?: string[];
-  engagement_strategy?: string;
+  platform: string;
+  type: string;
 }
 
 interface LinkedInIdeaGeneration extends IdeaGeneration {
   ideas: LinkedInIdea[];
   preferences: {
     post_type: string;
-    topic: string;
-    tone_of_voice: string;
+    target_audience: string;
+    content_focus: string;
+    engagement_goal: string;
   };
 }
 
@@ -81,8 +81,9 @@ export function LinkedInIdeaGeneratorPage() {
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
   const [preferences, setPreferences] = useState({
     post_type: '',
-    topic: '',
-    tone_of_voice: ''
+    target_audience: '',
+    content_focus: '',
+    engagement_goal: ''
   });
 
   // Load history on mount
@@ -133,7 +134,7 @@ export function LinkedInIdeaGeneratorPage() {
 
   const handlePreferencesSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!preferences.post_type || !preferences.topic || !preferences.tone_of_voice) {
+    if (!preferences.post_type || !preferences.target_audience || !preferences.content_focus || !preferences.engagement_goal) {
       toast.error("Please fill in all fields or use custom prompt");
       return;
     }
@@ -160,14 +161,14 @@ export function LinkedInIdeaGeneratorPage() {
   };
 
   const generateCustomIdeas = async () => {
-    if (!preferences.topic.trim()) {
-      toast.error("Please enter a topic");
+    if (!preferences.target_audience.trim()) {
+      toast.error("Please enter a target audience");
       return;
     }
 
     setLoading(true);
     try {
-      const response = await ideaGeneratorService.generateCustom('linkedin', preferences.topic) as LinkedInIdeaGeneration;
+      const response = await ideaGeneratorService.generateCustom('linkedin', preferences.target_audience) as LinkedInIdeaGeneration;
       setCurrentIdeas(response.ideas);
       setHistory(prev => [response, ...prev]);
       toast.success("Custom ideas generated successfully!");
@@ -220,64 +221,33 @@ export function LinkedInIdeaGeneratorPage() {
 
   const renderIdea = (idea: LinkedInIdea) => (
     <Card className="p-6 hover:shadow-lg transition-all duration-300 bg-card/50 backdrop-blur-sm">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-start gap-3 flex-1">
-          <div className="mt-1">
-            <Sparkles className="h-5 w-5 text-primary" />
+      <div className="space-y-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 whitespace-pre-wrap font-mono text-sm">
+            {idea.content.split('\n').map((line, index) => (
+              <div key={index} className={cn(
+                "py-1",
+                line.startsWith('Headline:') && "text-lg font-semibold text-primary pt-4",
+                line.startsWith('Main content:') && "font-medium text-muted-foreground pt-2",
+                line.startsWith('Key Points:') && "text-muted-foreground pt-2",
+                line.startsWith('Professional Insights:') && "text-primary pt-2",
+                line.startsWith('Call to Action:') && "text-muted-foreground pt-2",
+                line.startsWith('Hashtags:') && "text-primary pt-2",
+                line.startsWith('---') && "border-t border-border my-4"
+              )}>
+                {line}
+              </div>
+            ))}
           </div>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <p className="text-lg font-medium">{idea.title}</p>
-              <p className="text-muted-foreground whitespace-pre-wrap">{idea.content}</p>
-            </div>
-
-            {/* Key Points */}
-            {idea.key_points && idea.key_points.length > 0 && (
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">🎯 Key Points</p>
-                <div className="space-y-1">
-                  {idea.key_points.map((point, i) => (
-                    <div key={i} className="flex items-start gap-2">
-                      <span className="text-primary font-medium">•</span>
-                      <p className="text-sm">{point}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Engagement Strategy */}
-            {idea.engagement_strategy && (
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">💡 Engagement Strategy</p>
-                <p className="text-sm">{idea.engagement_strategy}</p>
-              </div>
-            )}
-
-            {/* Hashtags */}
-            {idea.hashtags && idea.hashtags.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {idea.hashtags.map((tag, i) => (
-                  <span
-                    key={i}
-                    className="px-3 py-1 text-sm rounded-full bg-primary/10 text-primary hover:bg-primary/20 cursor-pointer transition-colors"
-                    onClick={() => copyToClipboard(tag)}
-                  >
-                    #{tag}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => copyToClipboard(idea.content)}
+            className="shrink-0"
+          >
+            <Copy className="h-4 w-4" />
+          </Button>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => copyToClipboard(`${idea.title}\n\n${idea.content}`)}
-          className="shrink-0"
-        >
-          <Copy className="h-4 w-4" />
-        </Button>
       </div>
     </Card>
   );
@@ -329,11 +299,29 @@ export function LinkedInIdeaGeneratorPage() {
 
               <div className="grid gap-2">
                 <Select
-                  value={preferences.topic}
-                  onValueChange={(value) => handlePreferenceChange('topic', value)}
+                  value={preferences.target_audience}
+                  onValueChange={(value) => handlePreferenceChange('target_audience', value)}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select topic" />
+                    <SelectValue placeholder="Select target audience" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TARGET_AUDIENCES.map((tone) => (
+                      <SelectItem key={tone.value} value={tone.value}>
+                        {tone.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid gap-2">
+                <Select
+                  value={preferences.content_focus}
+                  onValueChange={(value) => handlePreferenceChange('content_focus', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select content focus" />
                   </SelectTrigger>
                   <SelectContent>
                     {CONTENT_FOCUS.map((topic) => (
@@ -347,16 +335,16 @@ export function LinkedInIdeaGeneratorPage() {
 
               <div className="grid gap-2">
                 <Select
-                  value={preferences.tone_of_voice}
-                  onValueChange={(value) => handlePreferenceChange('tone_of_voice', value)}
+                  value={preferences.engagement_goal}
+                  onValueChange={(value) => handlePreferenceChange('engagement_goal', value)}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select tone of voice" />
+                    <SelectValue placeholder="Select engagement goal" />
                   </SelectTrigger>
                   <SelectContent>
-                    {TARGET_AUDIENCES.map((tone) => (
-                      <SelectItem key={tone.value} value={tone.value}>
-                        {tone.label}
+                    {ENGAGEMENT_GOALS.map((goal) => (
+                      <SelectItem key={goal.value} value={goal.value}>
+                        {goal.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -366,7 +354,7 @@ export function LinkedInIdeaGeneratorPage() {
               <Button
                 className="w-full"
                 onClick={handlePreferencesSubmit}
-                disabled={loading || !preferences.post_type || !preferences.topic || !preferences.tone_of_voice}
+                disabled={loading || !preferences.post_type || !preferences.target_audience || !preferences.content_focus || !preferences.engagement_goal}
               >
                 {loading ? (
                   <>
@@ -398,14 +386,14 @@ export function LinkedInIdeaGeneratorPage() {
                   </p>
                   <Textarea
                     placeholder="E.g., 'I want to create an engaging LinkedIn post about my recent career transition, focusing on key lessons learned and advice for others...'"
-                    value={preferences.topic}
-                    onChange={(e) => handlePreferenceChange('topic', e.target.value)}
+                    value={preferences.target_audience}
+                    onChange={(e) => handlePreferenceChange('target_audience', e.target.value)}
                     className="min-h-[200px] resize-none"
                   />
                   <Button
                     className="w-full"
                     onClick={generateCustomIdeas}
-                    disabled={loading || !preferences.topic.trim()}
+                    disabled={loading || !preferences.target_audience.trim()}
                   >
                     {loading ? (
                       <>
@@ -567,8 +555,18 @@ export function LinkedInIdeaGeneratorPage() {
                     <div className="space-y-4">
                       {item.ideas.slice(0, 1).map((idea, index) => (
                         <div key={index} className="space-y-2">
-                          <h3 className="text-lg font-medium">{idea.title}</h3>
-                          <p className="text-sm text-muted-foreground line-clamp-2">{idea.content}</p>
+                          {idea.content.split('\n').slice(0, 4).map((line, lineIndex) => (
+                            <div key={lineIndex} className={cn(
+                              "line-clamp-2",
+                              line.startsWith('Headline:') && "text-lg font-semibold text-primary",
+                              line.startsWith('Main content:') && "text-primary font-medium"
+                            )}>
+                              {line}
+                            </div>
+                          ))}
+                          {idea.content.split('\n').length > 4 && (
+                            <p className="text-sm text-muted-foreground">...</p>
+                          )}
                         </div>
                       ))}
                     </div>

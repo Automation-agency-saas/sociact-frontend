@@ -11,6 +11,7 @@ import { LoadingModal } from "@/components/ui/loading-modal";
 import { ToolTitle } from "@/components/ui/tool-title";
 import { ideaGeneratorService, type IdeaGeneration } from '../../../lib/services/idea-generator';
 import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
 
 // Constants for dropdowns
 const CONTENT_TYPES = [
@@ -59,10 +60,8 @@ const loadingMessages = [
 // Update the type references
 interface InstagramIdea {
   content: string;
-  visual_elements?: string;
-  caption?: string;
-  hashtags?: string;
-  engagement_strategy?: string;
+  platform: string;
+  type: string;
 }
 
 interface InstagramPreferences {
@@ -228,59 +227,72 @@ export function InstagramIdeaGeneratorPage() {
   const renderIdea = (idea: InstagramIdea) => (
     <Card className="p-6 hover:shadow-lg transition-all duration-300 bg-card/50 backdrop-blur-sm">
       <div className="space-y-4">
-        {/* Content Section */}
-        <div className="flex justify-between items-start gap-4">
-          <div className="flex-1">
-            <p className="text-base">{idea.content}</p>
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 whitespace-pre-wrap font-mono text-sm">
+            {idea.content ? (
+              idea.content.split('\n').map((line, index) => (
+                <div key={index} className={cn(
+                  "py-1",
+                  line.startsWith('Idea') && "text-lg font-semibold text-primary pt-4",
+                  line.includes('Content Description:') && "font-medium text-muted-foreground pt-2",
+                  line.includes('Visual Elements:') && "text-muted-foreground pt-2",
+                  line.includes('Caption Suggestion:') && "text-primary pt-2",
+                  line.includes('Relevant Hashtags:') && "text-primary pt-2",
+                  line.includes('Engagement Strategy:') && "text-muted-foreground pt-2",
+                  line.startsWith('---') && "border-t border-border my-4"
+                )}>
+                  {line}
+                </div>
+              ))
+            ) : (
+              <div className="space-y-4">
+                {idea.title && <h3 className="text-lg font-semibold text-primary">{idea.title}</h3>}
+                {idea.content_description && (
+                  <p className="text-base">{idea.content_description}</p>
+                )}
+                {idea.visual_elements && (
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-muted-foreground">Visual Elements</p>
+                    <p className="text-sm">{idea.visual_elements}</p>
+                  </div>
+                )}
+                {idea.caption && (
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-muted-foreground">Caption</p>
+                    <p className="text-sm">{idea.caption}</p>
+                  </div>
+                )}
+                {idea.engagement_strategy && (
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-muted-foreground">Engagement Strategy</p>
+                    <p className="text-sm">{idea.engagement_strategy}</p>
+                  </div>
+                )}
+                {idea.hashtags && idea.hashtags.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {idea.hashtags.map((tag, i) => (
+                      <span
+                        key={i}
+                        className="px-3 py-1 text-sm rounded-full bg-primary/10 text-primary hover:bg-primary/20 cursor-pointer transition-colors"
+                        onClick={() => copyToClipboard(tag)}
+                      >
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => copyToClipboard(idea.content)}
+            onClick={() => copyToClipboard(idea.content || JSON.stringify(idea, null, 2))}
             className="shrink-0"
           >
             <Copy className="h-4 w-4" />
           </Button>
         </div>
-
-        {/* Visual Elements */}
-        {idea.visual_elements && (
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">🎨 Visual Elements</p>
-            <p className="text-sm">{idea.visual_elements}</p>
-          </div>
-        )}
-
-        {/* Caption */}
-        {idea.caption && (
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">📝 Caption</p>
-            <p className="text-sm">{idea.caption}</p>
-          </div>
-        )}
-
-        {/* Engagement Strategy */}
-        {idea.engagement_strategy && (
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">🎯 Engagement Strategy</p>
-            <p className="text-sm">{idea.engagement_strategy}</p>
-          </div>
-        )}
-
-        {/* Hashtags */}
-        {idea.hashtags && (
-          <div className="flex flex-wrap gap-2">
-            {idea.hashtags.split(' ').map((tag, i) => (
-              <span
-                key={i}
-                className="px-3 py-1 text-sm rounded-full bg-primary/10 text-primary hover:bg-primary/20 cursor-pointer transition-colors"
-                onClick={() => copyToClipboard(tag)}
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
       </div>
     </Card>
   );
@@ -589,11 +601,30 @@ export function InstagramIdeaGeneratorPage() {
                     <div className="space-y-4">
                       {item.ideas.slice(0, 1).map((idea, index) => (
                         <div key={index} className="space-y-2">
-                          <p className="text-base">{idea.content}</p>
-                          {idea.engagement_strategy && (
-                            <p className="text-sm text-muted-foreground">
-                              {idea.engagement_strategy}
-                            </p>
+                          {idea.content ? (
+                            idea.content.split('\n').slice(0, 4).map((line, lineIndex) => (
+                              <div key={lineIndex} className={cn(
+                                "line-clamp-2",
+                                line.startsWith('Idea') && "text-lg font-semibold text-primary",
+                                line.includes('Content Description:') && "text-primary font-medium"
+                              )}>
+                                {line}
+                              </div>
+                            ))
+                          ) : (
+                            <>
+                              {idea.title && (
+                                <h3 className="text-lg font-semibold text-primary">{idea.title}</h3>
+                              )}
+                              {idea.content_description && (
+                                <p className="text-base text-muted-foreground line-clamp-2">
+                                  {idea.content_description}
+                                </p>
+                              )}
+                            </>
+                          )}
+                          {((idea.content && idea.content.split('\n').length > 4) || (!idea.content && idea.visual_elements)) && (
+                            <p className="text-sm text-muted-foreground">...</p>
                           )}
                         </div>
                       ))}
