@@ -100,9 +100,9 @@ const CardGrids: React.FC = () => {
           app: "twitter",
         },
         {
-          title: "Comment Pro",
-          desc: "Automate engaging responses to comments on your LinkedIn posts",
-          url: "/linkedin/comment-automation",
+          title: "Post Pro",
+          desc: "Enhance your LinkedIn posts with AI and post them automatically",
+          url: "/linkedin/post-automation",
           app: "linkedin",
         },
       ],

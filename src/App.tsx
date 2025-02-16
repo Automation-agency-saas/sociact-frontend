@@ -223,7 +223,7 @@ function AppRoutes() {
           }
         />
         <Route
-          path="/linkedin/comment-automation"
+          path="/linkedin/post-automation"
           element={
             <ProtectedRoute>
               <LinkedInPostCreator />

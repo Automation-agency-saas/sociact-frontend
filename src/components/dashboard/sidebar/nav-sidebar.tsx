@@ -122,9 +122,9 @@ const NavSidebar: React.FC = () => {
           url: "/linkedin/post-generator",
         },
         {
-          title: "Comment Pro",
-          desc: "Automate engaging responses to comments on your LinkedIn posts",
-          url: "/linkedin/comment-automation",
+          title: "Post Automation",
+          desc: "Automate posting on linkedin",
+          url: "/linkedin/post-automation",
         },
       ],
     },
