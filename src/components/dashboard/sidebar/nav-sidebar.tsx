@@ -32,123 +32,70 @@ import {
   Youtube,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
+import { tools, platformConfig } from "@/lib/config/tools";
 
 const NavSidebar: React.FC = () => {
   const [selectedApp, setSelectedApp] = React.useState<string | null>(null);
   const location = useLocation();
 
-  const appContent = {
-    Youtube: {
-      icon: Youtube,
-      features: [
-        {
-          title: "Idea Forge",
-          desc: "Generate viral video ideas tailored to your niche",
-          url: "/youtube/idea-generator",
-        },
-        {
-          title: "Script Craft",
-          desc: "Create engaging video scripts with AI",
-          url: "/youtube/script-generator",
-        },
-        {
-          title: "Thumbnail Gen",
-          desc: "Create stunning thumbnails from text description",
-          url: "/youtube/thumbnail-generator",
-        },
-        {
-          title: "Seo Pro",
-          desc: "Optimize your content for better visibility",
-          url: "/youtube/seo-optimizer",
-        },
-        {
-          title: "Comment Pro",
-          desc: "Automate engaging responses to comments on your videos",
-          url: "/youtube/comment-automation",
-        },
-      ],
-    },
-    Instagram: {
-      icon: Instagram,
-      features: [
-        {
-          title: "Reel Spark",
-          desc: "Create engaging reel concepts that capture attention",
-          url: "/instagram/idea-generator",
-        },
-        {
-          title: "Caption Craft",
-          desc: "Generate engaging captions for your posts",
-          url: "/instagram/caption-generator",
-        },
-        {
-          title: "Comment Pro",
-          desc: "Automate engaging responses to comments on your posts",
-          url: "/instagram/comment-automation",
-        },
-      ],
-    },
-    Twitter: {
-      icon: Twitter,
-      features: [
-        {
-          title: "Thread Mind",
-          desc: "Generate viral ideas for twitter",
-          url: "/twitter/idea-generator",
-        },
-        {
-          title: "Thread Craft",
-          desc: "Create viral thread ideas for twitter with AI",
-          url: "/twitter/thread-generator",
-        },
-        {
-          title: "Comment Pro",
-          desc: "Automate engaging responses to comments on your tweets",
-          url: "/twitter/comment-automation",
-        },
-      ],
-    },
-    Linkedin: {
-      icon: Linkedin,
-      features: [
-        {
-          title: "Pro Mind",
-          desc: "Generate professional posts for linkedin",
-          url: "/linkedin/idea-generator",
-        },
-        {
-          title: "Pro Craft",
-          desc: "Create professional post ideas for linkedin",
-          url: "/linkedin/post-generator",
-        },
-        {
-          title: "Post Automation",
-          desc: "Automate posting on linkedin",
-          url: "/linkedin/post-automation",
-        },
-      ],
-    },
-    Facebook: {
-      icon: Facebook,
-      features: [
-        {
-          title: "Comment Pro",
-          desc: "Automate engaging responses to comments on your posts",
-          url: "/facebook/comment-automation",
-        },
-      ],
-    },
-  };
+  // Transform tools into platform-based structure
+  const appContent = Object.entries(platformConfig)
+    .filter(([key]) => key !== 'all')
+    .reduce((acc, [platform, config]) => ({
+      ...acc,
+      [config.name]: {
+        icon: config.icon,
+        features: tools
+          .filter(tool => tool.platforms.includes(platform as any))
+          .map(tool => ({
+            title: tool.title,
+            desc: tool.description,
+            url: tool.url,
+            comingSoon: tool.comingSoon,
+          }))
+      }
+    }), {} as Record<string, { icon: any, features: any[] }>);
 
   const apps = ["All", ...Object.keys(appContent)];
 
   const renderAppIcon = (app: string | null) => {
     if (!app || app === "All") return <ArrowDownAZ className="w-4 h-4" />;
-    const AppIcon = appContent[app as keyof typeof appContent].icon;
+    const AppIcon = appContent[app].icon;
     return <AppIcon className="w-4 h-4" />;
   };
 
   const filteredApps = selectedApp ? [selectedApp] : Object.keys(appContent);
+
+  const getSocialGradient = (app: string) => {
+    switch (app) {
+      case 'YouTube':
+        return 'from-[#FF0000] to-[#CC0000]';
+      case 'Instagram':
+        return 'from-[#833AB4] to-[#C13584]';
+      case 'Twitter':
+        return 'from-[#1DA1F2] to-[#0D8ECD]';
+      case 'LinkedIn':
+        return 'from-[#0077B5] to-[#00669C]';
+      default:
+        return 'from-purple-600 to-purple-800';
+    }
+  };
+
+  const getTextGradient = (app: string) => {
+    switch (app) {
+      case 'YouTube':
+        return 'from-[#FF0000] via-[#FF4444] to-[#FF0000]';
+      case 'Instagram':
+        return 'from-[#833AB4] via-[#C13584] to-[#833AB4]';
+      case 'Twitter':
+        return 'from-[#1DA1F2] via-[#4DB5F5] to-[#1DA1F2]';
+      case 'LinkedIn':
+        return 'from-[#0077B5] via-[#0091D5] to-[#0077B5]';
+      default:
+        return 'from-purple-600 via-purple-500 to-purple-600';
+    }
+  };
 
   return (
     <SidebarGroup>
@@ -157,9 +104,20 @@ const NavSidebar: React.FC = () => {
         <DropdownMenuTrigger asChild>
           <Button
             variant="outline"
-            className="flex items-center justify-start gap-2 px-2 my-2"
+            className={cn(
+              "flex items-center justify-start gap-2 px-2 my-2",
+              "bg-gradient-to-r from-purple-500/10 to-transparent",
+              "hover:from-purple-500/20 hover:to-purple-500/5",
+              "border-purple-500/20 hover:border-purple-500/30",
+              "transition-all duration-300"
+            )}
           >
-            <span>{renderAppIcon(selectedApp)}</span>
+            <motion.div
+              whileHover={{ rotate: 360 }}
+              transition={{ duration: 0.5 }}
+            >
+              {renderAppIcon(selectedApp)}
+            </motion.div>
             <span className="group-data-[collapsible=icon]:hidden">
               {selectedApp ? `Filter : ${selectedApp}` : "Filter : All"}
             </span>
@@ -167,15 +125,24 @@ const NavSidebar: React.FC = () => {
         </DropdownMenuTrigger>
         <DropdownMenuContent
           side="right"
-          className="min-w-max grid grid-cols-2"
+          className="min-w-max grid grid-cols-2 gap-1 p-2 bg-black/95 border-purple-500/20"
         >
           {apps.map((app) => (
             <DropdownMenuItem
               key={app}
               onSelect={() => setSelectedApp(app === "All" ? null : app)}
-              className="w-max"
+              className={cn(
+                "w-max p-1",
+                "hover:bg-gradient-to-r",
+                app !== "All" && `hover:${getSocialGradient(app)}/20`
+              )}
             >
-              <Button size="icon">{renderAppIcon(app)}</Button>
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                className="p-1"
+              >
+                {renderAppIcon(app)}
+              </motion.div>
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>
@@ -190,37 +157,94 @@ const NavSidebar: React.FC = () => {
           >
             <SidebarMenuItem>
               <CollapsibleTrigger asChild>
-                <SidebarMenuButton tooltip={app}>
-                  <span className="text-purple-400">{renderAppIcon(app)}</span>
-                  <span className="font-semibold">{app}</span>
-                  <ChevronRight className="ml-auto text-purple-400 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                <SidebarMenuButton 
+                  tooltip={app}
+                  className={cn(
+                    "transition-all duration-300",
+                    "hover:bg-gradient-to-r",
+                    `hover:${getSocialGradient(app)}/20`,
+                    "relative overflow-hidden group/button"
+                  )}
+                >
+                  <motion.div
+                    whileHover={{ scale: 1.1 }}
+                    transition={{ duration: 0.3 }}
+                    className={cn(
+                      "p-1 rounded",
+                      "bg-gradient-to-r",
+                      getSocialGradient(app),
+                      "opacity-80 group-hover/button:opacity-100"
+                    )}
+                  >
+                    {renderAppIcon(app)}
+                  </motion.div>
+                  <span className={cn(
+                    "font-semibold bg-gradient-to-r bg-clip-text text-transparent",
+                    "animate-text-gradient bg-[size:200%]",
+                    getTextGradient(app)
+                  )}>
+                    {app}
+                  </span>
+                  <ChevronRight className={cn(
+                    "ml-auto transition-all duration-300",
+                    "text-gray-400 group-hover/button:text-white",
+                    "group-data-[state=open]/collapsible:rotate-90"
+                  )} />
                 </SidebarMenuButton>
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <SidebarMenuSub>
-                  {appContent[app as keyof typeof appContent].features.map(
-                    (feature) => (
-                      <SidebarMenuSubItem key={feature.title}>
-                        <SidebarMenuSubButton
-                          className="hover:bg-purple-400/20"
-                          asChild
-                        >
+                  {appContent[app].features.map((feature) => (
+                    <SidebarMenuSubItem key={feature.title}>
+                      <SidebarMenuSubButton
+                        className={cn(
+                          "relative overflow-hidden group/feature",
+                          "transition-all duration-300",
+                          "hover:bg-gradient-to-r",
+                          `hover:${getSocialGradient(app)}/20`,
+                          feature.comingSoon && "cursor-not-allowed opacity-70"
+                        )}
+                        asChild
+                      >
+                        {feature.comingSoon ? (
+                          <div className="flex items-center justify-between">
+                            <span className={cn(
+                              "transition-colors duration-300",
+                              "text-gray-400"
+                            )}>
+                              {feature.title}
+                            </span>
+                            <span className="text-xs bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full">
+                              Coming Soon
+                            </span>
+                          </div>
+                        ) : (
                           <Link to={feature.url}>
-                            <span
-                              className={cn(
-                                "",
-                                location.pathname === feature.url
-                                  ? "text-purple-400"
-                                  : "text-gray-500"
-                              )}
-                            >
+                            <motion.div
+                              className="absolute inset-0 bg-gradient-to-r opacity-0 group-hover/feature:opacity-10"
+                              style={{
+                                backgroundImage: `linear-gradient(to right, ${
+                                  app === 'YouTube' ? '#FF0000' :
+                                  app === 'Instagram' ? '#833AB4' :
+                                  app === 'Twitter' ? '#1DA1F2' :
+                                  app === 'LinkedIn' ? '#0077B5' :
+                                  '#6B46C1'
+                                }, transparent)`
+                              }}
+                            />
+                            <span className={cn(
+                              "transition-colors duration-300",
+                              location.pathname === feature.url
+                                ? "text-white font-medium"
+                                : "text-gray-400 group-hover/feature:text-white"
+                            )}>
                               {feature.title}
                             </span>
                           </Link>
-                        </SidebarMenuSubButton>
-                      </SidebarMenuSubItem>
-                    )
-                  )}
+                        )}
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  ))}
                 </SidebarMenuSub>
               </CollapsibleContent>
             </SidebarMenuItem>

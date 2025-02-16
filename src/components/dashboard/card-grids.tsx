@@ -1,167 +1,224 @@
 import React from "react";
-import { EvervaultCard, Icon } from "./vault-card";
 import { Button } from "../ui/button";
-import {
-  ChevronRight,
-  LucideChartColumn,
-  MessageSquare,
-  Rocket,
-  Sparkles,
+import { ChevronRight, Sparkles, Facebook } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { StarsBackground } from "../ui/stars-background";
+import { 
+  Youtube, 
+  Instagram, 
+  Twitter, 
+  Linkedin 
 } from "lucide-react";
+import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import { tools, categories as toolCategories } from "@/lib/config/tools";
+
+const getSocialIcon = (app: string) => {
+  switch (app) {
+    case 'youtube':
+      return <Youtube className="w-8 h-8 text-white" />;
+    case 'instagram':
+      return <Instagram className="w-8 h-8 text-white" />;
+    case 'twitter':
+      return <Twitter className="w-8 h-8 text-white" />;
+    case 'linkedin':
+      return <Linkedin className="w-8 h-8 text-white" />;
+    case 'facebook':
+      return <Facebook className="w-8 h-8 text-white" />;
+    default:
+      return <Sparkles className="w-8 h-8 text-white" />;
+  }
+};
+
+const getSocialGradient = (app: string) => {
+  switch (app) {
+    case 'youtube':
+      return 'from-[#FF0000] to-[#CC0000]';
+    case 'instagram':
+      return 'from-[#833AB4] to-[#C13584]';
+    case 'twitter':
+      return 'from-[#1DA1F2] to-[#0D8ECD]';
+    case 'linkedin':
+      return 'from-[#0077B5] to-[#00669C]';
+    case 'facebook':
+      return 'from-[#1877F2] to-[#166DE5]';
+    default:
+      return 'from-purple-600 to-purple-800';
+  }
+};
+
+const getButtonGradient = (app: string) => {
+  switch (app) {
+    case 'youtube':
+      return 'from-[#FF0000]/90 to-[#CC0000]/90 hover:from-[#FF0000] hover:to-[#CC0000]';
+    case 'instagram':
+      return 'from-[#833AB4]/90 to-[#C13584]/90 hover:from-[#833AB4] hover:to-[#C13584]';
+    case 'twitter':
+      return 'from-[#1DA1F2]/90 to-[#0D8ECD]/90 hover:from-[#1DA1F2] hover:to-[#0D8ECD]';
+    case 'linkedin':
+      return 'from-[#0077B5]/90 to-[#00669C]/90 hover:from-[#0077B5] hover:to-[#00669C]';
+    case 'facebook':
+      return 'from-[#1877F2]/90 to-[#166DE5]/90 hover:from-[#1877F2] hover:to-[#166DE5]';
+    default:
+      return 'from-purple-600/90 to-purple-800/90 hover:from-purple-600 hover:to-purple-800';
+  }
+};
+
+const getTextGradient = (app: string) => {
+  switch (app) {
+    case 'youtube':
+      return 'from-[#FF0000] via-[#FF4444] to-[#FF0000]';
+    case 'instagram':
+      return 'from-[#833AB4] via-[#C13584] to-[#833AB4]';
+    case 'twitter':
+      return 'from-[#1DA1F2] via-[#4DB5F5] to-[#1DA1F2]';
+    case 'linkedin':
+      return 'from-[#0077B5] via-[#0091D5] to-[#0077B5]';
+    case 'facebook':
+      return 'from-[#1877F2] via-[#4893F5] to-[#1877F2]';
+    default:
+      return 'from-purple-600 via-purple-500 to-purple-600';
+  }
+};
 
 const CardGrids: React.FC = () => {
-  const categories = [
-    {
-      title: "Ideation",
-      icon: Sparkles,
-      subcategories: [
-        {
-          title: "Idea Forge",
-          desc: "Generate viral video ideas tailored to your niche",
-          url: "/youtube/idea-generator",
-          app: "youtube",
-        },
-        {
-          title: "Reel Spark",
-          desc: "Create engaging reel concepts that capture attention",
-          url: "/instagram/idea-generator",
-          app: "instagram",
-        },
-        {
-          title: "Thread Mind",
-          desc: "Generate viral ideas for twitter",
-          url: "/twitter/idea-generator",
-          app: "twitter",
-        },
-        {
-          title: "Pro Mind",
-          desc: "Generate professional posts for linkedin",
-          url: "/linkedin/idea-generator",
-          app: "linkedin",
-        },
-      ],
-    },
-    {
-      title: "Content",
-      icon: MessageSquare,
-      subcategories: [
-        {
-          title: "Script Craft",
-          desc: "Create engaging video scripts with AI",
-          url: "/youtube/script-generator",
-          app: "youtube",
-        },
-        {
-          title: "Caption Craft",
-          desc: "Generate engaging captions for your posts",
-          url: "/instagram/caption-generator",
-          app: "instagram",
-        },
-        {
-          title: "Thread Craft",
-          desc: "Create viral thread ideas for twitter with AI",
-          url: "/twitter/thread-generator",
-          app: "twitter",
-        },
-        {
-          title: "Pro Craft",
-          desc: "Create professional post ideas for linkedin",
-          url: "/linkedin/post-generator",
-          app: "linkedin",
-        },
-        {
-          title: "Thumbnail Gen",
-          desc: "Create stunning thumbnails from text description",
-          url: "/youtube/thumbnail-generator",
-          app: "youtube",
-        },
-      ],
-    },
-    {
-      title: "Engagement",
-      icon: Sparkles,
-      subcategories: [
-        {
-          title: "Comment Pro",
-          desc: "Automate engaging responses to comments on your posts",
-          url: "/instagram/comment-automation",
-          app: "instagram",
-        },
-        {
-          title: "Comment Pro",
-          desc: "Automate engaging responses to comments on your videos",
-          url: "/youtube/comment-automation",
-          app: "youtube",
-        },
-        {
-          title: "Comment Pro",
-          desc: "Automate engaging responses to comments on your tweets",
-          url: "/twitter/comment-automation",
-          app: "twitter",
-        },
-        {
-          title: "Post Pro",
-          desc: "Enhance your LinkedIn posts with AI and post them automatically",
-          url: "/linkedin/post-automation",
-          app: "linkedin",
-        },
-      ],
-    },
-    {
-      title: "Analytics",
-      icon: LucideChartColumn,
-      subcategories: [
-        {
-          title: "Seo Pro",
-          desc: "Optimize your content for better visibility",
-          url: "/youtube/seo-optimizer",
-          app: "youtube",
-        },
-      ],
-    },
-  ];
+  // Transform tools into the category structure needed for rendering
+  const categories = toolCategories.map(category => ({
+    title: category.title,
+    icon: category.icon,
+    subcategories: tools
+      .filter(tool => tool.category.toLowerCase() === category.title.toLowerCase())
+      .map(tool => ({
+        title: tool.title,
+        desc: tool.description,
+        url: tool.url,
+        app: tool.platforms[0], // Using the first platform as the primary one
+        comingSoon: tool.comingSoon,
+      }))
+  }));
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 p-4 sm:p-6 lg:p-8 mx-auto max-w-7xl">
-      {categories.map((category) =>
-        category.subcategories.map((subcategory) => (
-          <div
-            key={subcategory.title}
-            className="border bg-transparent backdrop-blur-sm group/card flex flex-row gap-2 sm:gap-3 
-                      w-full min-h-[120px] sm:min-h-[160px] lg:min-h-[200px]
-                      p-3 sm:p-4 relative rounded-xl
-                      transition-all duration-300 hover:shadow-lg"
-          >
-            <Icon className="absolute h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 -top-2 -left-2 text-primary" />
-            <Icon className="absolute h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 -bottom-2 -left-2 text-primary" />
-            <Icon className="absolute h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 -top-2 -right-2 text-primary" />
-            <Icon className="absolute h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 -bottom-2 -right-2 text-primary" />
+    <div className="relative min-h-screen">
+      <div className="relative z-10 px-4 py-8 mx-auto max-w-7xl">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {categories.map((category) =>
+            category.subcategories.map((subcategory) => (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                whileHover={{ scale: 1.02, y: -4 }}
+                key={`${subcategory.app}-${subcategory.title}`}
+                className={cn(
+                  "group/card relative overflow-hidden",
+                  "bg-[#0A0A0A] rounded-3xl transition-all duration-500",
+                  "border border-white/5",
+                  "h-[280px] p-6 flex flex-col",
+                  "before:absolute before:inset-0",
+                  "before:bg-gradient-to-r before:from-transparent before:via-white/[0.05]",
+                  "before:to-transparent before:-translate-x-full",
+                  "group-hover/card:before:animate-shimmer",
+                  "after:absolute after:inset-0",
+                  "after:bg-gradient-to-br after:from-black/5 after:to-black/20",
+                  "after:opacity-0 group-hover/card:after:opacity-100",
+                  "after:transition-opacity after:duration-500",
+                  subcategory.comingSoon && "opacity-70"
+                )}
+              >
+                {/* Animated gradient border */}
+                <div className="absolute inset-[1px] rounded-3xl bg-gradient-to-r from-transparent via-white/[0.03] to-transparent -z-10 animate-gradient" />
 
-            <EvervaultCard
-              icon={category.icon}
-              app={subcategory.app}
-              className="group-hover/card:scale-60   transition-all ease-in-out duration-300"
-            />
-            <div className="flex-1 flex flex-col gap-2 sm:gap-3">
-              <h1 className="text-lg sm:text-xl lg:text-2xl font-semibold text-white line-clamp-2">
-                {subcategory.title}
-              </h1>
-              <a href={subcategory.url}>
-                <Button
-                  size={"sm"}
-                  className="w-max pr-4 sm:pr-6 flex items-center gap-2 justify-start text-white text-sm sm:text-base"
+                {/* Enhanced Social Media Icon with floating effect */}
+                <motion.div
+                  animate={{
+                    y: [0, -8, 0],
+                  }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                  className={cn(
+                    "w-16 h-16 rounded-2xl overflow-hidden relative",
+                    "bg-gradient-to-br shadow-lg",
+                    "group-hover/card:animate-pulse-subtle",
+                    "before:absolute before:inset-0",
+                    "before:bg-gradient-to-br before:opacity-0",
+                    "before:transition-opacity before:duration-300",
+                    "group-hover/card:before:opacity-20",
+                    getSocialGradient(subcategory.app)
+                  )}
                 >
-                  <span>Launch</span>
-                  <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 group-hover/card:translate-x-3 transition-all ease-in-out duration-300" />
-                </Button>
-              </a>
-              <p className="w-full text-xs sm:text-sm text-muted-foreground line-clamp-2">
-                {subcategory.desc}
-              </p>
-            </div>
-          </div>
-        ))
-      )}
+                  <motion.div 
+                    className="h-full w-full flex items-center justify-center"
+                    whileHover={{ rotate: 360 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    {getSocialIcon(subcategory.app)}
+                  </motion.div>
+                  {/* Glow effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
+                </motion.div>
+
+                <div className="mt-6 flex-1">
+                  {/* Enhanced title with gradient text effect */}
+                  <motion.h2 
+                    className={cn(
+                      "text-xl font-bold mb-2",
+                      "bg-gradient-to-r bg-clip-text text-transparent",
+                      "animate-text-gradient bg-[size:200%]",
+                      getTextGradient(subcategory.app)
+                    )}
+                    whileHover={{ scale: 1.02 }}
+                  >
+                    {subcategory.title}
+                  </motion.h2>
+                  <p className="text-gray-400 text-sm leading-relaxed line-clamp-2 group-hover/card:text-gray-300 transition-colors duration-300">
+                    {subcategory.desc}
+                  </p>
+                </div>
+
+                {subcategory.comingSoon ? (
+                  <div className="mt-6 w-full">
+                    <div className={cn(
+                      "w-full h-10 rounded-lg",
+                      "bg-gradient-to-r",
+                      getButtonGradient(subcategory.app),
+                      "flex items-center justify-center",
+                      "text-white font-medium",
+                      "relative overflow-hidden",
+                      "cursor-not-allowed"
+                    )}>
+                      <span className="flex items-center gap-2 relative z-10">
+                        Coming Soon
+                        <Sparkles className="w-4 h-4 animate-pulse" />
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <Link to={subcategory.url} className="mt-6 w-full">
+                    <motion.button 
+                      className={cn(
+                        "w-full h-10 rounded-lg",
+                        "bg-gradient-to-r",
+                        getButtonGradient(subcategory.app),
+                        "flex items-center justify-center",
+                        "text-white font-medium",
+                        " relative overflow-hidden"
+                      )}
+                    >
+                      <span className="flex items-center gap-2 relative z-10">
+                        Launch
+                        <ChevronRight className="w-4 h-4 group-hover/button:translate-x-0.5 transition-transform" />
+                      </span>
+                    </motion.button>
+                  </Link>
+                )}
+              </motion.div>
+            ))
+          )}
+        </div>
+      </div>
     </div>
   );
 };
