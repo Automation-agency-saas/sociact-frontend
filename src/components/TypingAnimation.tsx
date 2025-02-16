@@ -3,5 +3,5 @@ interface TypingAnimationProps {
   text: string;
 }
 export function TypingAnimationDemo({ text }: TypingAnimationProps) {
-  return <TypingAnimation className="text-2xl md:text-7xl">{text}</TypingAnimation>;
+  return <TypingAnimation className="text-2xl md:text-8xl">{text}</TypingAnimation>;
 }
