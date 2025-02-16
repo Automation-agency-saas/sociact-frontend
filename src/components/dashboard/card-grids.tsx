@@ -58,7 +58,7 @@ const getButtonGradient = (app: string) => {
     case 'linkedin':
       return 'from-[#0077B5]/90 to-[#00669C]/90 hover:from-[#0077B5] hover:to-[#00669C]';
     case 'facebook':
-      return 'from-[#1877F2]/90 to-[#166DE5]/90 hover:from-[#1877F2] hover:to-[#166DE5]';
+      return 'from-[#1877F2]/20 to-[#166DE5]/20 hover:from-[#1877F2]/30 hover:to-[#166DE5]/30';
     default:
       return 'from-purple-600/90 to-purple-800/90 hover:from-purple-600 hover:to-purple-800';
   }
@@ -208,7 +208,7 @@ const CardGrids: React.FC = () => {
                       )}
                     >
                       <span className="flex items-center gap-2 relative z-10">
-                        Launch
+                        Launch Tool
                         <ChevronRight className="w-4 h-4 group-hover/button:translate-x-0.5 transition-transform" />
                       </span>
                     </motion.button>
