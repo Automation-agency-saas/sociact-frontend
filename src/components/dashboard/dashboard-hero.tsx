@@ -2,7 +2,7 @@ import React from "react";
 import { Sparkles } from "lucide-react";
 const DashboardHero: React.FC = () => {
   return (
-    <div className="relative w-full h-[300px]">
+    <div className="relative w-full h-[400px]">
     <div className="absolute inset-0">
       <img 
         src="https://res.cloudinary.com/dvuohzc5b/image/upload/v1739815634/tmp0u5zi0rr_squzhs.jpg"
