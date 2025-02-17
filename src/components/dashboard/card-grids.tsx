@@ -1,7 +1,6 @@
-
 import React from "react";
 import { Button } from "../ui/button";
-import { ChevronRight, Sparkles, Facebook } from "lucide-react";
+import { ChevronRight, Sparkles, Facebook, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { StarsBackground } from "../ui/stars-background";
 import { 
@@ -81,10 +80,11 @@ const getTextGradient = (app: string) => {
       return 'from-purple-600 via-purple-500 to-purple-600';
   }
 };
+
 const CardGrids: React.FC = () => {
-  // Create a flat array of all tools with their categories
+  // Create a flat array of all tools with their platforms
   const allTools = toolCategories.flatMap(category => {
-    const categoryTools = tools
+    return tools
       .filter(tool => tool.category.toLowerCase() === category.title.toLowerCase())
       .map(tool => ({
         title: tool.title,
@@ -95,142 +95,85 @@ const CardGrids: React.FC = () => {
         category: category.title,
         categoryIcon: category.icon
       }));
-
-    return categoryTools;
   });
 
-  // Sort tools: non-coming-soon first, then coming-soon
-  const sortedTools = [
-    ...allTools.filter(tool => !tool.comingSoon),
-    ...allTools.filter(tool => tool.comingSoon)
-  ];
+  // Sort tools by platform
+  const groupedByPlatform = allTools.reduce((acc, tool) => {
+    const platform = tool.app.toLowerCase();
+    if (!acc[platform]) {
+      acc[platform] = [];
+    }
+    acc[platform].push(tool);
+    return acc;
+  }, {} as Record<string, typeof allTools>);
 
   return (
-    <div className="relative min-h-screen">
-      <div className="relative z-10 px-4 py-8 mx-auto max-w-7xl">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {sortedTools.map((tool, index) => (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-              whileHover={{ scale: 1.02, y: -4 }}
-              key={`${tool.app}-${tool.title}-${index}`}
-              className={cn(
-                "group/card relative overflow-hidden",
-                "bg-[#0A0A0A] rounded-3xl transition-all duration-500",
-                "border border-white/5",
-                "h-[280px] p-6 flex flex-col",
-                "before:absolute before:inset-0",
-                "before:bg-gradient-to-r before:from-transparent before:via-white/[0.05]",
-                "before:to-transparent before:-translate-x-full",
-                "group-hover/card:before:animate-shimmer",
-                "after:absolute after:inset-0",
-                "after:bg-gradient-to-br after:from-black/5 after:to-black/20",
-                "after:opacity-0 group-hover/card:after:opacity-100",
-                "after:transition-opacity after:duration-500",
-                tool.comingSoon && "opacity-70"
-              )}
-            >
-              {/* Animated gradient border */}
-              <div className="absolute inset-[1px] rounded-3xl bg-gradient-to-r from-transparent via-white/[0.03] to-transparent -z-10 animate-gradient" />
+    <div className="relative min-h-screen bg-[#0A0A0A]">
+      <div className="relative z-10 px-4 mx-auto max-w-7xl">
+        {/* Tools Sections by Platform */}
+        {Object.entries(groupedByPlatform).map(([platform, tools]) => (
+          <div key={platform} className="mb-12">
+            <div className="bg-purple-900/20 p-4 rounded-2xl mb-8 flex items-center justify-between">
+              <h2 className="text-2xl font-semibold text-white capitalize">
+                {platform} Tools
+              </h2>
+              <ChevronDown className="w-6 h-6 text-purple-400" />
+            </div>
 
-              {/* Enhanced Social Media Icon with floating effect */}
-              <motion.div
-                animate={{
-                  y: [0, -8, 0],
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                  ease: "easeInOut"
-                }}
-                className={cn(
-                  "w-16 h-16 rounded-2xl overflow-hidden relative",
-                  "bg-gradient-to-br shadow-lg",
-                  "group-hover/card:animate-pulse-subtle",
-                  "before:absolute before:inset-0",
-                  "before:bg-gradient-to-br before:opacity-0",
-                  "before:transition-opacity before:duration-300",
-                  "group-hover/card:before:opacity-20",
-                  getSocialGradient(tool.app)
-                )}
-              >
-                <motion.div 
-                  className="h-full w-full flex items-center justify-center"
-                  whileHover={{ rotate: 360 }}
-                  transition={{ duration: 0.5 }}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {tools.map((tool, index) => (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                  key={`${tool.app}-${tool.title}-${index}`}
+                  className="flex bg-gradient-to-br from-gray-900 to-black rounded-3xl overflow-hidden h-48"
                 >
-                  {getSocialIcon(tool.app)}
-                </motion.div>
-                {/* Glow effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
-              </motion.div>
-
-              <div className="mt-6 flex-1">
-                {/* Enhanced title with gradient text effect */}
-                <motion.h2 
-                  className={cn(
-                    "text-xl font-bold mb-2",
-                    "bg-gradient-to-r bg-clip-text text-transparent",
-                    "animate-text-gradient bg-[size:200%]",
-                    getTextGradient(tool.app)
-                  )}
-                  whileHover={{ scale: 1.02 }}
-                >
-                  {tool.title}
-                </motion.h2>
-                <p className="text-gray-400 text-sm leading-relaxed line-clamp-2 group-hover/card:text-gray-300 transition-colors duration-300">
-                  {tool.desc}
-                </p>
-              </div>
-
-              {tool.comingSoon ? (
-                <div className="mt-6 w-full">
-                  <div className={cn(
-                    "w-full h-10 rounded-lg",
-                    "bg-gradient-to-r",
-                    getButtonGradient(tool.app),
-                    "flex items-center justify-center",
-                    "text-white font-medium",
-                    "relative overflow-hidden",
-                    "cursor-not-allowed"
-                  )}>
-                    <span className="flex items-center gap-2 relative z-10">
-                      Coming Soon
-                      <Sparkles className="w-4 h-4 animate-pulse" />
-                    </span>
+                  {/* Image Section */}
+                  <div className="w-1/2 relative overflow-hidden">
+                    <img
+                      src={`https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS-QSTiahdKODtBSzMaIxXzFqzQCzLpBPqevQ&s`}
+                      alt={tool.title}
+                      className="object-cover w-full h-full"
+                    />
                   </div>
-                </div>
-              ) : (
-                <div className="mt-6 w-full">
-                  <Link 
-                    to={tool.url}
-                    className="block w-full"
-                  >
-                    <div 
-                      className={cn(
-                        "w-full h-10 rounded-lg",
-                        "bg-gradient-to-r",
-                        getButtonGradient(tool.app),
-                        "flex items-center justify-center",
-                        "text-white font-medium",
-                        "relative overflow-hidden",
-                        // "hover:scale-[1.02] transition-transform duration-200",
-                        "cursor-pointer",         
-                      )}
-                    >
-                      <span className="flex items-center gap-2 relative z-10">
-                        Launch Tool
-                        <ChevronRight className="w-4 h-4 group-hover/button:translate-x-0.5 transition-transform" />
-                      </span>
+
+                  {/* Content Section */}
+                  <div className="w-1/2 p-4 flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        {getSocialIcon(tool.app)}
+                        <h3 className="text-xl font-bold text-white">
+                          {tool.title}
+                        </h3>
+                      </div>
+                      <p className="text-gray-400 mb-4 text-sm">
+                        {tool.desc}
+                      </p>
                     </div>
-                  </Link>
-                </div>
-              )}
-            </motion.div>
-          ))}
-        </div>
+
+                    <Link to={tool.url}>
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        className={cn(
+                          "w-full py-2 px-4 rounded-xl",
+                          'bg-gradient-to-r',
+                          getButtonGradient(tool.app),
+                          "text-white font-semibold",
+                          "flex items-center justify-center gap-2",
+                          "transition-all duration-300"
+                        )}
+                      >
+                        <Sparkles className="w-5 h-5" />
+                        Launch Tool 
+                      </motion.button>
+                    </Link>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
