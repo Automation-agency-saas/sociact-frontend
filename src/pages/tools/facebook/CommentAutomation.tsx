@@ -176,7 +176,7 @@ export function FacebookCommentAutomationPage() {
                 {!isRunning ? (
                   <Button
                     onClick={handleStart}
-                    disabled={!postUrl || !commentText}
+                    disabled={true}
                     className="w-full bg-primary hover:bg-primary/90"
                   >
                     <Play className="mr-2 h-4 w-4" />
