@@ -47,22 +47,7 @@ const getSocialGradient = (app: string) => {
   }
 };
 
-const getButtonGradient = (app: string) => {
-  switch (app) {
-    case 'youtube':
-      return 'from-[#FF0000]/90 to-[#CC0000]/90 hover:from-[#FF0000] hover:to-[#CC0000]';
-    case 'instagram':
-      return 'from-[#833AB4]/90 to-[#C13584]/90 hover:from-[#833AB4] hover:to-[#C13584]';
-    case 'twitter':
-      return 'from-[#1DA1F2]/90 to-[#0D8ECD]/90 hover:from-[#1DA1F2] hover:to-[#0D8ECD]';
-    case 'linkedin':
-      return 'from-[#0077B5]/90 to-[#00669C]/90 hover:from-[#0077B5] hover:to-[#00669C]';
-    case 'facebook':
-      return 'from-[#1877F2]/20 to-[#166DE5]/20 hover:from-[#1877F2]/30 hover:to-[#166DE5]/30';
-    default:
-      return 'from-purple-600/90 to-purple-800/90 hover:from-purple-600 hover:to-purple-800';
-  }
-};
+
 
 const getTextGradient = (app: string) => {
   switch (app) {
@@ -91,6 +76,7 @@ const CardGrids: React.FC = () => {
         desc: tool.description,
         url: tool.url,
         app: tool.platforms[0],
+        image: tool.image,
         comingSoon: tool.comingSoon,
         category: category.title,
         categoryIcon: category.icon
@@ -132,7 +118,7 @@ const CardGrids: React.FC = () => {
                   {/* Image Section */}
                   <div className="w-1/2 relative overflow-hidden">
                     <img
-                      src={`https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS-QSTiahdKODtBSzMaIxXzFqzQCzLpBPqevQ&s`}
+                      src={tool.image}
                       alt={tool.title}
                       className="object-cover w-full h-full"
                     />
@@ -158,7 +144,7 @@ const CardGrids: React.FC = () => {
                         className={cn(
                           "w-full py-2 px-4 rounded-xl",
                           'bg-gradient-to-r',
-                          getButtonGradient(tool.app),
+                          "from-[#1877F2]/60 to-primary/60 hover:from-[#1877F2]/30 hover:to-primary/60",
                           "text-white font-semibold",
                           "flex items-center justify-center gap-2",
                           "transition-all duration-300"

@@ -10,6 +10,7 @@ export interface Tool {
   platforms: Platform[];
   url: string;
   comingSoon?: boolean;
+  image?: string;
 }
 
 export const tools: Tool[] = [
@@ -22,6 +23,7 @@ export const tools: Tool[] = [
     category: 'ideation',
     platforms: ['youtube'],
     url: '/youtube/idea-generator',
+    image: 'https://res.cloudinary.com/dvuohzc5b/image/upload/v1739855169/Screenshot_2025-02-18_at_10.30.41_AM_fwys2r.png',
   },
   {
     name: 'ReelSpark',
@@ -31,6 +33,7 @@ export const tools: Tool[] = [
     category: 'ideation',
     platforms: ['instagram'],
     url: '/instagram/idea-generator',
+    image: 'https://res.cloudinary.com/dvuohzc5b/image/upload/v1739855170/Screenshot_2025-02-18_at_10.31.48_AM_folrx3.png',
   },
   {
     name: 'ThreadMind',
@@ -40,6 +43,7 @@ export const tools: Tool[] = [
     category: 'ideation',
     platforms: ['twitter'],
     url: '/twitter/idea-generator',
+    image: 'https://res.cloudinary.com/dvuohzc5b/image/upload/v1739855170/Screenshot_2025-02-18_at_10.32.31_AM_ht7ynv.png',
   },
   {
     name: 'ProMind',
@@ -49,6 +53,7 @@ export const tools: Tool[] = [
     category: 'ideation',
     platforms: ['linkedin'],
     url: '/linkedin/idea-generator',
+    image: 'https://res.cloudinary.com/dvuohzc5b/image/upload/v1739855496/af0x11nuag0igjq0xii4.png',
   },
 
   // Content Tools
@@ -60,6 +65,7 @@ export const tools: Tool[] = [
     category: 'content',
     platforms: ['youtube'],
     url: '/youtube/script-generator',
+    image: 'https://res.cloudinary.com/dvuohzc5b/image/upload/v1739855169/Screenshot_2025-02-18_at_10.30.55_AM_zwkldi.png',
   },
   {
     name: 'CaptionCraft',
@@ -69,15 +75,17 @@ export const tools: Tool[] = [
     category: 'content',
     platforms: ['instagram'],
     url: '/instagram/caption-generator',
+    image: 'https://res.cloudinary.com/dvuohzc5b/image/upload/v1739855770/orokzg5dy4hivg7aznc0.png',
   },
   {
     name: 'ThreadCraft',
     title: 'Thread Craft',
-    description: 'Create viral thread ideas for twitter with AI',
+    description: 'Create viral thread for twitter with AI',
     icon: MessageSquare,
     category: 'content',
     platforms: ['twitter'],
     url: '/twitter/thread-generator',
+    image: 'https://res.cloudinary.com/dvuohzc5b/image/upload/v1739855493/ebxkrek7jbbetqn6ebgl.png',
   },
   {
     name: 'ProCraft',
@@ -87,6 +95,7 @@ export const tools: Tool[] = [
     category: 'content',
     platforms: ['linkedin'],
     url: '/linkedin/post-generator',
+    image: 'https://res.cloudinary.com/dvuohzc5b/image/upload/v1739855776/ls37k0lq9h3uadu19hiy.png',
   },
   {
     name: 'ThumbnailGen',
@@ -96,6 +105,7 @@ export const tools: Tool[] = [
     category: 'content',
     platforms: ['youtube'],
     url: '/youtube/thumbnail-generator',
+    image: 'https://res.cloudinary.com/dvuohzc5b/image/upload/v1739855769/h2v1bvv5zmgq4aulmgkd.png',
   },
 
   // Engagement Tools
@@ -107,6 +117,7 @@ export const tools: Tool[] = [
     category: 'engagement',
     platforms: ['instagram'],
     url: '/instagram/comment-automation',
+    image: 'https://res.cloudinary.com/dvuohzc5b/image/upload/v1739855169/Screenshot_2025-02-18_at_10.32.09_AM_mzfkag.png',
   },
   {
     name: 'YoutubeCommentPro',
@@ -116,6 +127,7 @@ export const tools: Tool[] = [
     category: 'engagement',
     platforms: ['youtube'],
     url: '/youtube/comment-automation',
+    image: 'https://res.cloudinary.com/dvuohzc5b/image/upload/v1739855170/Screenshot_2025-02-18_at_10.31.15_AM_vlnary.png',
   },
   {
     name: 'TwitterCommentPro',
@@ -125,6 +137,7 @@ export const tools: Tool[] = [
     category: 'engagement',
     platforms: ['twitter'],
     url: '/twitter/comment-automation',
+    image: 'https://res.cloudinary.com/dvuohzc5b/image/upload/v1739855171/Screenshot_2025-02-18_at_10.32.51_AM_hzddyg.png',
   },
   {
     name: 'LinkedinPostPro',
@@ -134,6 +147,7 @@ export const tools: Tool[] = [
     category: 'engagement',
     platforms: ['linkedin'],
     url: '/linkedin/post-automation',
+    image: 'https://res.cloudinary.com/dvuohzc5b/image/upload/v1739855492/hlkkbk6d8kj5mmsljtmx.png',
   },
   {
     name: 'FacebookCommentPro',
@@ -144,6 +158,7 @@ export const tools: Tool[] = [
     platforms: ['facebook'],
     url: '/facebook/comment-automation',
     comingSoon: true,
+    image: 'https://res.cloudinary.com/dvuohzc5b/image/upload/v1739855498/v3efwdbfbyyxwzooa8rt.png',
   },
 
   // Analytics Tools
@@ -155,6 +170,7 @@ export const tools: Tool[] = [
     category: 'analytics',
     platforms: ['youtube'],
     url: '/youtube/seo-optimizer',
+    image: 'https://res.cloudinary.com/dvuohzc5b/image/upload/v1739855171/Screenshot_2025-02-18_at_10.31.38_AM_w2uojt.png',
   },
 ];
 
