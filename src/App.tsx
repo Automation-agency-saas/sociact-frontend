@@ -9,7 +9,6 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { useAuth } from "./lib/context/AuthContext";
 import { Toaster } from "react-hot-toast";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-import { ThemeProvider } from "./components/theme-provider";
 import { AuthCallback } from "./pages/auth/AuthCallback";
 import { OnboardingModal } from "./components/onboarding/OnboardingModal";
 import { WelcomeBackModal } from "./components/onboarding/WelcomeBackModal";
@@ -95,150 +94,76 @@ function AppRoutes() {
         <Route path="/auth/linkedin/callback" element={<AuthCallback />} />
 
         {/* Protected Routes */}
-        <Route
-          path="/home"
-          element={
-            <ProtectedRoute>
-              <Home />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/profile/me"
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/home" element={<Home />} />
+        <Route path="/profile/me" element={<Profile />} />
 
         {/* Tool Routes */}
         <Route
           path="/youtube/idea-generator"
-          element={
-            <ProtectedRoute>
-              <YouTubeIdeaGeneratorPage />
-            </ProtectedRoute>
-          }
+          element={<YouTubeIdeaGeneratorPage />}
         />
         <Route
           path="/youtube/script-generator"
-          element={
-            <ProtectedRoute>
-              <YouTubeScriptGeneratorPage />
-            </ProtectedRoute>
-          }
+          element={<YouTubeScriptGeneratorPage />}
         />
         <Route
           path="/youtube/thumbnail-generator"
-          element={
-            <ProtectedRoute>
-              <ThumbnailGenPage />
-            </ProtectedRoute>
-          }
+          element={<ThumbnailGenPage />}
         />
         <Route
           path="/youtube/seo-optimizer"
-          element={
-            <ProtectedRoute>
-              <YouTubeSEOOptimizerPage />
-            </ProtectedRoute>
-          }
+          element={<YouTubeSEOOptimizerPage />}
         />
         <Route
           path="/youtube/comment-automation"
-          element={
-            <ProtectedRoute>
-              <YouTubeCommentAutomationPage />
-            </ProtectedRoute>
-          }
+          element={<YouTubeCommentAutomationPage />}
         />
 
         {/* Instagram Tools */}
         <Route
           path="/instagram/idea-generator"
-          element={
-            <ProtectedRoute>
-              <InstagramIdeaGeneratorPage />
-            </ProtectedRoute>
-          }
+          element={<InstagramIdeaGeneratorPage />}
         />
         <Route
           path="/instagram/caption-generator"
-          element={
-            <ProtectedRoute>
-              <InstagramCaptionGeneratorPage />
-            </ProtectedRoute>
-          }
+          element={<InstagramCaptionGeneratorPage />}
         />
         <Route
           path="/instagram/comment-automation"
-          element={
-            <ProtectedRoute>
-              <InstagramCommentAutomationPage />
-            </ProtectedRoute>
-          }
+          element={<InstagramCommentAutomationPage />}
         />
         <Route
           path="/twitter/comment-automation"
-          element={
-            <ProtectedRoute>
-              <TwitterCommentAutomationPage />
-            </ProtectedRoute>
-          }
+          element={<TwitterCommentAutomationPage />}
         />
         {/* Twitter Tools */}
         <Route
           path="/twitter/idea-generator"
-          element={
-            <ProtectedRoute>
-              <TwitterIdeaGeneratorPage />
-            </ProtectedRoute>
-          }
+          element={<TwitterIdeaGeneratorPage />}
         />
         <Route
           path="/twitter/thread-generator"
-          element={
-            <ProtectedRoute>
-              <TwitterThreadGeneratorPage />
-            </ProtectedRoute>
-          }
+          element={<TwitterThreadGeneratorPage />}
         />
 
         {/* LinkedIn Tools */}
         <Route
           path="/linkedin/idea-generator"
-          element={
-            <ProtectedRoute>
-              <LinkedInIdeaGeneratorPage />
-            </ProtectedRoute>
-          }
+          element={<LinkedInIdeaGeneratorPage />}
         />
         <Route
           path="/linkedin/post-generator"
-          element={
-            <ProtectedRoute>
-              <LinkedInPostGeneratorPage />
-            </ProtectedRoute>
-          }
+          element={<LinkedInPostGeneratorPage />}
         />
         <Route
           path="/linkedin/post-automation"
-          element={
-            <ProtectedRoute>
-              <LinkedInPostCreator />
-            </ProtectedRoute>
-          }
+          element={<LinkedInPostCreator />}
         />
 
         {/* Facebook Tools */}
         <Route
           path="/facebook/comment-automation"
-          element={
-            <ProtectedRoute>
-              <FacebookCommentAutomationPage />
-            </ProtectedRoute>
-          }
+          element={<FacebookCommentAutomationPage />}
         />
 
         {/* Catch all route */}
@@ -266,10 +191,8 @@ function App() {
   return (
     <GoogleOAuthProvider
       clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}
-      onScriptLoadSuccess={() => {
-      }}
-      onScriptLoadError={() => {
-      }}
+      onScriptLoadSuccess={() => {}}
+      onScriptLoadError={() => {}}
     >
       <Router>
         <AuthProvider>
