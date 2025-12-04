@@ -13,7 +13,9 @@ export const Footer = () => {
             className="font-bold text-xl flex"
           >
             <LogoIcon />
-            Sociact
+            <p className="text-sm">
+            Social Automation
+            </p>
           </a>
         </div>
 
@@ -184,7 +186,7 @@ export const Footer = () => {
       </section>
 
       <div className="container pb-8 text-center text-sm opacity-60">
-        <p>© {new Date().getFullYear()} Sociact. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} Social Automation. All rights reserved.</p>
       </div>
     </footer>
   );

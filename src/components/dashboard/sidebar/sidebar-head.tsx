@@ -27,7 +27,7 @@ const SidebarHead: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                Sociact
+                Social Automation
               </motion.h2>
               <p className="text-xs text-gray-400">Dashboard</p>
             </div>

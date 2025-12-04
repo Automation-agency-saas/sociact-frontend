@@ -28,7 +28,7 @@ export function NavUser() {
                 {user?.name || "A Name"}
               </p>
               <p className="text-[8px] truncate  text-muted-foreground">
-                {user?.email || "mail@sociact.com"}
+                {user?.email || "mail@Social Automation.com"}
               </p>
             </div>
           </a>

@@ -30,7 +30,7 @@ export function AuthLayout() {
               >
                 <LogoIcon />
                 <span className="bg-gradient-to-r from-[#F596D3] to-[#D247BF] bg-clip-text text-transparent">
-                  Sociact
+                  Social Automation
                 </span>
               </Link>
             </div>

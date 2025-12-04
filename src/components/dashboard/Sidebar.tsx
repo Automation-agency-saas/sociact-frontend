@@ -57,7 +57,7 @@ export function Sidebar({
             </a>
             {sidebarOpen && (
               <div>
-                <h2 className="text-xl font-bold">Sociact</h2>
+                <h2 className="text-xl font-bold">Social Automation</h2>
                 <p className="text-xs">Dashboard</p>
               </div>
             )}
@@ -108,7 +108,7 @@ export function Sidebar({
                 </Avatar>
                 <div className="text-left">
                   <p className="text-xs font-medium capitalize">{user?.name || "A Name"}</p>
-                  <p className="text-xs text-muted-foreground">{user?.email || "mail@sociact.com"}</p>
+                  <p className="text-xs text-muted-foreground">{user?.email || "mail@Social Automation.com"}</p>
                 </div>
               </a>
             )}

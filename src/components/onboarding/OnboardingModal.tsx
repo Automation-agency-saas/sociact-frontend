@@ -126,7 +126,7 @@ export function OnboardingModal({ isOpen, onClose, onComplete }: OnboardingModal
     setIsSubmitting(true);
     try {
       await onComplete(formData);
-      toast.success('Welcome to Sociact! Your profile is ready.');
+      toast.success('Welcome to Social Automation! Your profile is ready.');
       onClose();
     } catch (error: any) {
       toast.error(error.response?.data?.detail || 'Failed to complete onboarding');
@@ -259,7 +259,7 @@ export function OnboardingModal({ isOpen, onClose, onComplete }: OnboardingModal
                   </motion.div>
                   <div className="space-y-2 sm:space-y-3">
                     <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[#F596D3] to-[#D247BF] text-transparent bg-clip-text">
-                      Welcome to Sociact
+                      Welcome to Social Automation
                     </h2>
                     <p className="text-base sm:text-lg text-muted-foreground">
                       Your journey to social media mastery begins here
@@ -381,7 +381,7 @@ export function OnboardingModal({ isOpen, onClose, onComplete }: OnboardingModal
                       transition={{ delay: 0.1 }}
                       className="space-y-2"
                     >
-                      <Label htmlFor="purpose" className="text-base sm:text-lg">I want to use Sociact for...</Label>
+                      <Label htmlFor="purpose" className="text-base sm:text-lg">I want to use Social Automation for...</Label>
                       <Select
                         value={formData.purpose}
                         onValueChange={(value) => setFormData(prev => ({ ...prev, purpose: value }))}

@@ -21,7 +21,7 @@ const DashboardHero: React.FC = () => {
           <span className="text-purple-200">AI Powered Tools to Help You</span>
         </div>
         <h1 className="text-5xl font-bold text-white mb-4 text-shadow-lg">
-          Sociact: Social Media Automation
+          Social Automation: Social Media Automation
         </h1>
         <p className="text-gray-200 text-xl text-shadow">
           Your AI companion from Content Creation to Publishing

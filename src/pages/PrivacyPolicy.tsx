@@ -86,7 +86,7 @@ export const PrivacyPolicy = () => {
             <section id="introduction" className="mb-12">
               <h2 className="text-3xl font-bold mb-4">1. Introduction</h2>
               <p className="text-gray-500 leading-relaxed">
-                Welcome to Sociact. We are committed to protecting your personal information and your right to privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our application.
+                Welcome to Social Automation. We are committed to protecting your personal information and your right to privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our application.
               </p>
             </section>
 
@@ -164,7 +164,7 @@ export const PrivacyPolicy = () => {
                 If you have any questions about this Privacy Policy, please contact us at:
               </p>
               <p className="text-gray-500 leading-relaxed">
-                Email: <a href="mailto:privacy@sociact.com" className="text-blue-500 hover:underline">privacy@sociact.com</a>
+                Email: <a href="mailto:privacy@Social Automation.com" className="text-blue-500 hover:underline">privacy@Social Automation.com</a>
               </p>
               <p className="text-gray-500 leading-relaxed">
                 Address: Gujarat, IN

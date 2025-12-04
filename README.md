@@ -1,8 +1,8 @@
-# Sociact - Social Media Automation Platform
+# Social Automation - Social Media Automation Platform
 
-![Sociact](public/app-dark.png)
+![Social Automation](public/app-dark.png)
 
-Sociact is a powerful social media automation platform designed to help content creators and businesses streamline their social media presence across YouTube, Instagram, and Twitter.
+Social Automation is a powerful social media automation platform designed to help content creators and businesses streamline their social media presence across YouTube, Instagram, and Twitter.
 
 ## ✨ Features
 
@@ -38,8 +38,8 @@ Sociact is a powerful social media automation platform designed to help content 
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/sociact.git
-cd sociact
+git clone https://github.com/yourusername/Social Automation.git
+cd Social Automation
 ```
 
 2. Install dependencies:
